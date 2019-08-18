@@ -1,8 +1,6 @@
 #ifndef ENTROPYOPENGLWIDGET_H
 #define ENTROPYOPENGLWIDGET_H
 
-#include <GL/gl.h>
-#include <GL/glu.h>
 #include <QOpenGLWidget>
 #include "QOpenGLFunctions"
 

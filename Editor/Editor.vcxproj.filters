@@ -67,6 +67,6 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="GUI.rc" />
+    <ResourceCompile Include="Editor.rc" />
   </ItemGroup>
 </Project>
