@@ -13,7 +13,41 @@
   <property name="windowTitle">
    <string>EntropyMainWindow</string>
   </property>
-  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QFormLayout" name="formLayout">
+    <item row="0" column="1">
+     <widget class="EntropyOpenGLWidget" name="openGLWidget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>200</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QTreeWidget" name="treeWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <column>
+       <property name="text">
+        <string notr="true">1</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -41,8 +75,13 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="EntropyMainWindow.qrc"/>
- </resources>
+ <customwidgets>
+  <customwidget>
+   <class>EntropyOpenGLWidget</class>
+   <extends>QWidget</extends>
+   <header>entropyopenglwidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
  <connections/>
 </ui>

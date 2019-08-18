@@ -39,6 +39,9 @@
     <ClCompile Include="EntropyMainWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="entropyopenglwidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -47,6 +50,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="EntropyMainWindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="entropyopenglwidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
