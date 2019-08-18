@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "entropyopenglwidget.h"
+#include "EntropyOpenGLWidget.h"
 
 EntropyOpenGLWidget::EntropyOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
