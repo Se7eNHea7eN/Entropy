@@ -130,6 +130,7 @@
   <ItemGroup>
     <ClCompile Include="Private\EntropyMainWindow.cpp" />
     <ClCompile Include="Private\EntropyOpenGLWidget.cpp" />
+    <ClCompile Include="Private\EntropyRenderWidget.cpp" />
     <ClCompile Include="Private\main.cpp" />
     <ClCompile Include="Private\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -141,10 +142,22 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Private\EntropyMainWindow.h" />
+    <QtMoc Include="Private\EntropyRenderWidget.h" />
     <ClInclude Include="Private\stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="GUI\EntropyMainWindow.ui" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Engine\Engine.vcxproj">
+      <Project>{3e2ef573-a895-49ab-ab52-ad8e91992dc4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\GLRenderer\GLRenderer.vcxproj">
+      <Project>{6417ce66-c752-4dbc-96dd-8f0f1b42ca8f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Renderer\Renderer.vcxproj">
+      <Project>{c5241cd9-d736-49bc-9670-d67fe2c247fd}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
