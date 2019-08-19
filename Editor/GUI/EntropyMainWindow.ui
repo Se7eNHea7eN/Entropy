@@ -43,7 +43,7 @@
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="EntropyOpenGLWidget" name="openGLWidget" native="true">
+     <widget class="EntropyRenderWidget" name="openGLWidget" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
@@ -89,9 +89,9 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>EntropyOpenGLWidget</class>
+   <class>EntropyRenderWidget</class>
    <extends>QWidget</extends>
-   <header>entropyopenglwidget.h</header>
+   <header>../Private/EntropyRenderWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

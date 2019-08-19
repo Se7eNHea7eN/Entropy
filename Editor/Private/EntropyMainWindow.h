@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
-#include "ui_EntropyMainWindow.h"
+#include "../GeneratedFiles/ui_EntropyMainWindow.h"
 
 class EntropyMainWindow : public QMainWindow
 {
