@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include "../../Direct3DRenderer/Public/Direct3DRenderer.h"
+#include "../../Direct3DRenderer/Public/D3DApplication.h"
 
 class EntropyDirect3DWidget : public QWidget
 {
@@ -28,5 +29,6 @@ public:
 
 	virtual void RenderScene();
 private:
-	Direct3DRenderer* mD3DApp;
+	Direct3DRenderer* renderer;
+	D3DApplication* mD3DApp;
 };

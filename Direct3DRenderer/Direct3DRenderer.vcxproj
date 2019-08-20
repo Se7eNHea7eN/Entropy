@@ -11,21 +11,38 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Private\Application.h" />
+    <ClInclude Include="Private\Color.h" />
+    <ClInclude Include="Private\Core.h" />
+    <ClInclude Include="Private\D3DUtil.h" />
+    <ClInclude Include="Private\DataChunkWrite.h" />
     <ClInclude Include="Private\direct3drenderer_global.h" />
+    <ClInclude Include="Private\GameTimer.h" />
+    <ClInclude Include="Private\Prerequest.h" />
+    <ClInclude Include="Private\Singleton.h" />
     <ClInclude Include="Private\stdafx.h" />
+    <ClInclude Include="Private\Vector4.h" />
+    <ClInclude Include="Public\D3DApplication.h" />
     <ClInclude Include="Public\Direct3DRenderer.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Private\Direct3DRenderer.cpp" />
-    <ClCompile Include="Private\stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Renderer\Renderer.vcxproj">
       <Project>{c5241cd9-d736-49bc-9670-d67fe2c247fd}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Private\Application.cpp" />
+    <ClCompile Include="Private\Color.cpp" />
+    <ClCompile Include="Private\D3DApplication.cpp" />
+    <ClCompile Include="Private\DataChunkWrite.cpp" />
+    <ClCompile Include="Private\Direct3DRenderer.cpp" />
+    <ClCompile Include="Private\GameTimer.cpp" />
+    <ClCompile Include="Private\Singleton.cpp" />
+    <ClCompile Include="Private\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Private\Vector4.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D8040D4F-95CA-42C1-9076-BBB757EFD078}</ProjectGuid>
