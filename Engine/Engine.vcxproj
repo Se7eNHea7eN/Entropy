@@ -39,13 +39,13 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -131,6 +131,9 @@
     <ClCompile Include="Private\Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Direct3DRenderer\Direct3DRenderer.vcxproj">
+      <Project>{d8040d4f-95ca-42c1-9076-bbb757efd078}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\GLRenderer\GLRenderer.vcxproj">
       <Project>{0b694ec8-65d5-4bce-ad00-cb8e9a5f64c6}</Project>
     </ProjectReference>

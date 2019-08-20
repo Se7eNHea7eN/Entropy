@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Renderer", "Renderer\Render
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLRenderer", "GLRenderer\GLRenderer.vcxproj", "{0B694EC8-65D5-4BCE-AD00-CB8E9A5F64C6}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Direct3DRenderer", "Direct3DRenderer\Direct3DRenderer.vcxproj", "{D8040D4F-95CA-42C1-9076-BBB757EFD078}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -83,6 +85,20 @@ Global
 		{0B694EC8-65D5-4BCE-AD00-CB8E9A5F64C6}.RelWithDebInfo|x64.Build.0 = Release|x64
 		{0B694EC8-65D5-4BCE-AD00-CB8E9A5F64C6}.RelWithDebInfo|x86.ActiveCfg = Release|x64
 		{0B694EC8-65D5-4BCE-AD00-CB8E9A5F64C6}.RelWithDebInfo|x86.Build.0 = Release|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.Debug|x64.ActiveCfg = Debug|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.Debug|x64.Build.0 = Debug|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.Debug|x86.ActiveCfg = Debug|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.MinSizeRel|x64.ActiveCfg = Release|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.MinSizeRel|x64.Build.0 = Release|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.MinSizeRel|x86.ActiveCfg = Release|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.MinSizeRel|x86.Build.0 = Release|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.Release|x64.ActiveCfg = Release|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.Release|x64.Build.0 = Release|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.Release|x86.ActiveCfg = Release|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.RelWithDebInfo|x64.ActiveCfg = Release|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.RelWithDebInfo|x64.Build.0 = Release|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.RelWithDebInfo|x86.ActiveCfg = Release|x64
+		{D8040D4F-95CA-42C1-9076-BBB757EFD078}.RelWithDebInfo|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
