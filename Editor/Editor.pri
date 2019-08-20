@@ -8,12 +8,12 @@ message("You are running qmake on a generated .pro file. This may not work!")
 
 
 HEADERS += ./Private/stdafx.h \
-    $$PWD/Private/EntropyRenderWidget.h \
     ./Private/EntropyOpenGLWidget.h \
-    ./Private/EntropyMainWindow.h
+    ./Private/EntropyMainWindow.h \
+    ./Private/EntropyRenderWidget.h
 SOURCES += ./Private/EntropyMainWindow.cpp \
-    $$PWD/Private/EntropyRenderWidget.cpp \
     ./Private/EntropyOpenGLWidget.cpp \
+    ./Private/EntropyRenderWidget.cpp \
     ./Private/main.cpp \
     ./Private/stdafx.cpp
 FORMS += ./GUI/EntropyMainWindow.ui

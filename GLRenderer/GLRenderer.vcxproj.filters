@@ -1,39 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Private">
-      <UniqueIdentifier>{3157051f-58cc-48b5-8df7-36ef35c92e26}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Public">
-      <UniqueIdentifier>{67d212d3-04ac-4391-b820-729b8fd6e6e8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Private\GL">
-      <UniqueIdentifier>{f829015f-a252-44e1-96f5-adef43c132ef}</UniqueIdentifier>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Private\GL\glxew.h">
-      <Filter>Private\GL</Filter>
-    </ClInclude>
-    <ClInclude Include="Private\GL\wglew.h">
-      <Filter>Private\GL</Filter>
-    </ClInclude>
-    <ClInclude Include="Private\GL\eglew.h">
-      <Filter>Private\GL</Filter>
-    </ClInclude>
-    <ClInclude Include="Private\GL\glew.h">
-      <Filter>Private\GL</Filter>
-    </ClInclude>
-    <ClInclude Include="Private\GL\glut.h">
-      <Filter>Private\GL</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\GLRenderer.h">
-      <Filter>Public</Filter>
-    </ClInclude>
+    <ClInclude Include="Public\glrenderer_global.h" />
+    <ClInclude Include="Private\stdafx.h" />
+    <ClInclude Include="Public\GLRenderer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Private\GLRenderer.cpp">
-      <Filter>Private</Filter>
-    </ClCompile>
+    <ClCompile Include="Private\GLRenderer.cpp" />
+    <ClCompile Include="Private\stdafx.cpp" />
   </ItemGroup>
 </Project>

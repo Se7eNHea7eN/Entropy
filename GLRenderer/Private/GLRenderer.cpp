@@ -1,22 +1,26 @@
+#include "stdafx.h"
 #include "../Public/GLRenderer.h"
-#include "GL/glew.h"
-#include "GL/glut.h"
+
+GLRenderer::GLRenderer()
+{
+}
+
+GLRenderer::~GLRenderer()
+{
+}
+
 void GLRenderer::initialize() {
-
-
+	initializeOpenGLFunctions();
 }
 
 void GLRenderer::resize(int w, int h) {
-	//glutInit(&argc, argv);
-	//glutInitWindowSize(w, h);
-	//glutInitWindowPosition(0, 0);
-	//glutInitDisplayMode(GLUT_RGBA);
-	//glutCreateWindow("opengl");
-	//glewInit();
-	//init();
-	//glutDisplayFunc(draw);
-	//glutMainLoop();
+	
 }
 
 void GLRenderer::draw() {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glClearColor(0,0, 0, 0);
 }
+

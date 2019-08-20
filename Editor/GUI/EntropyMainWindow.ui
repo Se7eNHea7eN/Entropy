@@ -15,6 +15,9 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="1">
+     <layout class="QGridLayout" name="sceneRendererContainer"/>
+    </item>
     <item row="0" column="0">
      <widget class="QTreeWidget" name="treeWidget">
       <property name="sizePolicy">
@@ -40,22 +43,6 @@
         <string notr="true">1</string>
        </property>
       </column>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="EntropyRenderWidget" name="openGLWidget" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>200</width>
-        <height>200</height>
-       </size>
-      </property>
      </widget>
     </item>
    </layout>
@@ -87,13 +74,6 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>EntropyRenderWidget</class>
-   <extends>QWidget</extends>
-   <header>../Private/EntropyRenderWidget.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>
