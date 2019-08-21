@@ -11,7 +11,16 @@ EntropyDirect3DWidget::EntropyDirect3DWidget(QWidget* parent) {
 	QObject::connect(&mTimer, SIGNAL(timeout()), this, SLOT(Idle()));
 	mTimer.start();
 
-	CreateD3DApp((HWND)winId());
+	auto hwnd = (HWND)winId();
+	RECT rc;
+	GetClientRect(hwnd, &rc);
+	int width = rc.right - rc.left;
+	int height = rc.bottom - rc.top;
+	renderer = new Direct3DRenderer();
+	mD3DApp = new D3DApplication(nullptr);
+	mD3DApp->SetClientWidth(width);
+	mD3DApp->SetClientHeight(height);
+	mD3DApp->InitQt(hwnd);
 }
 
 EntropyDirect3DWidget::~EntropyDirect3DWidget() {
@@ -40,20 +49,7 @@ void EntropyDirect3DWidget::mouseReleaseEvent(QMouseEvent* event) {
 void EntropyDirect3DWidget::mouseMoveEvent(QMouseEvent* event) {
 }
 
-void EntropyDirect3DWidget::CreateD3DApp(HWND hwnd) {
-	RECT rc;
-	::GetClientRect(hwnd, &rc);
-	int width = rc.right - rc.left;
-	int height = rc.bottom - rc.top;
-	renderer = new Direct3DRenderer();
-	mD3DApp = new D3DApplication(nullptr);
-	mD3DApp->SetClientWidth(width);
-	mD3DApp->SetClientHeight(height);
-	mD3DApp->InitQt(hwnd);
-}
-
 void EntropyDirect3DWidget::RenderScene() {
 	mD3DApp->RenderQt();
 }
-
 

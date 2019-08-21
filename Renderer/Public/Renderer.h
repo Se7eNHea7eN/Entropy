@@ -1,9 +1,4 @@
 #pragma once
-struct Wid {
-	unsigned __int64 Unsigned;
-	__int64 Signed;
-};
-
 class Renderer {
 public:
 	Renderer() = default;

@@ -25,7 +25,6 @@ protected:
 	QPoint mCurMousePt;
 
 public:
-	void CreateD3DApp(HWND hwnd);
 
 	virtual void RenderScene();
 private:

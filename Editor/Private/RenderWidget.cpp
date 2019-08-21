@@ -86,7 +86,7 @@ void RenderWidget::_init() {
 	// this widget:
 	auto nativeWindowHandler = winId();
 	// do your init code here...
-	renderer = new GLRenderer(nativeWindowHandler);
-
+	renderer = new GLRenderer();
+	renderer->initialize();
 	_isInit = true;
 }
