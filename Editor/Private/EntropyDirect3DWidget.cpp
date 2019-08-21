@@ -10,6 +10,8 @@ EntropyDirect3DWidget::EntropyDirect3DWidget(QWidget* parent) {
 	mTimer.setInterval(0);
 	QObject::connect(&mTimer, SIGNAL(timeout()), this, SLOT(Idle()));
 	mTimer.start();
+
+	CreateD3DApp((HWND)winId());
 }
 
 EntropyDirect3DWidget::~EntropyDirect3DWidget() {

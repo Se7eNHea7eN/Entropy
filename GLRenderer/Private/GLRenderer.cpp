@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "../Public/GLRenderer.h"
 
-GLRenderer::GLRenderer()
-{
+
+GLRenderer::GLRenderer(WId window) {
 }
 
 GLRenderer::~GLRenderer()
