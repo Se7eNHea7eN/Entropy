@@ -9,7 +9,6 @@ EntropyMainWindow::EntropyMainWindow(QWidget *parent)
 {
 	ui.setupUi(this);
 	auto renderWidget = new RenderWidget(this);
-	renderWidget->renderer = new GLRenderer((HWND)renderWidget->winId()),
-	// renderWidget->renderer = new Direct3DRenderer((HWND)renderWidget->winId()),
+	renderWidget->renderer = engineCore->CreateRenderer((HWND)renderWidget->winId());
 	ui.sceneRendererContainer->addWidget(renderWidget);
 }

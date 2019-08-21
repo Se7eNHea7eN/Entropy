@@ -151,12 +151,6 @@
     <ProjectReference Include="..\Engine\Engine.vcxproj">
       <Project>{3e2ef573-a895-49ab-ab52-ad8e91992dc4}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\GLRenderer\GLRenderer.vcxproj">
-      <Project>{0936488b-4186-4d9b-b4d5-4b380ec59090}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Renderer\Renderer.vcxproj">
-      <Project>{c5241cd9-d736-49bc-9670-d67fe2c247fd}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
