@@ -4,6 +4,7 @@
 #include <QApplication>
 #include "../../Renderer/Public/Renderer.h"
 #include "../../Direct3DRenderer/Public/D3DApplication.h"
+#include "../../Direct3DRenderer/Public/Direct3DRenderer.h"
 
 class EntropyDirect3DWidget : public QWidget
 {
@@ -40,6 +41,5 @@ private:
 	bool _isInit = false;
 
 
-	// Direct3DRenderer* renderer;
-	D3DApplication* mD3DApp;
+	Direct3DRenderer* renderer;
 };

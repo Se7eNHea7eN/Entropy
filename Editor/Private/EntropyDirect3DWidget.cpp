@@ -48,9 +48,8 @@ void EntropyDirect3DWidget::resizeEvent(QResizeEvent* resizeEvent) {
 	QSize size = resizeEvent->size();
 	int width = size.width();
 	int height = size.height();
-	mD3DApp->SetClientWidth(width);
-	mD3DApp->SetClientHeight(height);
-	mD3DApp->ResetQt();
+	renderer->resize(width, height);
+
 	// because Qt is not sending update request when resizing smaller
 	render();
 }
@@ -81,7 +80,7 @@ void EntropyDirect3DWidget::_doRender() {
 	//
 	// do your custom rendering here...
 	//
-	mD3DApp->RenderQt();
+	renderer->draw();
 	// next frame if rendering continuously
 	if (continuousRender == true)
 		render();
@@ -94,13 +93,14 @@ void EntropyDirect3DWidget::_init() {
 	// do your init code here...
 
 	auto hwnd = (HWND)nativeWindowHandler;
-	RECT rc;
-	GetClientRect(hwnd, &rc);
-	int width = rc.right - rc.left;
-	int height = rc.bottom - rc.top;
-	mD3DApp = new D3DApplication(nullptr);
-	mD3DApp->SetClientWidth(width);
-	mD3DApp->SetClientHeight(height);
-	mD3DApp->InitQt(hwnd);
+	// RECT rc;
+	// GetClientRect(hwnd, &rc);
+	// int width = rc.right - rc.left;
+	// int height = rc.bottom - rc.top;
+	renderer = new Direct3DRenderer(hwnd);
+	renderer->initialize();
+	// mD3DApp->SetClientWidth(width);
+	// mD3DApp->SetClientHeight(height);
+	// mD3DApp->InitQt(hwnd);
 	_isInit = true;
 }

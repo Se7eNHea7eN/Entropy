@@ -2,6 +2,7 @@
 
 #include "Color.h"
 #include "Public/D3DApplication.h"
+
 #pragma comment(lib,"d3d11.lib")
 
 // This is just used to forward Windows messages from a global window
