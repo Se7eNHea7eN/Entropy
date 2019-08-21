@@ -131,6 +131,7 @@
     <ClCompile Include="Private\EntropyMainWindow.cpp" />
     <ClCompile Include="Private\EntropyOpenGLWidget.cpp" />
     <ClCompile Include="Private\main.cpp" />
+    <ClCompile Include="Private\EntropyDirect3DWidget.cpp" />
     <ClCompile Include="Private\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -141,6 +142,10 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Private\EntropyMainWindow.h" />
+    <QtMoc Include="Private\EntropyDirect3DWidget.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtCore</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtCore</IncludePath>
+    </QtMoc>
     <ClInclude Include="Private\stdafx.h" />
   </ItemGroup>
   <ItemGroup>

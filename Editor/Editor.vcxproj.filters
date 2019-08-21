@@ -23,6 +23,9 @@
     <Filter Include="Private">
       <UniqueIdentifier>{1ee0ea25-7166-45d6-903d-f77e62af45fe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RenderWidgets">
+      <UniqueIdentifier>{03790c55-43bf-4488-9a75-b1a719bc4e99}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GUI\Editor.rc" />
@@ -33,9 +36,6 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Private\EntropyOpenGLWidget.cpp">
-      <Filter>Private</Filter>
-    </ClCompile>
     <ClCompile Include="Private\main.cpp">
       <Filter>Private</Filter>
     </ClCompile>
@@ -45,13 +45,22 @@
     <ClCompile Include="Private\EntropyMainWindow.cpp">
       <Filter>Private</Filter>
     </ClCompile>
+    <ClCompile Include="Private\EntropyOpenGLWidget.cpp">
+      <Filter>RenderWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\EntropyDirect3DWidget.cpp">
+      <Filter>RenderWidgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="Private\EntropyOpenGLWidget.h">
-      <Filter>Private</Filter>
-    </QtMoc>
     <QtMoc Include="Private\EntropyMainWindow.h">
       <Filter>Private</Filter>
+    </QtMoc>
+    <QtMoc Include="Private\EntropyOpenGLWidget.h">
+      <Filter>RenderWidgets</Filter>
+    </QtMoc>
+    <QtMoc Include="Private\EntropyDirect3DWidget.h">
+      <Filter>RenderWidgets</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
