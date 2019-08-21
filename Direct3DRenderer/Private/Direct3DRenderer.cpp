@@ -5,9 +5,23 @@
 
 #pragma comment(lib,"d3d11.lib")
 
-Direct3DRenderer* instance;
-Direct3DRenderer::Direct3DRenderer(HWND hwnd) {
-	instance = this;
+Direct3DRenderer::Direct3DRenderer(HWND hwnd):
+	md3dDriverType(D3D_DRIVER_TYPE_HARDWARE),
+	mEnable4xMsaa(false),
+	mhMainWnd(0),
+	mAppPaused(false),
+	mMinimized(false),
+	mMaximized(false),
+	mResizing(false),
+	m4xMsaaQuality(0),
+
+	md3dDevice(0),
+	md3dImmediateContext(0),
+	mSwapChain(0),
+	mDepthStencilBuffer(0),
+	mRenderTargetView(0),
+	mDepthStencilView(0) 
+{
 	this->hwnd = hwnd;
 	RECT rc;
 	GetClientRect(hwnd, &rc);
@@ -19,7 +33,6 @@ Direct3DRenderer::~Direct3DRenderer() {
 }
 
 void Direct3DRenderer::initialize() {
-	InitMainWindow();
 	// Create the device and device context.
 
 	UINT createDeviceFlags = 0;
@@ -198,50 +211,5 @@ void Direct3DRenderer::draw() {
 	HR(mSwapChain->Present(0, 0));
 }
 
-LRESULT Direct3DRenderer::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	return 0;
-}
-LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	// Forward hwnd on because we can get messages (e.g., WM_CREATE)
-	// before CreateWindow returns, and thus before mhMainWnd is valid.
-	return instance->MsgProc(hwnd, msg, wParam, lParam);
-}
 
-bool Direct3DRenderer::InitMainWindow() {
-	WNDCLASS wc;
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = MainWndProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = 0;
-	wc.hIcon = LoadIcon(0, IDI_APPLICATION);
-	wc.hCursor = LoadCursor(0, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
-	wc.lpszMenuName = 0;
-	wc.lpszClassName = L"D3DWndClassName";
-
-	if (!RegisterClass(&wc))
-	{
-		MessageBox(0, L"RegisterClass Failed.", 0, 0);
-		return false;
-	}
-
-	// Compute window rectangle dimensions based on requested client area dimensions.
-	RECT R = { 0, 0, width, height };
-	AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
-	int width = R.right - R.left;
-	int height = R.bottom - R.top;
-
-	mhMainWnd = CreateWindow(L"D3DWndClassName", L"D3D11 Application",
-		WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, 0, 0);
-	if (!mhMainWnd)
-	{
-		MessageBox(0, L"CreateWindow Failed.", 0, 0);
-		return false;
-	}
-
-	ShowWindow(mhMainWnd, SW_SHOW);
-	UpdateWindow(mhMainWnd);
-}
 

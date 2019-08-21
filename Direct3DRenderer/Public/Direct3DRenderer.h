@@ -11,10 +11,8 @@ public:
 	void initialize() override;
 	void resize(int w, int h) override;
 	void draw() override;
-	LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 private:
-	bool InitMainWindow();
 
 	HWND      hwnd;
 	HWND      mhMainWnd;

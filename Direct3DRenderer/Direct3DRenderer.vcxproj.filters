@@ -14,28 +14,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\Direct3DRenderer.h" />
-    <ClInclude Include="Public\D3DApplication.h" />
-    <ClInclude Include="Private\Application.h" />
-    <ClInclude Include="Private\Color.h" />
-    <ClInclude Include="Private\Core.h" />
-    <ClInclude Include="Private\D3DUtil.h" />
-    <ClInclude Include="Private\DataChunkWrite.h" />
     <ClInclude Include="Private\direct3drenderer_global.h" />
-    <ClInclude Include="Private\GameTimer.h" />
-    <ClInclude Include="Private\Prerequest.h" />
-    <ClInclude Include="Private\Singleton.h" />
     <ClInclude Include="Private\stdafx.h" />
-    <ClInclude Include="Private\Vector4.h" />
+    <ClInclude Include="Private\D3DUtil.h" />
+    <ClInclude Include="Private\Prerequest.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Private\Application.cpp" />
-    <ClCompile Include="Private\Color.cpp" />
-    <ClCompile Include="Private\D3DApplication.cpp" />
-    <ClCompile Include="Private\DataChunkWrite.cpp" />
     <ClCompile Include="Private\Direct3DRenderer.cpp" />
-    <ClCompile Include="Private\GameTimer.cpp" />
-    <ClCompile Include="Private\Singleton.cpp" />
     <ClCompile Include="Private\stdafx.cpp" />
-    <ClCompile Include="Private\Vector4.cpp" />
   </ItemGroup>
 </Project>
