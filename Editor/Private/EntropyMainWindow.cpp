@@ -1,13 +1,15 @@
 #include "stdafx.h"
 #include "EntropyMainWindow.h"
-#include "EntropyOpenGLWidget.h"
+#include "RenderWidget.h"
 #include "../../GLRenderer/Public/GLRenderer.h"
-#include "EntropyDirect3DWidget.h"
+#include "../../Direct3DRenderer/Public/Direct3DRenderer.h"
 
 EntropyMainWindow::EntropyMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-	// ui.sceneRendererContainer->addWidget(new EntropyOpenGLWidget(this));
-	ui.sceneRendererContainer->addWidget(new EntropyDirect3DWidget(this));
+	auto renderWidget = new RenderWidget(this);
+	renderWidget->renderer = new GLRenderer((HWND)renderWidget->winId()),
+	// renderWidget->renderer = new Direct3DRenderer((HWND)renderWidget->winId()),
+	ui.sceneRendererContainer->addWidget(renderWidget);
 }

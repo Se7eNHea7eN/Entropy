@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "RenderWidget.h"
-#include "../../GLRenderer/Public/GLRenderer.h"
 
 RenderWidget::RenderWidget(QWidget* parent): QWidget{parent} {
 	setAttribute(Qt::WA_NativeWindow);
@@ -8,6 +7,8 @@ RenderWidget::RenderWidget(QWidget* parent): QWidget{parent} {
 	setAttribute(Qt::WA_NoSystemBackground);
 
 	setMouseTracking(true); // ÔÊÐíÊó±êÒÆ¶¯ ...
+	this->renderer = renderer;
+
 }
 
 QPaintEngine* RenderWidget::paintEngine() const {
@@ -98,7 +99,6 @@ void RenderWidget::_init() {
 	// GetClientRect(hwnd, &rc);
 	// int width = rc.right - rc.left;
 	// int height = rc.bottom - rc.top;
-	renderer = new GLRenderer(hwnd);
 	renderer->initialize();
 	// mD3DApp->SetClientWidth(width);
 	// mD3DApp->SetClientHeight(height);

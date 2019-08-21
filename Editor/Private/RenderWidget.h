@@ -15,6 +15,7 @@ public:
 	virtual QPaintEngine* paintEngine() const override;
 
 	void render();
+	Renderer* renderer;
 
 public:
 	bool continuousRender = false;
@@ -38,5 +39,4 @@ private:
 	bool _isInit = false;
 
 
-	Renderer* renderer;
 };
