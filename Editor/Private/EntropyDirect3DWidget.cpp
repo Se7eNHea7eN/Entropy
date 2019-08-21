@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "EntropyDirect3DWidget.h"
+#include "../../Direct3DRenderer/Public/Direct3DRenderer.h"
 
 EntropyDirect3DWidget::EntropyDirect3DWidget(QWidget* parent): QWidget{parent} {
 	setAttribute(Qt::WA_NativeWindow);
@@ -93,14 +94,8 @@ void EntropyDirect3DWidget::_init() {
 	// do your init code here...
 
 	auto hwnd = (HWND)nativeWindowHandler;
-	// RECT rc;
-	// GetClientRect(hwnd, &rc);
-	// int width = rc.right - rc.left;
-	// int height = rc.bottom - rc.top;
+
 	renderer = new Direct3DRenderer(hwnd);
 	renderer->initialize();
-	// mD3DApp->SetClientWidth(width);
-	// mD3DApp->SetClientHeight(height);
-	// mD3DApp->InitQt(hwnd);
 	_isInit = true;
 }

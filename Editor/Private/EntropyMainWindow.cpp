@@ -8,6 +8,6 @@ EntropyMainWindow::EntropyMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-	// ui.sceneRendererContainer->addWidget(new EntropyOpenGLWidget(new GLRenderer(),this));
+	// ui.sceneRendererContainer->addWidget(new EntropyOpenGLWidget(this));
 	ui.sceneRendererContainer->addWidget(new EntropyDirect3DWidget(this));
 }

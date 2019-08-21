@@ -132,10 +132,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Direct3DRenderer\Direct3DRenderer.vcxproj">
-      <Project>{d8040d4f-95ca-42c1-9076-bbb757efd078}</Project>
+      <Project>{5c289274-08ad-483e-a810-2ebb1283d292}</Project>
     </ProjectReference>
     <ProjectReference Include="..\GLRenderer\GLRenderer.vcxproj">
-      <Project>{0b694ec8-65d5-4bce-ad00-cb8e9a5f64c6}</Project>
+      <Project>{0936488b-4186-4d9b-b4d5-4b380ec59090}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Renderer\Renderer.vcxproj">
       <Project>{c5241cd9-d736-49bc-9670-d67fe2c247fd}</Project>

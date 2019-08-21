@@ -2,7 +2,6 @@
 #include "../Public/Direct3DRenderer.h"
 #include <d3d11.h>
 #include "../Private/D3DUtil.h"
-
 #pragma comment(lib,"d3d11.lib")
 
 Direct3DRenderer::Direct3DRenderer(HWND hwnd):
@@ -54,13 +53,13 @@ void Direct3DRenderer::initialize() {
 
 	if (FAILED(hr))
 	{
-		MessageBox(0, L"D3D11CreateDevice Failed.", 0, 0);
+		MessageBox(0, "D3D11CreateDevice Failed.", 0, 0);
 		return;
 	}
 
 	if (featureLevel != D3D_FEATURE_LEVEL_11_0)
 	{
-		MessageBox(0, L"Direct3D Feature Level 11 unsupported.", 0, 0);
+		MessageBox(0, "Direct3D Feature Level 11 unsupported.", 0, 0);
 		return;
 	}
 

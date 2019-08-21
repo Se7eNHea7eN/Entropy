@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include "EntropyOpenGLWidget.h"
 #include "QOpenGLFunctions"
+#include "../../GLRenderer/Public/GLRenderer.h"
 
-EntropyOpenGLWidget::EntropyOpenGLWidget(Renderer* renderer, QWidget *parent) : QOpenGLWidget(parent)
+EntropyOpenGLWidget::EntropyOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
-	this->renderer = renderer;
+	this->renderer = new GLRenderer((HWND)winId());
 }
 
 void EntropyOpenGLWidget::mousePressEvent(QMouseEvent* event) {

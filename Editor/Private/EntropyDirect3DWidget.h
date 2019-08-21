@@ -1,7 +1,7 @@
 #pragma once
 #include <QWidget>
 #include <QResizeEvent>
-#include "../../Direct3DRenderer/Public/Direct3DRenderer.h"
+#include "../../Renderer/Public/Renderer.h"
 
 class EntropyDirect3DWidget : public QWidget
 {
@@ -38,5 +38,5 @@ private:
 	bool _isInit = false;
 
 
-	Direct3DRenderer* renderer;
+	Renderer* renderer;
 };

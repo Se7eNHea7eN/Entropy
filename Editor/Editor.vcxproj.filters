@@ -51,6 +51,9 @@
     <ClCompile Include="Private\EntropyDirect3DWidget.cpp">
       <Filter>RenderWidgets</Filter>
     </ClCompile>
+    <ClCompile Include="Private\RenderWidget.cpp">
+      <Filter>RenderWidgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Private\EntropyMainWindow.h">
@@ -60,6 +63,9 @@
       <Filter>RenderWidgets</Filter>
     </QtMoc>
     <QtMoc Include="Private\EntropyDirect3DWidget.h">
+      <Filter>RenderWidgets</Filter>
+    </QtMoc>
+    <QtMoc Include="Private\RenderWidget.h">
       <Filter>RenderWidgets</Filter>
     </QtMoc>
   </ItemGroup>

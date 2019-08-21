@@ -1,9 +1,8 @@
 #pragma once
-#include "../Private/direct3drenderer_global.h"
 #include "../../Renderer/Public/Renderer.h"
 #include <d3d11.h>
 
-class DIRECT3DRENDERER_EXPORT Direct3DRenderer : Renderer
+class Direct3DRenderer : public Renderer
 {
 public:
 	Direct3DRenderer(HWND hwnd);

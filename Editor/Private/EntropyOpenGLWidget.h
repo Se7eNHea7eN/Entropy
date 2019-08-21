@@ -10,7 +10,7 @@ class EntropyOpenGLWidget : public QOpenGLWidget
 private:
     Q_OBJECT
 public:
-	explicit EntropyOpenGLWidget(Renderer* renderer,QWidget *parent = nullptr);
+	explicit EntropyOpenGLWidget(QWidget *parent = nullptr);
 
 protected:
 	void mousePressEvent(QMouseEvent* event) override;
