@@ -1,33 +1,45 @@
 #pragma once
-
 #include <QWidget>
-#include "../../Direct3DRenderer/Public/Direct3DRenderer.h"
+#include <QResizeEvent>
+#include <QApplication>
+#include "../../Renderer/Public/Renderer.h"
 #include "../../Direct3DRenderer/Public/D3DApplication.h"
 
 class EntropyDirect3DWidget : public QWidget
 {
-	Q_OBJECT
+	Q_OBJECT;
+
 public:
-	EntropyDirect3DWidget(QWidget* parent);
-	virtual ~EntropyDirect3DWidget();
-public slots:
-	void Idle();
+	explicit EntropyDirect3DWidget(QWidget* parent);
+
+	virtual ~EntropyDirect3DWidget() = default;
+
+	virtual QPaintEngine* paintEngine() const override;
+
+	void render();
+
+public:
+	bool continuousRender = false;
+
 protected:
-	// event
-	QPaintEngine* paintEngine() const { return 0; }	// ‘ –Ìdx‰÷»æ
+	virtual void paintEvent(QPaintEvent* paintEvent) override;
 
-	virtual void resizeEvent(QResizeEvent* event);
-	virtual void mousePressEvent(QMouseEvent* event);
-	virtual void mouseReleaseEvent(QMouseEvent* event);
-	virtual void mouseMoveEvent(QMouseEvent* event);
+	virtual void showEvent(QShowEvent* showEvent) override;
 
-	QTimer mTimer;
-	QPoint mCurMousePt;
+	virtual void resizeEvent(QResizeEvent* resizeEvent) override;
 
-public:
+	virtual bool event(QEvent* event) override;
 
-	virtual void RenderScene();
 private:
-	Direct3DRenderer* renderer;
+	void _doRender();
+
+	void _init();
+
+private:
+	bool _updatePending = false;
+	bool _isInit = false;
+
+
+	// Direct3DRenderer* renderer;
 	D3DApplication* mD3DApp;
 };
