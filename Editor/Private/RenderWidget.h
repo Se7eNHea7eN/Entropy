@@ -1,6 +1,5 @@
 #pragma once
 #include <QWidget>
-#include <QResizeEvent>
 #include "../../Engine/Public/Renderer.h"
 
 class RenderWidget : public QWidget
