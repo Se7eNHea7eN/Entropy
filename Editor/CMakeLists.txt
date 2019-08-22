@@ -25,7 +25,8 @@ source_group("Headers" FILES ${HEADERS_FILES})
 set(RESOURCES
   GUI/EntropyMainWindow.ui
   GUI/EntropyMainWindow.qrc
-  GUI/Entropy.ico
+ 
+  GUI/Editor.rc
   )
 source_group("Resources" FILES ${RESOURCES})
 
