@@ -125,10 +125,12 @@
   <ItemGroup>
     <ClInclude Include="Private\RendererFactory.h" />
     <ClInclude Include="Public\EntropyCore.h" />
+    <ClInclude Include="Public\Renderer.h" />
     <ClInclude Include="Public\Scene.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Private\EntropyCore.cpp" />
+    <ClCompile Include="Private\Renderer.cpp" />
     <ClCompile Include="Private\RendererFactory.cpp" />
     <ClCompile Include="Private\Scene.cpp" />
   </ItemGroup>

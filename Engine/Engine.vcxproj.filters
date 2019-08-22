@@ -4,10 +4,12 @@
     <ClInclude Include="Public\EntropyCore.h" />
     <ClInclude Include="Public\Scene.h" />
     <ClInclude Include="Private\RendererFactory.h" />
+    <ClInclude Include="Public\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Private\EntropyCore.cpp" />
     <ClCompile Include="Private\Scene.cpp" />
     <ClCompile Include="Private\RendererFactory.cpp" />
+    <ClCompile Include="Private\Renderer.cpp" />
   </ItemGroup>
 </Project>
