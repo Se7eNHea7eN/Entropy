@@ -6,27 +6,28 @@ project(${PROJECT_NAME} CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-#set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(SRC_FILES
-    Private/EntropyMainWindow.cpp
-    Private/main.cpp
-    Private/RenderWidget.cpp
-    Private/stdafx.cpp
+    EntropyMainWindow.cpp
+    main.cpp
+    RenderWidget.cpp
+    stdafx.cpp
 )
 source_group("Sources" FILES ${SRC_FILES})
 
 set(HEADERS_FILES
-    Private/stdafx.h
+  stdafx.h
+  EntropyMainWindow.h
+  RenderWidget.h
 )
 source_group("Headers" FILES ${HEADERS_FILES})
 
 set(RESOURCES
-  GUI/EntropyMainWindow.ui
-  GUI/EntropyMainWindow.qrc
- 
-  GUI/Editor.rc
+  EntropyMainWindow.ui
+  EntropyMainWindow.qrc
+  Editor.rc
   )
 source_group("Resources" FILES ${RESOURCES})
 
