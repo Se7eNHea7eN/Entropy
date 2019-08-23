@@ -19,8 +19,10 @@ source_group("Headers" FILES ${HEADERS_FILES})
 
 add_library(${PROJECT_NAME} STATIC ${HEADERS_FILES} ${SRC_FILES})
 
-include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Direct3DRenderer")
-target_link_libraries(${PROJECT_NAME} Direct3DRenderer)
+if(WIN32)
+    include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Direct3DRenderer")
+    target_link_libraries(${PROJECT_NAME} Direct3DRenderer)
+endif()
 
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/GLRenderer")
 target_link_libraries(${PROJECT_NAME} GLRenderer)
