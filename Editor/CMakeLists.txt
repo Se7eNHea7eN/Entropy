@@ -78,3 +78,6 @@ target_link_libraries(
   Qt5::Widgets
   Qt5::Gui
 )
+
+
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../RunDir/)
