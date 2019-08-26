@@ -1,5 +1,5 @@
 #pragma once
-#include "../Private/RendererFactory.h"
+#include "RendererFactory.h"
 class EntropyCore {
 public:
 	EntropyCore();

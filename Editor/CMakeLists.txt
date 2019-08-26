@@ -53,3 +53,5 @@ target_link_libraries(
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../RunDir/)
 
 Set_Target_Properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Include")

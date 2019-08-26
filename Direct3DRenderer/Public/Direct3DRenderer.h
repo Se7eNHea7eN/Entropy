@@ -1,5 +1,5 @@
 #pragma once
-#include "../../Engine/Public/Renderer.h"
+#include "Renderer.h"
 #include <d3d11.h>
 
 class Direct3DRenderer : public Renderer

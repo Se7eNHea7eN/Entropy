@@ -34,4 +34,5 @@ add_library(${PROJECT_NAME} STATIC ${HEADERS_FILES} ${SRC_FILES}
  target_link_libraries(${PROJECT_NAME} glew)
 
 
+ include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Include")
 

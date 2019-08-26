@@ -1,5 +1,5 @@
 #pragma once
-#include "../../Engine/Public/Renderer.h"
+#include "Renderer.h"
 #include <windows.h>		// Header File For Windows
 
 class GLRenderer : public Renderer {

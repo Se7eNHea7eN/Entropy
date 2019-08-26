@@ -23,4 +23,4 @@ add_library(${PROJECT_NAME} STATIC ${HEADERS_FILES} ${SRC_FILES})
 
 
 
-
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Include")
