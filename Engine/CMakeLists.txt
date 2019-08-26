@@ -4,12 +4,14 @@ set(PROJECT_NAME Engine)
 
 project(${PROJECT_NAME})
 
+file(GLOB_RECURSE project_headers *.hpp *.h)
+file(GLOB_RECURSE project_cpps *.cpp *.c)
+set(all_files ${project_headers} ${project_cpps})
 
-file(GLOB_RECURSE SRC_FILES Src/*.cpp Src/*.c)
-source_group("Sources" FILES ${SRC_FILES})
-file(GLOB_RECURSE HEADERS_FILES Include/*.hpp Include/*.h)
-source_group("Headers" FILES ${HEADERS_FILES})
-add_library(${PROJECT_NAME} STATIC ${HEADERS_FILES} ${SRC_FILES})
+source_group_by_dir(all_files)
+
+add_library(${PROJECT_NAME} STATIC ${all_files})
+
 include_directories(SYSTEM "Include")
 
 if(WIN32)

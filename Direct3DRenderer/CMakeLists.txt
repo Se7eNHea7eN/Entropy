@@ -6,12 +6,15 @@ set(PROJECT_NAME Direct3DRenderer)
 project(${PROJECT_NAME})
 
 
+file(GLOB_RECURSE project_headers *.hpp *.h)
+file(GLOB_RECURSE project_cpps *.cpp *.c)
+set(all_files ${project_headers} ${project_cpps})
 
-file(GLOB SRC_FILES Src/*.cpp)
-source_group("Sources" FILES ${SRC_FILES})
-file(GLOB HEADERS_FILES Include/*.hpp)
-source_group("Headers" FILES ${HEADERS_FILES})
-add_library(${PROJECT_NAME} STATIC ${HEADERS_FILES} ${SRC_FILES})
+source_group_by_dir(all_files)
+
+add_library(${PROJECT_NAME} STATIC ${all_files})
+
+
 include_directories(SYSTEM "Include")
 
 
