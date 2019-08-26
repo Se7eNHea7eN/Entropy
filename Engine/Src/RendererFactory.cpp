@@ -1,6 +1,7 @@
 #include "RendererFactory.hpp"
 #include "GLRenderer.hpp"
 #include "Direct3DRenderer.hpp"
+using namespace Entropy;
 
 Renderer* RendererFactory::CreateRenderer(RenderAPI renderAPI, HWND hwnd) {
 	switch(renderAPI) {

@@ -1,6 +1,7 @@
 #include "GLRenderer.hpp"
 #include "GL/glew.h"
 #pragma comment(lib,"opengl32.lib")
+using namespace Entropy;
 
 GLRenderer::GLRenderer(HWND hwnd) {
 	this->hWnd = hwnd;

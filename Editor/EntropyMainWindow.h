@@ -4,6 +4,7 @@
 #include "../GeneratedFiles/ui_EntropyMainWindow.h"
 #include "EntropyCore.hpp"
 
+using namespace Entropy;
 class EntropyMainWindow : public QMainWindow
 {
 	Q_OBJECT

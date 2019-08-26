@@ -1,5 +1,6 @@
-#include "../Public/EntropyCore.h"
-#include "Camera.h"
+#include "EntropyCore.hpp"
+#include "Camera.hpp"
+using namespace Entropy;
 
 EntropyCore::EntropyCore()
 {

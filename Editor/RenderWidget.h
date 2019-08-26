@@ -1,6 +1,7 @@
 #pragma once
 #include <QWidget>
 #include "Renderer.hpp"
+using namespace Entropy;
 
 class RenderWidget : public QWidget
 {

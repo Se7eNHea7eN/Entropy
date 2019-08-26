@@ -1,9 +1,13 @@
 #pragma once
+#include "Common.hpp"
 #include "RendererFactory.hpp"
-class EntropyCore {
-public:
-	EntropyCore();
-	Renderer* CreateRenderer(HWND hwnd);
-private:
-	RenderAPI renderAPI = OpenGL;
-};
+
+namespace Entropy {
+	class EntropyCore {
+	public:
+		EntropyCore();
+		Renderer* CreateRenderer(HWND hwnd);
+	private:
+		RenderAPI renderAPI = OpenGL;
+	};
+}

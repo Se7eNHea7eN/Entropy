@@ -1,5 +1,6 @@
 ﻿#include "Camera.hpp"
 #include <Eigen/Geometry>
+using namespace Entropy;
 
 Eigen::Matrix4f Camera::perspective(float fovy, float aspect, float zNear, float zFar)
 {

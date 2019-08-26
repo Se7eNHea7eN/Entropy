@@ -2,6 +2,7 @@
 #include <d3d11.h>
 #include "D3DUtil.hpp"
 #pragma comment(lib,"d3d11.lib")
+using namespace Entropy;
 
 Direct3DRenderer::Direct3DRenderer(HWND hwnd):
 	md3dDriverType(D3D_DRIVER_TYPE_HARDWARE),

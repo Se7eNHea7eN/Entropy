@@ -1,6 +1,9 @@
 #pragma once
-class Scene {
-public:
-	Scene();
-	~Scene();
-};
+namespace Entropy {
+
+	class Scene {
+	public:
+		Scene();
+		~Scene();
+	};
+}
