@@ -36,36 +36,6 @@ add_executable(${PROJECT_NAME}
   ${HEADERS_FILES}
   ${RESOURCES}
 )
-#set(CMAKE_PREFIX_PATH "Qt to path ") 
-#qt5_use_modules(${PROJECT_NAME} Widgets)
-
-#if(MSVC)
-   #target_link_libraries(${PROJECT_NAME} qtmaind.lib Qt5Guid.lib Qt5Widgetsd.lib Qt5Cored.lib )
-#endif(MSVC)
-
-
-if (QTDIR OR DEFINED ENV{QTDIR} OR DEFINED ENV{QTDIR32} OR DEFINED ENV{QTDIR64})
- #Qt path set by user or env var
-else()
-set(QTDIR "" CACHE PATH "Path to Qt (e.g. C:/Qt/5.7/msvc2015_64)")
-message(WARNING "QTDIR variable is missing.  Please set this variable to specify path to Qt (e.g. C:/Qt/5.7/msvc2015_64)")
-endif()
-
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-set(_lib_suffix 64)
-else()
-set(_lib_suffix 32)
-endif()
-
-if(DEFINED QTDIR${_lib_suffix})
-list(APPEND CMAKE_PREFIX_PATH "${QTDIR${_lib_suffix}}")
-elseif(DEFINED QTDIR)
-list(APPEND CMAKE_PREFIX_PATH "${QTDIR}")
-elseif(DEFINED ENV{QTDIR${_lib_suffix}})
-list(APPEND CMAKE_PREFIX_PATH "$ENV{QTDIR${_lib_suffix}}")
-elseif(DEFINED ENV{QTDIR})
-list(APPEND CMAKE_PREFIX_PATH "$ENV{QTDIR}")
-endif()
 
 find_package(Qt5 COMPONENTS Core Widgets Gui REQUIRED)
 

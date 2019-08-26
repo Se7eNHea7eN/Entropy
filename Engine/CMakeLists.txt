@@ -8,16 +8,21 @@ set(SRC_FILES
     Private/EntropyCore.cpp
     Private/RendererFactory.cpp
     Private/Scene.cpp
+    Private/Camera.cpp
 )
 source_group("Sources" FILES ${SRC_FILES})
 
 set(HEADERS_FILES
     Public/EntropyCore.h
     Public/Scene.h
+    Private/Camera.h
 )
 source_group("Headers" FILES ${HEADERS_FILES})
 
 add_library(${PROJECT_NAME} STATIC ${HEADERS_FILES} ${SRC_FILES})
+
+include_directories(SYSTEM "Private")
+include_directories(SYSTEM "Public")
 
 if(WIN32)
     include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Direct3DRenderer")
@@ -26,3 +31,5 @@ endif()
 
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/GLRenderer")
 target_link_libraries(${PROJECT_NAME} GLRenderer)
+
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Eigen")
