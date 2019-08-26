@@ -2,7 +2,7 @@
 #ifndef __D3DUTIL_H__
 #define __D3DUTIL_H__
 
-#include "Prerequest.h"
+#include "Prerequest.hpp"
 
 //---------------------------------------------------------------------------------------
 // Simple d3d error checker for book demos.

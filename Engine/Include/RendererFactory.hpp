@@ -1,6 +1,6 @@
 #pragma once
 #include "windows.h"
-#include "Renderer.h"
+#include "Renderer.hpp"
 
 enum RenderAPI {
 	OpenGL = 1,

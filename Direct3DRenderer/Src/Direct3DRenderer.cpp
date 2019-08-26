@@ -1,7 +1,6 @@
-#include "stdafx.h"
-#include "../Public/Direct3DRenderer.h"
+#include "Direct3DRenderer.hpp"
 #include <d3d11.h>
-#include "../Private/D3DUtil.h"
+#include "D3DUtil.hpp"
 #pragma comment(lib,"d3d11.lib")
 
 Direct3DRenderer::Direct3DRenderer(HWND hwnd):

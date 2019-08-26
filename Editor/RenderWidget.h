@@ -1,6 +1,6 @@
 #pragma once
 #include <QWidget>
-#include "Renderer.h"
+#include "Renderer.hpp"
 
 class RenderWidget : public QWidget
 {

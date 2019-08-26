@@ -5,21 +5,14 @@ set(PROJECT_NAME Direct3DRenderer)
 
 project(${PROJECT_NAME})
 
-set(SRC_FILES
-    Private/Direct3DRenderer.cpp
-    Private/stdafx.cpp
-)
+
+
+file(GLOB SRC_FILES Src/*.cpp)
 source_group("Sources" FILES ${SRC_FILES})
-
-# Header Files
-set(HEADERS_FILES
-    Public/Direct3DRenderer.h
-)
+file(GLOB HEADERS_FILES Include/*.hpp)
 source_group("Headers" FILES ${HEADERS_FILES})
-
-
-
 add_library(${PROJECT_NAME} STATIC ${HEADERS_FILES} ${SRC_FILES})
+include_directories(SYSTEM "Include")
 
 
 

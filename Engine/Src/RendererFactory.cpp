@@ -1,6 +1,6 @@
-#include "RendererFactory.h"
-#include "../../GLRenderer/Public/GLRenderer.h"
-#include "../../Direct3DRenderer/Public/Direct3DRenderer.h"
+#include "RendererFactory.hpp"
+#include "GLRenderer.hpp"
+#include "Direct3DRenderer.hpp"
 
 Renderer* RendererFactory::CreateRenderer(RenderAPI renderAPI, HWND hwnd) {
 	switch(renderAPI) {

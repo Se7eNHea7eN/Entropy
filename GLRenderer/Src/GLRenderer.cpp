@@ -1,6 +1,5 @@
-#include "stdafx.h"
-#include "../Public/GLRenderer.h"
-#include "../../glew/include/GL/glew.h"
+#include "GLRenderer.hpp"
+#include "GL/glew.h"
 #pragma comment(lib,"opengl32.lib")
 
 GLRenderer::GLRenderer(HWND hwnd) {

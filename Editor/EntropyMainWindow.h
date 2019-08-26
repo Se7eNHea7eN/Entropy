@@ -2,7 +2,7 @@
 
 #include <QtWidgets/QMainWindow>
 #include "../GeneratedFiles/ui_EntropyMainWindow.h"
-#include "EntropyCore.h"
+#include "EntropyCore.hpp"
 
 class EntropyMainWindow : public QMainWindow
 {

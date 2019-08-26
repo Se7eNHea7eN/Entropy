@@ -1,4 +1,4 @@
-﻿#include "Camera.h"
+﻿#include "Camera.hpp"
 #include <Eigen/Geometry>
 
 Eigen::Matrix4f Camera::perspective(float fovy, float aspect, float zNear, float zFar)
