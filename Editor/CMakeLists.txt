@@ -8,27 +8,13 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(SRC_FILES
-    EntropyMainWindow.cpp
-    main.cpp
-    RenderWidget.cpp
-    stdafx.cpp
-)
+FILE(GLOB SRC_FILES *.cpp *.c)
 source_group("Sources" FILES ${SRC_FILES})
 
-set(HEADERS_FILES
-  stdafx.h
-  EntropyMainWindow.h
-  RenderWidget.h
-)
+file(GLOB HEADERS_FILES *.hpp *.h)
 source_group("Headers" FILES ${HEADERS_FILES})
 
-set(RESOURCES
-  EntropyMainWindow.ui
-  EntropyMainWindow.qrc
-  Editor.rc
-  )
+file(GLOB RESOURCES *.ui *.rc *.qrc)
 source_group("Resources" FILES ${RESOURCES})
 
 add_executable(${PROJECT_NAME}  
@@ -48,6 +34,7 @@ target_link_libraries(
   Qt5::Widgets
   Qt5::Gui
 )
+include_directories(SYSTEM "Include")
 
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../RunDir/)
