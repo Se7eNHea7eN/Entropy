@@ -5,9 +5,9 @@ set(PROJECT_NAME Engine)
 project(${PROJECT_NAME})
 
 
-file(GLOB SRC_FILES Src/*.cpp)
+file(GLOB_RECURSE SRC_FILES Src/*.cpp Src/*.c)
 source_group("Sources" FILES ${SRC_FILES})
-file(GLOB HEADERS_FILES Include/*.hpp)
+file(GLOB_RECURSE HEADERS_FILES Include/*.hpp Include/*.h)
 source_group("Headers" FILES ${HEADERS_FILES})
 add_library(${PROJECT_NAME} STATIC ${HEADERS_FILES} ${SRC_FILES})
 include_directories(SYSTEM "Include")
