@@ -4,6 +4,3 @@
 
 #define implements public
 
-namespace Entropy {
-
-}
