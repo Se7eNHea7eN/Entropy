@@ -107,9 +107,11 @@ void Direct3DRenderer::initialize() {
 }
 
 void Direct3DRenderer::resize(int w, int h) {
-	g_pSwapchain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+	width = w;
+	height = h;
+	//g_pSwapchain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
 
-	/*if (g_pSwapchain != nullptr)
+	if (g_pSwapchain != nullptr)
 	{
 		SafeRelease(&g_pLayout);
 		SafeRelease(&g_pVS);
@@ -119,7 +121,7 @@ void Direct3DRenderer::resize(int w, int h) {
 		SafeRelease(&g_pRTView);
 		SafeRelease(&g_pDev);
 		SafeRelease(&g_pDevcon);
-	}*/
+	}
 }
 
 
