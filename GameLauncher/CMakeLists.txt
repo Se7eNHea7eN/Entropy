@@ -37,3 +37,6 @@ target_link_libraries(${PROJECT_NAME} Engine)
 if(WIN32)
     Set_Target_Properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
 endif()
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../RunDir/)
+
+#add_test(NAME Game.exe COMMAND Game.exe WORKING_DIRECTORY ${UNIT_TEST_BIN_OUTPUT_DIR})

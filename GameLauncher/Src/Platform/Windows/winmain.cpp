@@ -68,10 +68,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		// send the message to the WindowProc function
 		DispatchMessage(&msg);
 
-		if (entropy.renderAPI == OpenGL) {
-			if(renderer != nullptr)
-				renderer->draw();
-		}
+		if(renderer != nullptr)
+			renderer->draw();
 	}
 
 	// return this part of the WM_QUIT message to Windows
@@ -94,10 +92,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	break;
 	case WM_PAINT: {
-		if(entropy.renderAPI == Direct3D) {
-			renderer->draw();
-			InvalidateRect(hWnd, nullptr, false);
-		}
+	
 	}
 	break;
 		// this message is read when the window is closed

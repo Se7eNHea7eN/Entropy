@@ -2,213 +2,235 @@
 #include <d3d11.h>
 #include "D3DUtil.hpp"
 #pragma comment(lib,"d3d11.lib")
+#pragma comment(lib,"d3dcompiler.lib")
+
 using namespace Entropy;
 
-Direct3DRenderer::Direct3DRenderer(HWND hwnd):
-	md3dDriverType(D3D_DRIVER_TYPE_HARDWARE),
-	mEnable4xMsaa(false),
-	mhMainWnd(0),
-	mAppPaused(false),
-	mMinimized(false),
-	mMaximized(false),
-	mResizing(false),
-	m4xMsaaQuality(0),
-
-	md3dDevice(0),
-	md3dImmediateContext(0),
-	mSwapChain(0),
-	mDepthStencilBuffer(0),
-	mRenderTargetView(0),
-	mDepthStencilView(0) 
-{
-	this->hwnd = hwnd;
+Direct3DRenderer::Direct3DRenderer(HWND hwnd) : hwnd(hwnd) {
 	RECT rc;
 	GetClientRect(hwnd, &rc);
 	width = rc.right - rc.left;
 	height = rc.bottom - rc.top;
 }
 
+template <class T>
+inline void SafeRelease(T** ppInterfaceToRelease) {
+	if (*ppInterfaceToRelease != nullptr)
+	{
+		(*ppInterfaceToRelease)->Release();
+
+		(*ppInterfaceToRelease) = nullptr;
+	}
+}
+
 Direct3DRenderer::~Direct3DRenderer() {
+	SafeRelease(&g_pLayout);
+	SafeRelease(&g_pVS);
+	SafeRelease(&g_pPS);
+	SafeRelease(&g_pVBuffer);
+	SafeRelease(&g_pSwapchain);
+	SafeRelease(&g_pRTView);
+	SafeRelease(&g_pDev);
+	SafeRelease(&g_pDevcon);
 }
 
 void Direct3DRenderer::initialize() {
-	// Create the device and device context.
+	HRESULT hr = S_OK;
+	if (g_pSwapchain == nullptr) {
+		// create a struct to hold information about the swap chain
+		DXGI_SWAP_CHAIN_DESC scd;
 
-	UINT createDeviceFlags = 0;
-#if defined(DEBUG) || defined(_DEBUG)  
-	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
+		// clear out the struct for use
+		ZeroMemory(&scd, sizeof(DXGI_SWAP_CHAIN_DESC));
 
-	D3D_FEATURE_LEVEL featureLevel;
-	HRESULT hr = D3D11CreateDevice(
-		0,                 // default adapter
-		md3dDriverType,
-		0,                 // no software device
-		createDeviceFlags,
-		0, 0,              // default feature level array
-		D3D11_SDK_VERSION,
-		&md3dDevice,
-		&featureLevel,
-		&md3dImmediateContext);
+		// fill the swap chain description struct
+		scd.BufferCount = 1; // one back buffer
+		scd.BufferDesc.Width = width;
+		scd.BufferDesc.Height = height;
+		scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // use 32-bit color
+		scd.BufferDesc.RefreshRate.Numerator = 60;
+		scd.BufferDesc.RefreshRate.Denominator = 1;
+		scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // how swap chain is to be used
+		scd.OutputWindow = hwnd; // the window to be used
+		scd.SampleDesc.Count = 4; // how many multisamples
+		scd.Windowed = TRUE; // windowed/full-screen mode
+		scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH; // allow full-screen switching
 
-	if (FAILED(hr))
-	{
-		MessageBox(0, "D3D11CreateDevice Failed.", 0, 0);
-		return;
+		const D3D_FEATURE_LEVEL FeatureLevels[] = {
+			D3D_FEATURE_LEVEL_11_1,
+			D3D_FEATURE_LEVEL_11_0,
+			D3D_FEATURE_LEVEL_10_1,
+			D3D_FEATURE_LEVEL_10_0,
+			D3D_FEATURE_LEVEL_9_3,
+			D3D_FEATURE_LEVEL_9_2,
+			D3D_FEATURE_LEVEL_9_1
+		};
+		D3D_FEATURE_LEVEL FeatureLevelSupported;
+
+		HRESULT hr = S_OK;
+
+		// create a device, device context and swap chain using the information in the scd struct
+		hr = D3D11CreateDeviceAndSwapChain(NULL,
+		                                   D3D_DRIVER_TYPE_HARDWARE,
+		                                   NULL,
+		                                   0,
+		                                   FeatureLevels,
+		                                   _countof(FeatureLevels),
+		                                   D3D11_SDK_VERSION,
+		                                   &scd,
+		                                   &g_pSwapchain,
+		                                   &g_pDev,
+		                                   &FeatureLevelSupported,
+		                                   &g_pDevcon);
+
+		if (hr == E_INVALIDARG) {
+			hr = D3D11CreateDeviceAndSwapChain(NULL,
+			                                   D3D_DRIVER_TYPE_HARDWARE,
+			                                   NULL,
+			                                   0,
+			                                   &FeatureLevelSupported,
+			                                   1,
+			                                   D3D11_SDK_VERSION,
+			                                   &scd,
+			                                   &g_pSwapchain,
+			                                   &g_pDev,
+			                                   NULL,
+			                                   &g_pDevcon);
+		}
+
+		if (hr == S_OK) {
+			CreateRenderTarget();
+			SetViewPort();
+			InitPipeline();
+			InitGraphics();
+		}
 	}
-
-	if (featureLevel != D3D_FEATURE_LEVEL_11_0)
-	{
-		MessageBox(0, "Direct3D Feature Level 11 unsupported.", 0, 0);
-		return;
-	}
-
-	// Check 4X MSAA quality support for our back buffer format.
-	// All Direct3D 11 capable devices support 4X MSAA for all render 
-	// target formats, so we only need to check quality support.
-
-	HR(md3dDevice->CheckMultisampleQualityLevels(
-		DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMsaaQuality));
-	assert(m4xMsaaQuality > 0);
-
-	// Fill out a DXGI_SWAP_CHAIN_DESC to describe our swap chain.
-
-	DXGI_SWAP_CHAIN_DESC sd;
-	sd.BufferDesc.Width = width;
-	sd.BufferDesc.Height = height;
-	sd.BufferDesc.RefreshRate.Numerator = 60;
-	sd.BufferDesc.RefreshRate.Denominator = 1;
-	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-
-	// Use 4X MSAA? 
-	if (mEnable4xMsaa)
-	{
-		sd.SampleDesc.Count = 4;
-		sd.SampleDesc.Quality = m4xMsaaQuality - 1;
-	}
-	// No MSAA
-	else
-	{
-		sd.SampleDesc.Count = 1;
-		sd.SampleDesc.Quality = 0;
-	}
-
-	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	sd.BufferCount = 1;
-	sd.OutputWindow = hwnd;
-	sd.Windowed = true;
-	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	sd.Flags = 0;
-
-	// To correctly create the swap chain, we must use the IDXGIFactory that was
-	// used to create the device.  If we tried to use a different IDXGIFactory instance
-	// (by calling CreateDXGIFactory), we get an error: "IDXGIFactory::CreateSwapChain: 
-	// This function is being called with a device from a different IDXGIFactory."
-
-	IDXGIDevice* dxgiDevice = 0;
-	HR(md3dDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice));
-
-	IDXGIAdapter* dxgiAdapter = 0;
-	HR(dxgiDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&dxgiAdapter));
-
-	IDXGIFactory* dxgiFactory = 0;
-	HR(dxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&dxgiFactory));
-
-	HR(dxgiFactory->CreateSwapChain(md3dDevice, &sd, &mSwapChain));
-
-	ReleaseCOM(dxgiDevice);
-	ReleaseCOM(dxgiAdapter);
-	ReleaseCOM(dxgiFactory);
-
-	// The remaining steps that need to be carried out for d3d creation
-	// also need to be executed every time the window is resized.  So
-	// just call the OnResize method here to avoid code duplication.
-
-	resize(width,height);
 }
 
 void Direct3DRenderer::resize(int w, int h) {
-	width = w;
-	height = h;
-	assert(md3dImmediateContext);
-	assert(md3dDevice);
-	assert(mSwapChain);
+	/*g_pSwapchain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
 
-	// Release the old views, as they hold references to the buffers we
-	// will be destroying.  Also release the old depth/stencil buffer.
-
-	ReleaseCOM(mRenderTargetView);
-	ReleaseCOM(mDepthStencilView);
-	ReleaseCOM(mDepthStencilBuffer);
-
-	// Resize the swap chain and recreate the render target view.
-
-	HR(mSwapChain->ResizeBuffers(1, w, h, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
-	ID3D11Texture2D* backBuffer;
-	HR(mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer)));
-	HR(md3dDevice->CreateRenderTargetView(backBuffer, 0, &mRenderTargetView));
-	ReleaseCOM(backBuffer);
-
-	// Create the depth/stencil buffer and view.
-
-	D3D11_TEXTURE2D_DESC depthStencilDesc;
-
-	depthStencilDesc.Width = w;
-	depthStencilDesc.Height = h;
-	depthStencilDesc.MipLevels = 1;
-	depthStencilDesc.ArraySize = 1;
-	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-	// Use 4X MSAA? --must match swap chain MSAA values.
-	if (mEnable4xMsaa)
+	if (g_pSwapchain != nullptr)
 	{
-		depthStencilDesc.SampleDesc.Count = 4;
-		depthStencilDesc.SampleDesc.Quality = m4xMsaaQuality - 1;
-	}
-	// No MSAA
-	else
-	{
-		depthStencilDesc.SampleDesc.Count = 1;
-		depthStencilDesc.SampleDesc.Quality = 0;
-	}
-
-	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	depthStencilDesc.CPUAccessFlags = 0;
-	depthStencilDesc.MiscFlags = 0;
-
-	HR(md3dDevice->CreateTexture2D(&depthStencilDesc, 0, &mDepthStencilBuffer));
-	HR(md3dDevice->CreateDepthStencilView(mDepthStencilBuffer, 0, &mDepthStencilView));
+		SafeRelease(&g_pLayout);
+		SafeRelease(&g_pVS);
+		SafeRelease(&g_pPS);
+		SafeRelease(&g_pVBuffer);
+		SafeRelease(&g_pSwapchain);
+		SafeRelease(&g_pRTView);
+		SafeRelease(&g_pDev);
+		SafeRelease(&g_pDevcon);
+	}*/
+}
 
 
-	// Bind the render target view and depth/stencil view to the pipeline.
+void Direct3DRenderer::CreateRenderTarget() {
+	 HRESULT hr;
+     ID3D11Texture2D *pBackBuffer;
+  
+     // Get a pointer to the back buffer
+     g_pSwapchain->GetBuffer( 0, __uuidof( ID3D11Texture2D ),
+                                  ( LPVOID* )&pBackBuffer );
+  
+     // Create a render-target view
+     g_pDev->CreateRenderTargetView( pBackBuffer, nullptr,
+                                           &g_pRTView );
+     pBackBuffer->Release();
+  
+     // Bind the view
+     g_pDevcon->OMSetRenderTargets( 1, &g_pRTView, nullptr );
+}
 
-	md3dImmediateContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
+void Direct3DRenderer::SetViewPort() {
+	D3D11_VIEWPORT viewport;
+    ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
+ 
+    viewport.TopLeftX = 0;
+    viewport.TopLeftY = 0;
+    viewport.Width = width;
+    viewport.Height = height;
+ 
+    g_pDevcon->RSSetViewports(1, &viewport);
+}
 
+void Direct3DRenderer::InitPipeline() {
+    // load and compile the two shaders
+    ID3DBlob *VS, *PS;
+ 
+    HRESULT result =  D3DReadFileToBlob(L"Shaders\\copy.vso", &VS);
+    D3DReadFileToBlob(L"Shaders\\copy.pso", &PS);
+ 
+    // encapsulate both shaders into shader objects
+    g_pDev->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), NULL, &g_pVS);
+    g_pDev->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &g_pPS);
+ 
+    // set the shader objects
+    g_pDevcon->VSSetShader(g_pVS, 0, 0);
+    g_pDevcon->PSSetShader(g_pPS, 0, 0);
+ 
+    // create the input layout object
+    D3D11_INPUT_ELEMENT_DESC ied[] =
+    {
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+    };
+ 
+ 
+    g_pDev->CreateInputLayout(ied, 2, VS->GetBufferPointer(), VS->GetBufferSize(), &g_pLayout);
+    g_pDevcon->IASetInputLayout(g_pLayout);
+ 
+    VS->Release();
+    PS->Release();
+}
 
-	// Set the viewport transform.
-
-	mScreenViewport.TopLeftX = 0;
-	mScreenViewport.TopLeftY = 0;
-	mScreenViewport.Width = static_cast<float>(w);
-	mScreenViewport.Height = static_cast<float>(h);
-	mScreenViewport.MinDepth = 0.0f;
-	mScreenViewport.MaxDepth = 1.0f;
-
-	md3dImmediateContext->RSSetViewports(1, &mScreenViewport);
+void Direct3DRenderer::InitGraphics() {
+   // create a triangle using the VERTEX struct
+    VERTEX OurVertices[] =
+    {
+        {XMFLOAT3(0.0f, 0.5f, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)},
+        {XMFLOAT3(0.45f, -0.5, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f)},
+        {XMFLOAT3(-0.45f, -0.5f, 0.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)}
+    };
+ 
+    // create the vertex buffer
+    D3D11_BUFFER_DESC bd;
+    ZeroMemory(&bd, sizeof(bd));
+ 
+    bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
+    bd.ByteWidth = sizeof(VERTEX) * 3;             // size is the VERTEX struct * 3
+    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
+    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
+ 
+    g_pDev->CreateBuffer(&bd, NULL, &g_pVBuffer);       // create the buffer
+ 
+    // copy the vertices into the buffer
+    D3D11_MAPPED_SUBRESOURCE ms;
+    g_pDevcon->Map(g_pVBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
+    memcpy(ms.pData, OurVertices, sizeof(VERTEX) * 3);                       // copy the data
+    g_pDevcon->Unmap(g_pVBuffer, NULL);                                      // unmap the buffer
+ 
 }
 
 void Direct3DRenderer::draw() {
-	assert(md3dImmediateContext);
-	float color[4] = { 1, 1,0,1 };
-	md3dImmediateContext->ClearRenderTargetView(mRenderTargetView, color);
-	md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	initialize();
+	const FLOAT clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
+	g_pDevcon->ClearRenderTargetView(g_pRTView, clearColor);
 
-	assert(mSwapChain);
-	HR(mSwapChain->Present(0, 0));
+	// do 3D rendering on the back buffer here
+	{
+		// select which vertex buffer to display
+		UINT stride = sizeof(VERTEX);
+		UINT offset = 0;
+		g_pDevcon->IASetVertexBuffers(0, 1, &g_pVBuffer, &stride, &offset);
+
+		// select which primtive type we are using
+		g_pDevcon->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		// draw the vertex buffer to the back buffer
+		g_pDevcon->Draw(3, 0);
+	}
+
+	// swap the back buffer and the front buffer
+	g_pSwapchain->Present(0, 0);
+
 }
-
-
-
