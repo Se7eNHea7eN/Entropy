@@ -1,13 +1,18 @@
 #include "GLRenderer.hpp"
 #include "GL/glew.h"
+#include "Eigen/Core"
 #pragma comment(lib,"opengl32.lib")
 using namespace Entropy;
 
-GLRenderer::GLRenderer(HWND hwnd) {
-	this->hWnd = hwnd;
+GLRenderer::GLRenderer(HWND hwnd) : hWnd(hwnd){
 }
 
 GLRenderer::~GLRenderer(){
+
+	wglDeleteContext(hRC);
+	hRC = nullptr;
+	ReleaseDC(hWnd, hDC);
+	hDC = nullptr;
 }
 
 void GLRenderer::initialize() {
@@ -65,7 +70,6 @@ void GLRenderer::resize(int w, int h) {
 	width = w;
 	height = h;
 	glViewport(0, 0, width, height);
-
 }
 
 void GLRenderer::draw() {
@@ -85,6 +89,7 @@ void GLRenderer::draw() {
 	glColor3f(1., 1., 0.);
 	glVertex3f(-.75, .75, 0.);
 	glEnd();
+
 	SwapBuffers(hDC);
 }
 

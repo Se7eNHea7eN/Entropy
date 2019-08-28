@@ -16,16 +16,17 @@ add_library(${PROJECT_NAME} STATIC ${all_files})
 include_directories(SYSTEM "Include")
 
 
-#GLEW
 include_directories("Private/glew/include/")
 
 
- #${GLEW_HEADERS_FILES} 
- #${GLEW_SRC_FILES}
  include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/glew")
  target_link_libraries(${PROJECT_NAME} glew)
  include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/glew/include")
 
 
  include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Include")
+
+
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Eigen")
+
 
