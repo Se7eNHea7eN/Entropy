@@ -59,8 +59,6 @@ void GLRenderer::initialize() {
 		MessageBox(NULL, "Can't Activate The GL Rendering Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		return;								// Return FALSE
 	}
-
-	// glewInit();
 }
 
 void GLRenderer::resize(int w, int h) {
