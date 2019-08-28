@@ -62,16 +62,29 @@ void GLRenderer::initialize() {
 }
 
 void GLRenderer::resize(int w, int h) {
+	width = w;
+	height = h;
+	glViewport(0, 0, width, height);
 
 }
 
 void GLRenderer::draw() {
 	wglMakeCurrent(hDC, hRC);
-
+	glClearColor(0.0f, 0.2f, 0.4f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glClearColor(1,0, 1, 1);
+
+	glLoadIdentity();
+
+	glBegin(GL_QUADS);
+	glColor3f(1., 0., 0.);
+	glVertex3f(-.75, -.75, 0.);
+	glColor3f(0., 1., 0.);
+	glVertex3f(.75, -.75, 0.);
+	glColor3f(0., 0., 1.);
+	glVertex3f(.75, .75, 0.);
+	glColor3f(1., 1., 0.);
+	glVertex3f(-.75, .75, 0.);
+	glEnd();
 	SwapBuffers(hDC);
 }
 

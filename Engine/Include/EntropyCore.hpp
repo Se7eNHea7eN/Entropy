@@ -7,6 +7,6 @@ namespace Entropy {
 	public:
 		EntropyCore();
 		Renderer* CreateRenderer(HWND hwnd);
-		RenderAPI renderAPI = Direct3D;
+		RenderAPI renderAPI = OpenGL;
 	};
 }
