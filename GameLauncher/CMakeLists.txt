@@ -12,10 +12,16 @@ source_group("Src" FILES ${SRC_FILES})
 file(GLOB_RECURSE platform_headers Include/Platform/*.hpp Include/Platform/*.h)
 
 if(WIN32)
-    file(GLOB_RECURSE platform_win32_cpps Src/Platform/Windows/*.cpp)
+    file(GLOB_RECURSE platform_cpps Src/Platform/Windows/*.cpp)
+endif()
+if(UNIX)
+    file(GLOB_RECURSE platform_cpps Src/Platform/Linux/*.cpp)
 endif()
 
-set(all_files ${platform_headers} ${platform_win32_cpps} ${SRC_FILES})
+if(APPLE)
+
+endif()
+set(all_files ${platform_headers} ${platform_cpps} ${SRC_FILES})
 
 source_group_by_dir(all_files)
 
@@ -28,5 +34,6 @@ include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Include")
 
 target_link_libraries(${PROJECT_NAME} Engine)
 
-
-
+if(WIN32)
+    Set_Target_Properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+endif()
