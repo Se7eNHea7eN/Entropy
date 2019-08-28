@@ -24,24 +24,6 @@ namespace Entropy {
 		void InitPipeline();
 		void InitGraphics();
 		HWND hwnd;
-		// HWND mhMainWnd;
-		// bool mAppPaused;
-		// bool mMinimized;
-		// bool mMaximized;
-		// bool mResizing;
-		//
-		// UINT m4xMsaaQuality;
-		// bool mEnable4xMsaa;
-		// ID3D11Device* md3dDevice;
-		// D3D_DRIVER_TYPE md3dDriverType;
-		// ID3D11DeviceContext* md3dImmediateContext;
-		// IDXGISwapChain* mSwapChain;
-		// ID3D11Texture2D* mDepthStencilBuffer;
-		// ID3D11RenderTargetView* mRenderTargetView;
-		// ID3D11DepthStencilView* mDepthStencilView;
-		// D3D11_VIEWPORT mScreenViewport;
-
-		// global declarations
 		
 		IDXGISwapChain* g_pSwapchain = nullptr; // the pointer to the swap chain interface
 		

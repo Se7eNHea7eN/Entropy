@@ -1,6 +1,5 @@
 #include "Direct3DRenderer.hpp"
 #include <d3d11.h>
-#include "D3DUtil.hpp"
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"d3dcompiler.lib")
 
@@ -108,9 +107,9 @@ void Direct3DRenderer::initialize() {
 }
 
 void Direct3DRenderer::resize(int w, int h) {
-	/*g_pSwapchain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+	g_pSwapchain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
 
-	if (g_pSwapchain != nullptr)
+	/*if (g_pSwapchain != nullptr)
 	{
 		SafeRelease(&g_pLayout);
 		SafeRelease(&g_pVS);
