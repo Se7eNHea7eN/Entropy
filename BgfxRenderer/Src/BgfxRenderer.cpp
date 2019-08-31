@@ -17,6 +17,10 @@ void Entropy::BgfxRenderer::initialize() {
 	pd.backBuffer = NULL;
 	pd.backBufferDS = NULL;
 	bgfx::setPlatformData(pd); // 设置平台信息，绑定上层 view
+
+	bgfx::renderFrame();
+
+
 	bgfx::Init init;
 	// 选择一个渲染后端，当设置为 RendererType::Enum::Count 的时候，系统将默认选择一个平台，可以设置Metal，OpenGL ES，Direct 等
 	init.type = bgfx::RendererType::Enum::Count;
@@ -38,12 +42,11 @@ void Entropy::BgfxRenderer::initialize() {
 	bgfx::setDebug(true);
 	bgfx::setViewClear(0
 		, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
-		, 0x303030ff
+		, 0xFF0000ff
 		, 1.0f
 		, 0
 	);
 
-	bgfx::renderFrame();
 }
 
 void Entropy::BgfxRenderer::resize(int w, int h) {
@@ -53,24 +56,24 @@ void Entropy::BgfxRenderer::resize(int w, int h) {
 }
 
 void Entropy::BgfxRenderer::draw() {
-
 	bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
-	bgfx::dbgTextClear();
 
-	bgfx::dbgTextPrintf(0, 1, 0x0f, "Color can be changed with ANSI \x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.");
-
-	bgfx::dbgTextPrintf(80, 1, 0x0f, "\x1b[;0m    \x1b[;1m    \x1b[; 2m    \x1b[; 3m    \x1b[; 4m    \x1b[; 5m    \x1b[; 6m    \x1b[; 7m    \x1b[0m");
-	bgfx::dbgTextPrintf(80, 2, 0x0f, "\x1b[;8m    \x1b[;9m    \x1b[;10m    \x1b[;11m    \x1b[;12m    \x1b[;13m    \x1b[;14m    \x1b[;15m    \x1b[0m");
-
-	const bgfx::Stats* stats = bgfx::getStats();
-	bgfx::dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters."
-		, stats->width
-		, stats->height
-		, stats->textWidth
-		, stats->textHeight
-	);
-	bgfx::renderFrame();
-
-	//bgfx::frame();
+	// bgfx::dbgTextClear();
+	//
+	// bgfx::dbgTextPrintf(0, 1, 0x0f, "Color can be changed with ANSI \x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.");
+	//
+	// bgfx::dbgTextPrintf(80, 1, 0x0f, "\x1b[;0m    \x1b[;1m    \x1b[; 2m    \x1b[; 3m    \x1b[; 4m    \x1b[; 5m    \x1b[; 6m    \x1b[; 7m    \x1b[0m");
+	// bgfx::dbgTextPrintf(80, 2, 0x0f, "\x1b[;8m    \x1b[;9m    \x1b[;10m    \x1b[;11m    \x1b[;12m    \x1b[;13m    \x1b[;14m    \x1b[;15m    \x1b[0m");
+	//
+	// const bgfx::Stats* stats = bgfx::getStats();
+	// bgfx::dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters."
+	// 	, stats->width
+	// 	, stats->height
+	// 	, stats->textWidth
+	// 	, stats->textHeight
+	// );
+	// bgfx::renderFrame();
+	bgfx::touch(0);
+	bgfx::frame();
 
 }

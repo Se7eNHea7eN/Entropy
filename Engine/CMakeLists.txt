@@ -14,15 +14,15 @@ add_library(${PROJECT_NAME} STATIC ${all_files})
 
 include_directories(SYSTEM "Include")
 
-#if(WIN32)
-    #include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Direct3DRenderer")
-    #include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Direct3DRenderer/Include")
-    #target_link_libraries(${PROJECT_NAME} Direct3DRenderer)
-#endif()
+if(WIN32)
+    include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Direct3DRenderer")
+    include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Direct3DRenderer/Include")
+    target_link_libraries(${PROJECT_NAME} Direct3DRenderer)
+endif()
 
-#include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/GLRenderer")
-#include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/GLRenderer/Include")
-#target_link_libraries(${PROJECT_NAME} GLRenderer)
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/GLRenderer")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/GLRenderer/Include")
+target_link_libraries(${PROJECT_NAME} GLRenderer)
 
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Eigen")
 
@@ -32,4 +32,4 @@ include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/BgfxRenderer")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/BgfxRenderer/Include")
 target_link_libraries(${PROJECT_NAME} BgfxRenderer)
 
-add_compile_definitions("__STDC_LIMIT_MACROS;__STDC_FORMAT_MACROS;__STDC_CONSTANT_MACROS;_DEBUG;WIN32;_WIN32;_HAS_EXCEPTIONS=0;_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;_SCL_SECURE=0;_SECURE_SCL=0;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;BX_CONFIG_DEBUG=1;")
+add_compile_definitions("__STDC_LIMIT_MACROS;__STDC_FORMAT_MACROS;__STDC_CONSTANT_MACROS;_DEBUG;WIN32;_WIN32;_HAS_EXCEPTIONS=0;_SCL_SECURE=0;_SECURE_SCL=0;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;BX_CONFIG_DEBUG=1;")

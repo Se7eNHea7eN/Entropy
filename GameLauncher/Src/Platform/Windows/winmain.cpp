@@ -28,21 +28,21 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	// fill in the struct with the needed information
 	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+	wc.style = CS_HREDRAW | CS_VREDRAW ;
 	wc.lpfnWndProc = WindowProc;
 	wc.hInstance = hInstance;
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
-	wc.lpszClassName = _T("WindowClass1");
+	wc.lpszClassName = _T("Entropy");
 
 	// register the window class
 	RegisterClassEx(&wc);
 
 	// create the window and use the result as the handle
-	hWnd = CreateWindowEx(0,
-	                      _T("WindowClass1"), // name of the window class
-	                      _T("Hello, Engine!"), // title of the window
-	                      WS_OVERLAPPEDWINDOW, // window style
+	hWnd = CreateWindowEx(WS_EX_ACCEPTFILES,
+	                      _T("Entropy"), // name of the window class
+	                      _T("Entropy"), // title of the window
+	                      WS_OVERLAPPEDWINDOW | WS_VISIBLE, // window style
 	                      300, // x-position of the window
 	                      300, // y-position of the window
 	                      500, // width of the window
