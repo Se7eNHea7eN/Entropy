@@ -46,21 +46,6 @@ static PosColorVertex s_cubeVertices[] =
 	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
 };
 
-static const uint16_t s_cubeTriList[] =
-{
-	0, 1, 2, // 0
-	1, 3, 2,
-	4, 6, 5, // 2
-	5, 6, 7,
-	0, 2, 4, // 4
-	4, 2, 6,
-	1, 5, 3, // 6
-	5, 7, 3,
-	0, 4, 1, // 8
-	4, 5, 1,
-	2, 3, 6, // 10
-	6, 3, 7,
-};
 
 static const uint16_t s_cubeTriStrip[] =
 {
@@ -78,38 +63,9 @@ static const uint16_t s_cubeTriStrip[] =
 	5,
 };
 
-static const uint16_t s_cubeLineList[] =
-{
-	0, 1,
-	0, 2,
-	0, 4,
-	1, 3,
-	1, 5,
-	2, 3,
-	2, 6,
-	3, 7,
-	4, 5,
-	4, 6,
-	5, 7,
-	6, 7,
-};
-
-static const uint16_t s_cubeLineStrip[] =
-{
-	0, 2, 3, 1, 5, 7, 6, 4,
-	0, 2, 6, 4, 5, 7, 3, 1,
-	0,
-};
-
-static const uint16_t s_cubePoints[] =
-{
-	0, 1, 2, 3, 4, 5, 6, 7
-};
-
 bgfx::VertexBufferHandle m_vbh;
 bgfx::ProgramHandle m_program;
 int64_t m_timeOffset;
-int32_t m_pt;
 
 bgfx::IndexBufferHandle m_ibh;
 
@@ -117,6 +73,9 @@ Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 }
 
 Entropy::BgfxRenderer::~BgfxRenderer() {
+	bgfx::destroy(m_ibh);
+	bgfx::destroy(m_vbh);
+	bgfx::destroy(m_program);
 	bgfx::shutdown();
 }
 
@@ -168,16 +127,17 @@ void Entropy::BgfxRenderer::initialize() {
 		, PosColorVertex::ms_layout
 	);
 
+	m_ibh = bgfx::createIndexBuffer(
+		// Static data can be passed with bgfx::makeRef
+		bgfx::makeRef(s_cubeTriStrip, sizeof(s_cubeTriStrip))
+	);
 
 	// Create program from shaders.
 	m_program = loadProgram("vs_cubes", "fs_cubes");
 
 	m_timeOffset = bx::getHPCounter();
 
-	m_ibh = bgfx::createIndexBuffer(
-		// Static data can be passed with bgfx::makeRef
-		bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList))
-	);
+	
 }
 
 void Entropy::BgfxRenderer::resize(int w, int h) {
@@ -187,9 +147,10 @@ void Entropy::BgfxRenderer::resize(int w, int h) {
 }
 
 void Entropy::BgfxRenderer::draw() {
-	bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
+	// bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
 	float time = (float)((bx::getHPCounter() - m_timeOffset) / double(bx::getHPFrequency()));
-
+	// printf("%f", time);
+	// std::cout << time;
 	const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
 	const bx::Vec3 eye = { 0.0f, 0.0f, -35.0f };
 
@@ -214,12 +175,13 @@ void Entropy::BgfxRenderer::draw() {
 	uint64_t state = 0
 		| BGFX_STATE_WRITE_R 
 		| BGFX_STATE_WRITE_G 
-		|  BGFX_STATE_WRITE_B 
-		|  BGFX_STATE_WRITE_A 
+		| BGFX_STATE_WRITE_B 
+		| BGFX_STATE_WRITE_A 
 		| BGFX_STATE_WRITE_Z
 		| BGFX_STATE_DEPTH_TEST_LESS
 		| BGFX_STATE_CULL_CW
 		| BGFX_STATE_MSAA
+		| BGFX_STATE_PT_TRISTRIP
 		;
 
 	// Submit 11x11 cubes.
@@ -248,7 +210,6 @@ void Entropy::BgfxRenderer::draw() {
 		}
 	}
 
-	bgfx::touch(0);
 	bgfx::frame();
 
 }

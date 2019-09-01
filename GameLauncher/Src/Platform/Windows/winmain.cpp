@@ -4,9 +4,20 @@
 #include <tchar.h>
 #include "Renderer.hpp"
 #include "EntropyCore.hpp"
+#include <thread>
 using namespace Entropy;
 EntropyCore entropy;
 Renderer* renderer;
+std::thread* renderThread;
+bool isExit = false;
+void appThreadEntrance() {
+	while (!isExit) {
+		if (renderer != nullptr)
+			renderer->draw();
+	}
+	delete renderer;
+	renderer = nullptr;
+}
 // the WindowProc function prototype
 LRESULT CALLBACK WindowProc(HWND hWnd,
                             UINT message,
@@ -57,21 +68,17 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	// enter the main loop:
 
 	// this struct holds Windows event messages
-	MSG msg;
+	renderThread = new std::thread(appThreadEntrance);
 
+	MSG msg;
 	// wait for the next message in the queue, store the result in 'msg'
 	while (GetMessage(&msg, nullptr, 0, 0)) {
-	
 		// translate keystroke messages into the right format
 		TranslateMessage(&msg);
 
 		// send the message to the WindowProc function
 		DispatchMessage(&msg);
-
-		if(renderer != nullptr)
-			renderer->draw();
 	}
-
 	// return this part of the WM_QUIT message to Windows
 	return msg.wParam;
 }
@@ -92,15 +99,18 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	break;
 	case WM_PAINT: {
-	
+		
 	}
 	break;
 		// this message is read when the window is closed
 	case WM_DESTROY: {
-		delete renderer;
-		renderer = nullptr;
 		// close the application entirely
 		PostQuitMessage(0);
+		isExit = true;
+		if(renderThread != nullptr) {
+			renderThread->join();
+			renderThread = nullptr;
+		}
 		return 0;
 	}
 	break;
@@ -113,3 +123,4 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	return
 		DefWindowProc(hWnd, message, wParam, lParam);
 }
+
