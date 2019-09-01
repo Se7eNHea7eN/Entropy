@@ -109,7 +109,7 @@ void Entropy::BgfxRenderer::initialize() {
 	bgfx::init(init);
 
 	// Enable debug text.
-	bgfx::setDebug(true);
+	// bgfx::setDebug(true);
 	bgfx::setViewClear(0
 		, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
 		, 0x303030ff
