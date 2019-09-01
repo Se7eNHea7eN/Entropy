@@ -4,6 +4,7 @@
 
 namespace Entropy {
 	enum RenderAPI {
+		Bgfx = 0,
 		OpenGL = 1,
 		Direct3D = 2,
 		Vulkan = 3

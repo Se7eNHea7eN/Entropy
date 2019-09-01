@@ -29,3 +29,8 @@ add_subdirectory(GameLauncher)
 if(WIN32)
     add_subdirectory(Direct3DRenderer)
 endif()
+
+add_subdirectory(bgfx)
+add_subdirectory(bx)
+add_subdirectory(bimg)
+add_subdirectory(BgfxRenderer)
