@@ -2,15 +2,16 @@
 
 #include "bgfx/bgfx.h"
 #include "bgfx/platform.h"
-// #include <bx/math.h>
-//
-// #include <bx/pixelformat.h>
-// #include <bgfx/bgfx.h>
-//
-// #include <tinystl/allocator.h>
-// #include <tinystl/vector.h>
+#include <bx/math.h>
+
+#include <bx/pixelformat.h>
+#include <bgfx/bgfx.h>
+
+#include <tinystl/allocator.h>
+#include <tinystl/vector.h>
 
 #include "BgfxRenderer.hpp"
+#include "bx/timer.h"
 
 struct PosColorVertex
 {
@@ -105,10 +106,13 @@ static const uint16_t s_cubePoints[] =
 	0, 1, 2, 3, 4, 5, 6, 7
 };
 
-// bgfx::VertexBufferHandle m_vbh;
-// bgfx::ProgramHandle m_program;
+bgfx::VertexBufferHandle m_vbh;
+bgfx::ProgramHandle m_program;
 int64_t m_timeOffset;
 int32_t m_pt;
+
+bgfx::IndexBufferHandle m_ibh;
+
 Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 }
 
@@ -155,20 +159,25 @@ void Entropy::BgfxRenderer::initialize() {
 	);
 
 	// Create vertex stream declaration.
-	// PosColorVertex::init();
+	PosColorVertex::init();
 
 	// Create static vertex buffer.
-	// m_vbh = bgfx::createVertexBuffer(
-	// 	// Static data can be passed with bgfx::makeRef
-	// 	bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices))
-	// 	, PosColorVertex::ms_layout
-	// );
+	m_vbh = bgfx::createVertexBuffer(
+		// Static data can be passed with bgfx::makeRef
+		bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices))
+		, PosColorVertex::ms_layout
+	);
 
 
 	// Create program from shaders.
-	// m_program = loadProgram("vs_cubes", "fs_cubes");
+	m_program = loadProgram("vs_cubes", "fs_cubes");
 
-	//m_timeOffset = bx::getHPCounter();
+	m_timeOffset = bx::getHPCounter();
+
+	m_ibh = bgfx::createIndexBuffer(
+		// Static data can be passed with bgfx::makeRef
+		bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList))
+	);
 }
 
 void Entropy::BgfxRenderer::resize(int w, int h) {
@@ -179,22 +188,66 @@ void Entropy::BgfxRenderer::resize(int w, int h) {
 
 void Entropy::BgfxRenderer::draw() {
 	bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
+	float time = (float)((bx::getHPCounter() - m_timeOffset) / double(bx::getHPFrequency()));
 
-	// bgfx::dbgTextClear();
-	//
-	// bgfx::dbgTextPrintf(0, 1, 0x0f, "Color can be changed with ANSI \x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.");
-	//
-	// bgfx::dbgTextPrintf(80, 1, 0x0f, "\x1b[;0m    \x1b[;1m    \x1b[; 2m    \x1b[; 3m    \x1b[; 4m    \x1b[; 5m    \x1b[; 6m    \x1b[; 7m    \x1b[0m");
-	// bgfx::dbgTextPrintf(80, 2, 0x0f, "\x1b[;8m    \x1b[;9m    \x1b[;10m    \x1b[;11m    \x1b[;12m    \x1b[;13m    \x1b[;14m    \x1b[;15m    \x1b[0m");
-	//
-	// const bgfx::Stats* stats = bgfx::getStats();
-	// bgfx::dbgTextPrintf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters."
-	// 	, stats->width
-	// 	, stats->height
-	// 	, stats->textWidth
-	// 	, stats->textHeight
-	// );
-	// bgfx::renderFrame();
+	const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
+	const bx::Vec3 eye = { 0.0f, 0.0f, -35.0f };
+
+	// Set view and projection matrix for view 0.
+	{
+		float view[16];
+		bx::mtxLookAt(view, eye, at);
+
+		float proj[16];
+		bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+		bgfx::setViewTransform(0, view, proj);
+
+		// Set view 0 default viewport.
+		bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
+	}
+
+	// This dummy draw call is here to make sure that view 0 is cleared
+	// if no other draw calls are submitted to view 0.
+	bgfx::touch(0);
+
+	// bgfx::IndexBufferHandle ibh = m_ibh[m_pt];
+	uint64_t state = 0
+		| BGFX_STATE_WRITE_R 
+		| BGFX_STATE_WRITE_G 
+		|  BGFX_STATE_WRITE_B 
+		|  BGFX_STATE_WRITE_A 
+		| BGFX_STATE_WRITE_Z
+		| BGFX_STATE_DEPTH_TEST_LESS
+		| BGFX_STATE_CULL_CW
+		| BGFX_STATE_MSAA
+		;
+
+	// Submit 11x11 cubes.
+	for (uint32_t yy = 0; yy < 11; ++yy)
+	{
+		for (uint32_t xx = 0; xx < 11; ++xx)
+		{
+			float mtx[16];
+			bx::mtxRotateXY(mtx, time + xx * 0.21f, time + yy * 0.37f);
+			mtx[12] = -15.0f + float(xx) * 3.0f;
+			mtx[13] = -15.0f + float(yy) * 3.0f;
+			mtx[14] = 0.0f;
+
+			// Set model matrix for rendering.
+			bgfx::setTransform(mtx);
+
+			// Set vertex and index buffer.
+			bgfx::setVertexBuffer(0, m_vbh);
+			bgfx::setIndexBuffer(m_ibh);
+
+			// Set render states.
+			bgfx::setState(state);
+
+			// Submit primitive for rendering to view 0.
+			bgfx::submit(0, m_program);
+		}
+	}
+
 	bgfx::touch(0);
 	bgfx::frame();
 

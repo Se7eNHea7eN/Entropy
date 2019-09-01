@@ -9,7 +9,6 @@
 #include <tinystl/vector.h>
 #include <tinystl/string.h>
 #include <src/bgfx_p.h>
-#include "bx/file.h"
 namespace stl = tinystl;
 
 #include <bgfx/bgfx.h>
@@ -24,7 +23,6 @@ namespace stl = tinystl;
 
 #include <bimg/decode.h>
 #include <bx/bx.h>
-#include <bx/filepath.h>
 
 #include <bx/timer.h>
 #include <bx/math.h>

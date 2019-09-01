@@ -6,7 +6,7 @@ project(${PROJECT_NAME})
 
 
 file(GLOB_RECURSE project_headers include/*.hpp include/*.h)
-file(GLOB_RECURSE project_cpps src/*.cpp src/*.c)
+file(GLOB_RECURSE project_cpps src/*.cpp src/*.c 3rdparty/meshoptimizer/src/*.cpp)
 source_group("include" FILES ${project_headers})
 source_group("src" FILES ${project_cpps})
 set(all_files ${project_headers} ${project_cpps})
