@@ -68,17 +68,29 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	// enter the main loop:
 
 	// this struct holds Windows event messages
-	renderThread = new std::thread(appThreadEntrance);
+	// renderThread = new std::thread(appThreadEntrance);
 
 	MSG msg;
-	// wait for the next message in the queue, store the result in 'msg'
-	while (GetMessage(&msg, nullptr, 0, 0)) {
-		// translate keystroke messages into the right format
-		TranslateMessage(&msg);
-
-		// send the message to the WindowProc function
-		DispatchMessage(&msg);
+	while(!isExit) {
+		if (renderer != nullptr)
+			renderer->draw();
+		WaitForInputIdle(GetCurrentProcess(), 16);
+		while (0 != PeekMessageW(&msg, nullptr, 0U, 0U, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
 	}
+	// wait for the next message in the queue, store the result in 'msg'
+	// while (GetMessage(&msg, nullptr, 0, 0)) {
+	// 	// translate keystroke messages into the right format
+	// 	TranslateMessage(&msg);
+	//
+	// 	// send the message to the WindowProc function
+	// 	DispatchMessage(&msg);
+	// 	if (renderer != nullptr)
+	// 		renderer->draw();
+	// }
 	// return this part of the WM_QUIT message to Windows
 	return msg.wParam;
 }
@@ -115,7 +127,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	break;
 	case WM_DISPLAYCHANGE:
-		InvalidateRect(hWnd, nullptr, false);
+		// InvalidateRect(hWnd, nullptr, false);
 		break;
 	}
 
