@@ -8,16 +8,8 @@
 using namespace Entropy;
 EntropyCore entropy;
 Renderer* renderer;
-std::thread* renderThread;
+
 bool isExit = false;
-void appThreadEntrance() {
-	while (!isExit) {
-		if (renderer != nullptr)
-			renderer->draw();
-	}
-	delete renderer;
-	renderer = nullptr;
-}
 // the WindowProc function prototype
 LRESULT CALLBACK WindowProc(HWND hWnd,
                             UINT message,
@@ -56,19 +48,14 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	                      WS_OVERLAPPEDWINDOW | WS_VISIBLE, // window style
 	                      300, // x-position of the window
 	                      300, // y-position of the window
-	                      500, // width of the window
-	                      400, // height of the window
+	                      1024, // width of the window
+	                      768, // height of the window
 	                      nullptr, // we have no parent window, NULL
 	                      nullptr, // we aren't using menus, NULL
 	                      hInstance, // application handle
 	                      nullptr); // used with multiple windows, NULL
 
-	// display the window on the screen
 	ShowWindow(hWnd, nCmdShow);
-	// enter the main loop:
-
-	// this struct holds Windows event messages
-	// renderThread = new std::thread(appThreadEntrance);
 
 	MSG msg;
 	while(!isExit) {
@@ -81,17 +68,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 			DispatchMessageW(&msg);
 		}
 	}
-	// wait for the next message in the queue, store the result in 'msg'
-	// while (GetMessage(&msg, nullptr, 0, 0)) {
-	// 	// translate keystroke messages into the right format
-	// 	TranslateMessage(&msg);
-	//
-	// 	// send the message to the WindowProc function
-	// 	DispatchMessage(&msg);
-	// 	if (renderer != nullptr)
-	// 		renderer->draw();
-	// }
-	// return this part of the WM_QUIT message to Windows
+	delete renderer;
 	return msg.wParam;
 }
 
@@ -110,19 +87,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 		renderer->resize(rc.right - rc.left, rc.bottom - rc.top);
 	}
 	break;
-	case WM_PAINT: {
-		
-	}
-	break;
-		// this message is read when the window is closed
+	// this message is read when the window is closed
 	case WM_DESTROY: {
 		// close the application entirely
 		PostQuitMessage(0);
 		isExit = true;
-		if(renderThread != nullptr) {
-			renderThread->join();
-			renderThread = nullptr;
-		}
 		return 0;
 	}
 	break;
