@@ -7,6 +7,6 @@ namespace Entropy {
 		EntropyApp();
 		~EntropyApp();
 		int run(int _argc, const char* const* _argv);
-		EntropyCore entropyCore;
+		EntropyCore* entropyCore;
 	};
 }

@@ -17,6 +17,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd,
 
 EntropyApp::EntropyApp() {
 	instance = this;
+	entropyCore = new EntropyCore();
 }
 
 EntropyApp::~EntropyApp() {
@@ -78,7 +79,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	// sort through and find what code to run for the message given
 	switch (message) {
 	case WM_CREATE: {
-		renderer = instance-> entropyCore.CreateRenderer(hWnd);
+		renderer = instance->entropyCore->CreateRenderer(hWnd);
 		renderer->initialize();
 	}
 	break;
