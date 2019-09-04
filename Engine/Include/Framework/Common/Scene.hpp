@@ -7,6 +7,6 @@ namespace Entropy {
 		Scene();
 		~Scene();
 	protected:
-		SceneNode* m_RootNode;
+		SceneEmptyNode* m_RootNode;
 	};
 }
