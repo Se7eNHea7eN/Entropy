@@ -9,7 +9,7 @@ project(${PROJECT_NAME})
 source_group("Src" FILES ${SRC_FILES})
 
 
-file(GLOB_RECURSE platform_headers Include/Platform/*.hpp Include/Platform/*.h)
+file(GLOB_RECURSE platform_headers Include/*.hpp)
 
 if(WIN32)
     file(GLOB_RECURSE platform_cpps Src/Platform/Windows/*.cpp)
@@ -25,23 +25,10 @@ set(all_files ${platform_headers} ${platform_cpps} ${SRC_FILES})
 
 source_group_by_dir(all_files)
 
-add_executable(${PROJECT_NAME} ${all_files})
+add_library(${PROJECT_NAME} STATIC ${all_files})
 
-include_directories(SYSTEM "Include")
+include_directories(SYSTEM "Include/")
 
-include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine")
-include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Include")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Include/")
 
 target_link_libraries(${PROJECT_NAME} Engine)
-
-if(WIN32)
-    Set_Target_Properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
-endif()
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../RunDir/)
-
-#add_test(NAME Game.exe COMMAND Game.exe WORKING_DIRECTORY ${UNIT_TEST_BIN_OUTPUT_DIR})
-
-
-set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${EXECUTABLE_OUTPUT_PATH}Debug")
-
-#add_compile_definitions("__STDC_LIMIT_MACROS;__STDC_FORMAT_MACROS;__STDC_CONSTANT_MACROS;_DEBUG;WIN32;_WIN32;_HAS_EXCEPTIONS=0;_SCL_SECURE=0;_SECURE_SCL=0;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;")

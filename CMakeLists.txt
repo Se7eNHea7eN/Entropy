@@ -34,3 +34,5 @@ add_subdirectory(bgfx)
 add_subdirectory(bx)
 add_subdirectory(bimg)
 add_subdirectory(BgfxRenderer)
+add_subdirectory(test)
+

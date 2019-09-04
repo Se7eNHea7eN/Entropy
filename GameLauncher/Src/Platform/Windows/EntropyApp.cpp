@@ -1,25 +1,29 @@
-// include the basic windows header file
 #include <windows.h>
 #include <windowsx.h>
 #include <tchar.h>
 #include "Framework/Common/Renderer.hpp"
-#include "Framework/Common/EntropyCore.hpp"
-using namespace Entropy;
-EntropyCore entropy;
-Renderer* renderer;
+#include "EntropyApp.hpp"
 
+using namespace Entropy;
+Renderer* renderer;
 bool isExit = false;
+EntropyApp* instance;
 // the WindowProc function prototype
 LRESULT CALLBACK WindowProc(HWND hWnd,
                             UINT message,
                             WPARAM wParam,
                             LPARAM lParam);
 
-// the entry point for any Windows program
-int WINAPI WinMain(HINSTANCE hInstance,
-                   HINSTANCE hPrevInstance,
-                   LPTSTR lpCmdLine,
-                   int nCmdShow) {
+
+EntropyApp::EntropyApp() {
+	instance = this;
+}
+
+EntropyApp::~EntropyApp() {
+}
+
+int EntropyApp::run(int _argc, const char* const* _argv) {
+	HINSTANCE instance = (HINSTANCE)GetModuleHandle(NULL);
 	// the handle for the window, filled by a function
 	HWND hWnd;
 	// this struct holds information for the window class
@@ -30,9 +34,9 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	// fill in the struct with the needed information
 	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.style = CS_HREDRAW | CS_VREDRAW ;
+	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = WindowProc;
-	wc.hInstance = hInstance;
+	wc.hInstance = instance;
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
 	wc.lpszClassName = _T("Entropy");
@@ -51,32 +55,30 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	                      768, // height of the window
 	                      nullptr, // we have no parent window, NULL
 	                      nullptr, // we aren't using menus, NULL
-	                      hInstance, // application handle
+	                      instance, // application handle
 	                      nullptr); // used with multiple windows, NULL
 
-	ShowWindow(hWnd, nCmdShow);
-
+	ShowWindow(hWnd, SW_SHOWNORMAL);
 	MSG msg;
-	while(!isExit) {
+	while (true) {
 		if (renderer != nullptr)
 			renderer->draw();
 		WaitForInputIdle(GetCurrentProcess(), 16);
-		while (0 != PeekMessageW(&msg, nullptr, 0U, 0U, PM_REMOVE))
-		{
+		while (0 != PeekMessageW(&msg, nullptr, 0U, 0U, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
 		}
 	}
-	delete renderer;
-	return msg.wParam;
+	return 0;
 }
+
 
 // this is the main message handler for the program
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	// sort through and find what code to run for the message given
 	switch (message) {
 	case WM_CREATE: {
-		renderer = entropy.CreateRenderer(hWnd);
+		renderer = instance-> entropyCore.CreateRenderer(hWnd);
 		renderer->initialize();
 	}
 	break;
@@ -86,7 +88,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 		renderer->resize(rc.right - rc.left, rc.bottom - rc.top);
 	}
 	break;
-	// this message is read when the window is closed
+		// this message is read when the window is closed
 	case WM_DESTROY: {
 		// close the application entirely
 		PostQuitMessage(0);
@@ -103,4 +105,3 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	return
 		DefWindowProc(hWnd, message, wParam, lParam);
 }
-
