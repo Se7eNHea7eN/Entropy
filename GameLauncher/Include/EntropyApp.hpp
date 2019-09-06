@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Framework/Common/EntropyCore.hpp"
+#include "Common/EntropyCore.hpp"
 
 namespace Entropy {
 	class EntropyApp {

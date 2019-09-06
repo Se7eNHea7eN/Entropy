@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include "SceneObject.hpp"
+#include "Transform.hpp"
+#include "Graphic/Material.hpp"
 
 namespace Entropy {
 	class BaseSceneNode {
@@ -20,6 +22,7 @@ namespace Entropy {
 	protected:
 		std::string m_strName;
 		std::list<std::unique_ptr<BaseSceneNode>> m_Children;
+		std::list<std::unique_ptr<Transform>> m_Transforms;
 	};
 
 	template <typename T>
@@ -52,8 +55,7 @@ namespace Entropy {
 	protected:
 		bool        m_bVisible;
 		bool        m_bShadow;
-		bool        m_bMotionBlur;
-		std::vector<std::shared_ptr<SceneObjectMaterial>> m_Materials;
+		std::vector<std::shared_ptr<Material>> m_Materials;
 
 	protected:
 		virtual void dump(std::ostream& out) const
@@ -61,11 +63,10 @@ namespace Entropy {
 			SceneNode::dump(out);
 			out << "Visible: " << m_bVisible << std::endl;
 			out << "Shadow: " << m_bShadow << std::endl;
-			out << "Motion Blur: " << m_bMotionBlur << std::endl;
 			out << "Material(s): " << std::endl;
-			for (auto material : m_Materials) {
-				out << *material << std::endl;
-			}
+			// for (auto material : m_Materials) {
+				// out << *material << std::endl;
+			// }
 		};
 
 	public:
@@ -75,10 +76,8 @@ namespace Entropy {
 		const bool Visible() { return m_bVisible; };
 		void SetIfCastShadow(bool shadow) { m_bShadow = shadow; };
 		const bool CastShadow() { return m_bShadow; };
-		void SetIfMotionBlur(bool motion_blur) { m_bMotionBlur = motion_blur; };
-		const bool MotionBlur() { return m_bMotionBlur; };
 		using SceneNode::AddSceneObjectRef;
-		void AddSceneObjectRef(const std::shared_ptr<SceneObjectMaterial>& object) { m_Materials.push_back(object); };
+		void AddSceneObjectRef(const std::shared_ptr<Material>& object) { m_Materials.push_back(object); };
 	};
 
 }

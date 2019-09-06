@@ -1,4 +1,4 @@
-#include "Framework/Common/MemoryManager.hpp"
+#include "Common/MemoryManager.hpp"
 #include <malloc.h>
 
 using namespace Entropy;

@@ -1,6 +1,6 @@
 #pragma once
-#include "Framework/Interface/Interface.hpp"
-#include "Framework/Interface/IRuntimeModule.hpp"
+#include "Interface/Interface.hpp"
+#include "Interface/IRuntimeModule.hpp"
 #include "Allocator.hpp"
 
 namespace Entropy {

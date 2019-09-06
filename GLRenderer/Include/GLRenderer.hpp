@@ -1,5 +1,5 @@
 #pragma once
-#include "Framework/Common/Renderer.hpp"
+#include "Common/Renderer.hpp"
 #include <windows.h>		// Header File For Windows
 
 namespace Entropy {

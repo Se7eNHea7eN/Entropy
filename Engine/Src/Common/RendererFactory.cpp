@@ -1,4 +1,4 @@
-#include "Framework/Common/RendererFactory.hpp"
+#include "Common/RendererFactory.hpp"
 #include "GLRenderer.hpp"
 #include "Direct3DRenderer.hpp"
 #include "BgfxRenderer.hpp"

@@ -1,6 +1,6 @@
 #pragma once
-#include "Renderer.hpp"
 #include <windows.h>		// Header File For Windows
+#include "Common/Renderer.hpp"
 
 namespace Entropy {
 

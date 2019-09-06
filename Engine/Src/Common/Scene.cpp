@@ -1,4 +1,4 @@
-#include "Scene.hpp"
+#include "Common/Scene.hpp"
 using namespace Entropy;
 
 Scene::Scene()

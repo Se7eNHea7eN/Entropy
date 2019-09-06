@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <tchar.h>
-#include "Framework/Common/Renderer.hpp"
+#include "Common/Renderer.hpp"
 #include "EntropyApp.hpp"
 
 using namespace Entropy;

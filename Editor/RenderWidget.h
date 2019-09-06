@@ -1,6 +1,6 @@
 #pragma once
 #include <QWidget>
-#include "Renderer.hpp"
+#include "Common/Renderer.hpp"
 using namespace Entropy;
 
 class RenderWidget : public QWidget

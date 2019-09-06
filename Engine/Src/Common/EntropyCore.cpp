@@ -1,4 +1,4 @@
-#include "Framework/Common/EntropyCore.hpp"
+#include "Common/EntropyCore.hpp"
 
 using namespace Entropy;
 
