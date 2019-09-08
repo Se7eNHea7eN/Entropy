@@ -12,7 +12,8 @@
 
 #include "BgfxRenderer.hpp"
 #include "bx/timer.h"
-
+#include "Common/EntropyCore.hpp"
+#include "Common/Scene.hpp"
 struct PosColorVertex
 {
 	float m_x;
@@ -70,16 +71,6 @@ int64_t m_timeOffset;
 bgfx::IndexBufferHandle m_ibh;
 
 Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
-}
-
-Entropy::BgfxRenderer::~BgfxRenderer() {
-	bgfx::destroy(m_ibh);
-	bgfx::destroy(m_vbh);
-	bgfx::destroy(m_program);
-	bgfx::shutdown();
-}
-
-void Entropy::BgfxRenderer::initialize() {
 	bgfx::PlatformData pd;
 	pd.ndt = NULL;
 	pd.nwh = hwnd;
@@ -116,7 +107,18 @@ void Entropy::BgfxRenderer::initialize() {
 		, 1.0f
 		, 0
 	);
+}
 
+Entropy::BgfxRenderer::~BgfxRenderer() {
+	bgfx::destroy(m_ibh);
+	bgfx::destroy(m_vbh);
+	bgfx::destroy(m_program);
+	bgfx::shutdown();
+}
+
+void Entropy::BgfxRenderer::Initialize() {
+
+	// engine->CurrentScene()->SceneGraph->
 	// Create vertex stream declaration.
 	PosColorVertex::init();
 
@@ -136,17 +138,15 @@ void Entropy::BgfxRenderer::initialize() {
 	m_program = loadProgram("vs_cubes", "fs_cubes");
 
 	m_timeOffset = bx::getHPCounter();
-
-	
 }
 
-void Entropy::BgfxRenderer::resize(int w, int h) {
+void Entropy::BgfxRenderer::Resize(int w, int h) {
 	width = w;
 	height = h;
 	bgfx::reset(w, h, BGFX_RESET_VSYNC);
 }
 
-void Entropy::BgfxRenderer::draw() {
+void Entropy::BgfxRenderer::Draw() {
 	// bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
 	float time = (float)((bx::getHPCounter() - m_timeOffset) / double(bx::getHPFrequency()));
 	// printf("%f", time);

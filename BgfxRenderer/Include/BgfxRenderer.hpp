@@ -9,9 +9,9 @@ namespace Entropy {
 	public:
 		BgfxRenderer(HWND hwnd) ;
 		~BgfxRenderer() override;
-		void initialize() override;
-		void resize(int w, int h) override;
-		void draw() override;
+		void Initialize() override;
+		void Resize(int w, int h) override;
+		void Draw() override;
 	private:
 		HWND hwnd;
 	};

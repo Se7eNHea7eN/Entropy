@@ -1,9 +1,7 @@
 #pragma
-#include <cstdint>
 #include <string>
 #include <Eigen/Core>
 #include "Texture.hpp"
-
 namespace Entropy {
 	using namespace Eigen;
 	template <typename T>

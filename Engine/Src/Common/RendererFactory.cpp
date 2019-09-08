@@ -2,6 +2,7 @@
 #include "GLRenderer.hpp"
 #include "Direct3DRenderer.hpp"
 #include "BgfxRenderer.hpp"
+
 using namespace Entropy;
 
 Renderer* RendererFactory::CreateRenderer(RenderAPI renderAPI, HWND hwnd) {

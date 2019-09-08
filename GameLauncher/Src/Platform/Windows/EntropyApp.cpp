@@ -61,9 +61,9 @@ int EntropyApp::run(int _argc, const char* const* _argv) {
 
 	ShowWindow(hWnd, SW_SHOWNORMAL);
 	MSG msg;
-	while (true) {
+	while (!isExit) {
 		if (renderer != nullptr)
-			renderer->draw();
+			renderer->Draw();
 		WaitForInputIdle(GetCurrentProcess(), 16);
 		while (0 != PeekMessageW(&msg, nullptr, 0U, 0U, PM_REMOVE)) {
 			TranslateMessage(&msg);
@@ -80,13 +80,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	switch (message) {
 	case WM_CREATE: {
 		renderer = instance->entropyCore->CreateRenderer(hWnd);
-		renderer->initialize();
+		renderer->Initialize();
 	}
 	break;
 	case WM_SIZE: {
 		RECT rc;
 		GetClientRect(hWnd, &rc);
-		renderer->resize(rc.right - rc.left, rc.bottom - rc.top);
+		renderer->Resize(rc.right - rc.left, rc.bottom - rc.top);
 	}
 	break;
 		// this message is read when the window is closed

@@ -1,7 +1,7 @@
 #pragma once
 #include <Eigen/Core>
-using namespace Eigen;
 namespace Entropy {
+	using namespace Eigen;
 
 	class Transform
 	{

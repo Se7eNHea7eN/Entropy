@@ -15,7 +15,7 @@ GLRenderer::~GLRenderer(){
 	hDC = nullptr;
 }
 
-void GLRenderer::initialize() {
+void GLRenderer::Initialize() {
 	GLuint		PixelFormat;			// Holds The Results After Searching For A Match
 	PIXELFORMATDESCRIPTOR pfd =				// pfd Tells Windows How We Want Things To Be
 	{
@@ -66,13 +66,13 @@ void GLRenderer::initialize() {
 	}
 }
 
-void GLRenderer::resize(int w, int h) {
+void GLRenderer::Resize(int w, int h) {
 	width = w;
 	height = h;
 	glViewport(0, 0, width, height);
 }
 
-void GLRenderer::draw() {
+void GLRenderer::Draw() {
 	wglMakeCurrent(hDC, hRC);
 	glClearColor(0.0f, 0.2f, 0.4f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

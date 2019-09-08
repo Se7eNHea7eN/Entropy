@@ -60,4 +60,24 @@ namespace Entropy {
 	};
 
 
+
+	class SceneObjectLight : public BaseSceneObject
+	{
+	protected:
+	
+
+	public:
+
+
+	};
+
+	class SceneObjectCamera : public BaseSceneObject
+	{
+	protected:
+
+
+	public:
+
+
+	};
 }

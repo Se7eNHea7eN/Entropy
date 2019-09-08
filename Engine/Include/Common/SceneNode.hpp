@@ -19,10 +19,16 @@ namespace Entropy {
 
 		virtual ~BaseSceneNode() {
 		};
+
+		void AppendChild(std::unique_ptr<BaseSceneNode>&& sub_node)
+		{
+			m_Children.push_back(std::move(sub_node));
+		}
+
 	protected:
 		std::string m_strName;
 		std::list<std::unique_ptr<BaseSceneNode>> m_Children;
-		std::list<std::unique_ptr<Transform>> m_Transforms;
+		std::unique_ptr<Transform> m_Transforms;
 	};
 
 	template <typename T>
