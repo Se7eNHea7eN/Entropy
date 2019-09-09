@@ -69,6 +69,8 @@ bgfx::ProgramHandle m_program;
 int64_t m_timeOffset;
 
 bgfx::IndexBufferHandle m_ibh;
+std::vector<bgfx::VertexBufferHandle> vbhs;
+std::vector<bgfx::IndexBufferHandle> ibhs;
 
 Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 	bgfx::PlatformData pd;

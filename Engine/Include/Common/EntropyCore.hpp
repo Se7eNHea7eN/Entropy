@@ -15,6 +15,7 @@ namespace Entropy {
 		Scene* CurrentScene() {
 			return m_currentScene;
 		}
+		void Tick();
 
 	private:
 		Scene* m_currentScene;

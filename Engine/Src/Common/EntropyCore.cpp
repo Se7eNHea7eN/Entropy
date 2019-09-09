@@ -18,3 +18,9 @@ Renderer* EntropyCore::CreateRenderer(HWND hwnd) {
 void EntropyCore::CreateScene(const char* scene_name) {
 	m_currentScene = new Scene(scene_name);
 }
+
+void EntropyCore::Tick() {
+	if(m_currentScene != nullptr) {
+		m_currentScene->Tick();
+	}
+}

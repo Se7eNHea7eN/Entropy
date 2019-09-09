@@ -1,6 +1,7 @@
 #pragma once
 #include <unordered_map>
 #include "SceneNode.hpp"
+#include <functional>
 
 namespace Entropy {
 
@@ -14,12 +15,18 @@ namespace Entropy {
 		~Scene() = default;
 
 		std::unique_ptr<BaseSceneNode> SceneGraph;
-		std::list<std::unique_ptr<SceneObjectGeometry>> Geometries;
-		std::list<std::unique_ptr<SceneObjectCamera>> Cameras;
-		std::list<std::unique_ptr<SceneObjectLight>> Lights;
+		std::list<std::shared_ptr<SceneObjectGeometry>> Geometries;
+		std::list<std::shared_ptr<SceneObjectCamera>> Cameras;
+		std::list<std::shared_ptr<SceneObjectLight>> Lights;
 
 		std::shared_ptr<SceneObjectCamera> MainCamera;
+
+		void Tick();
+		void SetOnTick(std::function<void()> onTick) {
+			this->onTick = onTick;
+		}
 	protected:
 		SceneEmptyNode* m_RootNode;
+		std::function<void()> onTick;
 	};
 }

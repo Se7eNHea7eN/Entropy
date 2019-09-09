@@ -62,6 +62,7 @@ int EntropyApp::run(int _argc, const char* const* _argv) {
 	ShowWindow(hWnd, SW_SHOWNORMAL);
 	MSG msg;
 	while (!isExit) {
+		entropyCore->Tick();
 		if (renderer != nullptr)
 			renderer->Draw();
 		WaitForInputIdle(GetCurrentProcess(), 16);
