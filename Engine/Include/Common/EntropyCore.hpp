@@ -1,5 +1,4 @@
 #pragma once
-#include "Common.hpp"
 #include "Common/RendererFactory.hpp"
 
 namespace Entropy {

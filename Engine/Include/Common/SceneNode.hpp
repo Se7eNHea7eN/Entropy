@@ -4,9 +4,9 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "SceneObject.hpp"
 #include "Transform.hpp"
 #include "Graphic/Material.hpp"
+#include "Graphic/Mesh.hpp"
 
 namespace Entropy {
 	class BaseSceneNode {
@@ -24,49 +24,18 @@ namespace Entropy {
 		{
 			m_Children.push_back(std::move(sub_node));
 		}
+		std::unique_ptr<Transform> m_Transform = std::make_unique<Transform>();
 
 	protected:
 		std::string m_strName;
 		std::list<std::unique_ptr<BaseSceneNode>> m_Children;
-		std::unique_ptr<Transform> m_Transforms;
 	};
 
-	template <typename T>
-	class SceneNode : public BaseSceneNode {
-	protected:
-		std::shared_ptr<T> m_pSceneObject;
-
-	protected:
-		virtual void dump(std::ostream& out) const {
-			if (m_pSceneObject)
-				out << *m_pSceneObject << std::endl;
-		};
-
-	public:
-		using BaseSceneNode::BaseSceneNode;
-		SceneNode() = default;
-		SceneNode(const std::shared_ptr<T>& object) { m_pSceneObject = object; };
-		SceneNode(const std::shared_ptr<T>&& object) { m_pSceneObject = std::move(object); };
-
-		void AddSceneObjectRef(const std::shared_ptr<T>& object) { m_pSceneObject = object; };
-		void AddSceneObjectRef(const std::shared_ptr<T>&& object) { m_pSceneObject = std::move(object); };
-
-	};
-
-	typedef BaseSceneNode SceneEmptyNode;
-
-
-	class SceneGeometryNode : public SceneNode<SceneObjectGeometry>
-	{
-	protected:
-		bool        m_bVisible;
-		bool        m_bShadow;
-		std::vector<std::shared_ptr<Material>> m_Materials;
-
+		std::vector<std::shared_ptr<Matial>> m_Materials;
+		std::vector<std::shared_ptr<Mesh>> m_Mesh;
 	protected:
 		virtual void dump(std::ostream& out) const
 		{
-			SceneNode::dump(out);
 			out << "Visible: " << m_bVisible << std::endl;
 			out << "Shadow: " << m_bShadow << std::endl;
 			out << "Material(s): " << std::endl;
@@ -76,13 +45,11 @@ namespace Entropy {
 		};
 
 	public:
-		using SceneNode::SceneNode;
 
 		void SetVisibility(bool visible) { m_bVisible = visible; };
 		const bool Visible() { return m_bVisible; };
 		void SetIfCastShadow(bool shadow) { m_bShadow = shadow; };
 		const bool CastShadow() { return m_bShadow; };
-		using SceneNode::AddSceneObjectRef;
 		void AddSceneObjectRef(const std::shared_ptr<Material>& object) { m_Materials.push_back(object); };
 	};
 

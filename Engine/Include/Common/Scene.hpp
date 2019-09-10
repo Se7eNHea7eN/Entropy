@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include "SceneNode.hpp"
 #include <functional>
+#include "Camera.hpp"
 
 namespace Entropy {
 
@@ -15,9 +16,9 @@ namespace Entropy {
 		~Scene() = default;
 
 		std::unique_ptr<BaseSceneNode> SceneGraph;
-		std::list<std::shared_ptr<SceneObjectGeometry>> Geometries;
+		std::list<std::shared_ptr<SceneGeometryNode>> Geometries;
 		std::list<std::shared_ptr<SceneObjectCamera>> Cameras;
-		std::list<std::shared_ptr<SceneObjectLight>> Lights;
+		// std::list<std::shared_ptr<SceneObjectLight>> Lights;
 
 		std::shared_ptr<SceneObjectCamera> MainCamera;
 

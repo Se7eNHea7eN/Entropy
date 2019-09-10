@@ -1,6 +1,4 @@
 #pragma once
-#include "Common.hpp"
-
 namespace Entropy {
 	class EntropyCore;
 	class Renderer {

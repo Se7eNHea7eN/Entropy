@@ -2,6 +2,8 @@
 #include "Common/Scene.hpp"
 #include "Common/SceneNode.hpp"
 #include "Common/SceneObject.hpp"
+#include "Common/Transform.hpp"
+#include "Eigen/Core"
 using namespace Entropy;
 int main(int _argc, const char* const* _argv)
 {
@@ -46,6 +48,20 @@ int main(int _argc, const char* const* _argv)
 	_object->AddMesh(mesh);
 	scene->Geometries.push_back(_object);
 	cubeNode->AddSceneObjectRef(_object);
+
+	// scene->SetOnTick([&cubeNode]()
+	// 	{
+	// 		cubeNode->m_Transform->Isometry().rotate()
+	// 	});
 	scene->SceneGraph->AppendChild(std::move(cubeNode));
+
+
+	auto cameraNode = std::shared_ptr<SceneObjectCamera>(std::make_shared<SceneObjectCamera>());
+	cameraNode->m_Transform->Isometry().translate(Vector3f(0,0,-35));
+
+	scene->MainCamera = cameraNode;
+	scene->Cameras.push_back(cameraNode);
+	scene->SceneGraph->AppendChild(std::move(cameraNode));
+
 	return app.run(_argc, _argv);
 }

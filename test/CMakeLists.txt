@@ -27,3 +27,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 if(WIN32)
     Set_Target_Properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /entry:mainCRTStartup ")
 endif()
+
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Eigen")

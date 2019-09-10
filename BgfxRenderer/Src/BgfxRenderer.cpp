@@ -14,15 +14,14 @@
 #include "bx/timer.h"
 #include "Common/EntropyCore.hpp"
 #include "Common/Scene.hpp"
-struct PosColorVertex
-{
+
+struct PosColorVertex {
 	float m_x;
 	float m_y;
 	float m_z;
 	uint32_t m_abgr;
 
-	static void init()
-	{
+	static void init() {
 		ms_layout
 			.begin()
 			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
@@ -33,18 +32,34 @@ struct PosColorVertex
 	static bgfx::VertexLayout ms_layout;
 };
 
+
+struct SimpleVertexLayout {
+	float m_x;
+	float m_y;
+	float m_z;
+
+	static void init() {
+		ms_layout
+			.begin()
+			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+			.end();
+	};
+
+	static bgfx::VertexLayout ms_layout;
+};
+
 bgfx::VertexLayout PosColorVertex::ms_layout;
 
 static PosColorVertex s_cubeVertices[] =
 {
-	{-1.0f,  1.0f,  1.0f, 0xff000000 },
-	{ 1.0f,  1.0f,  1.0f, 0xff0000ff },
-	{-1.0f, -1.0f,  1.0f, 0xff00ff00 },
-	{ 1.0f, -1.0f,  1.0f, 0xff00ffff },
-	{-1.0f,  1.0f, -1.0f, 0xffff0000 },
-	{ 1.0f,  1.0f, -1.0f, 0xffff00ff },
-	{-1.0f, -1.0f, -1.0f, 0xffffff00 },
-	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
+	{-1.0f, 1.0f, 1.0f, 0xff000000},
+	{1.0f, 1.0f, 1.0f, 0xff0000ff},
+	{-1.0f, -1.0f, 1.0f, 0xff00ff00},
+	{1.0f, -1.0f, 1.0f, 0xff00ffff},
+	{-1.0f, 1.0f, -1.0f, 0xffff0000},
+	{1.0f, 1.0f, -1.0f, 0xffff00ff},
+	{-1.0f, -1.0f, -1.0f, 0xffffff00},
+	{1.0f, -1.0f, -1.0f, 0xffffffff},
 };
 
 
@@ -64,13 +79,15 @@ static const uint16_t s_cubeTriStrip[] =
 	5,
 };
 
-bgfx::VertexBufferHandle m_vbh;
+// bgfx::VertexBufferHandle m_vbh;
+// bgfx::IndexBufferHandle m_ibh;
+
 bgfx::ProgramHandle m_program;
 int64_t m_timeOffset;
 
-bgfx::IndexBufferHandle m_ibh;
-std::vector<bgfx::VertexBufferHandle> vbhs;
-std::vector<bgfx::IndexBufferHandle> ibhs;
+std::list<bgfx::VertexBufferHandle> vbhs;
+std::list<bgfx::IndexBufferHandle> ibhs;
+
 
 Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 	bgfx::PlatformData pd;
@@ -104,37 +121,57 @@ Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 	// Enable debug text.
 	// bgfx::setDebug(true);
 	bgfx::setViewClear(0
-		, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
-		, 0x303030ff
-		, 1.0f
-		, 0
+	                   , BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
+	                   , 0x303030ff
+	                   , 1.0f
+	                   , 0
 	);
+	PosColorVertex::init();
+	SimpleVertexLayout::init();
 }
 
 Entropy::BgfxRenderer::~BgfxRenderer() {
-	bgfx::destroy(m_ibh);
-	bgfx::destroy(m_vbh);
+	// bgfx::destroy(m_ibh);
+	// bgfx::destroy(m_vbh);
 	bgfx::destroy(m_program);
 	bgfx::shutdown();
 }
 
 void Entropy::BgfxRenderer::Initialize() {
 
-	// engine->CurrentScene()->SceneGraph->
+	for (auto obj : engine->CurrentScene()->Geometries) {
+		auto meshes = obj->GetMesh();
+
+		for (auto mesh : meshes) {
+			auto vbh = bgfx::createVertexBuffer(
+				// Static data can be passed with bgfx::makeRef
+				bgfx::makeRef(mesh->m_vertexBuffer, sizeof(mesh->m_vertexCount))
+				, PosColorVertex::ms_layout
+			);
+			vbhs.push_back(vbh);
+
+
+			auto ibh = bgfx::createIndexBuffer(
+				// Static data can be passed with bgfx::makeRef
+				bgfx::makeRef(mesh->m_indexBuffer, sizeof(mesh->m_indexCount))
+			);
+			ibhs.push_back(ibh);
+		}
+
+	}
 	// Create vertex stream declaration.
-	PosColorVertex::init();
 
 	// Create static vertex buffer.
-	m_vbh = bgfx::createVertexBuffer(
-		// Static data can be passed with bgfx::makeRef
-		bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices))
-		, PosColorVertex::ms_layout
-	);
-
-	m_ibh = bgfx::createIndexBuffer(
-		// Static data can be passed with bgfx::makeRef
-		bgfx::makeRef(s_cubeTriStrip, sizeof(s_cubeTriStrip))
-	);
+	// m_vbh = bgfx::createVertexBuffer(
+	// 	// Static data can be passed with bgfx::makeRef
+	// 	bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices))
+	// 	, SimpleVertexLayout::ms_layout
+	// );
+	//
+	// m_ibh = bgfx::createIndexBuffer(
+	// 	// Static data can be passed with bgfx::makeRef
+	// 	bgfx::makeRef(s_cubeTriStrip, sizeof(s_cubeTriStrip))
+	// );
 
 	// Create program from shaders.
 	m_program = loadProgram("vs_cubes", "fs_cubes");
@@ -153,14 +190,14 @@ void Entropy::BgfxRenderer::Draw() {
 	float time = (float)((bx::getHPCounter() - m_timeOffset) / double(bx::getHPFrequency()));
 	// printf("%f", time);
 	// std::cout << time;
-	const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
-	const bx::Vec3 eye = { 0.0f, 0.0f, -35.0f };
+	const bx::Vec3 at = {0.0f, 0.0f, 0.0f};
+	const bx::Vec3 eye = {0.0f, 0.0f, -35.0f};
 
 	// Set view and projection matrix for view 0.
 	{
 		float view[16];
 		bx::mtxLookAt(view, eye, at);
-
+		engine->CurrentScene()->MainCamera->lookAt()
 		float proj[16];
 		bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
 		bgfx::setViewTransform(0, view, proj);
@@ -175,42 +212,41 @@ void Entropy::BgfxRenderer::Draw() {
 
 	// bgfx::IndexBufferHandle ibh = m_ibh[m_pt];
 	uint64_t state = 0
-		| BGFX_STATE_WRITE_R 
-		| BGFX_STATE_WRITE_G 
-		| BGFX_STATE_WRITE_B 
-		| BGFX_STATE_WRITE_A 
+		| BGFX_STATE_WRITE_R
+		| BGFX_STATE_WRITE_G
+		| BGFX_STATE_WRITE_B
+		| BGFX_STATE_WRITE_A
 		| BGFX_STATE_WRITE_Z
 		| BGFX_STATE_DEPTH_TEST_LESS
 		| BGFX_STATE_CULL_CW
 		| BGFX_STATE_MSAA
-		| BGFX_STATE_PT_TRISTRIP
-		;
+		| BGFX_STATE_PT_TRISTRIP;
 
-	// Submit 11x11 cubes.
-	for (uint32_t yy = 0; yy < 11; ++yy)
-	{
-		for (uint32_t xx = 0; xx < 11; ++xx)
-		{
-			float mtx[16];
-			bx::mtxRotateXY(mtx, time + xx * 0.21f, time + yy * 0.37f);
-			mtx[12] = -15.0f + float(xx) * 3.0f;
-			mtx[13] = -15.0f + float(yy) * 3.0f;
-			mtx[14] = 0.0f;
-
-			// Set model matrix for rendering.
-			bgfx::setTransform(mtx);
-
-			// Set vertex and index buffer.
-			bgfx::setVertexBuffer(0, m_vbh);
-			bgfx::setIndexBuffer(m_ibh);
-
-			// Set render states.
-			bgfx::setState(state);
-
-			// Submit primitive for rendering to view 0.
-			bgfx::submit(0, m_program);
-		}
-	}
+	// // Submit 11x11 cubes.
+	// for (uint32_t yy = 0; yy < 11; ++yy)
+	// {
+	// 	for (uint32_t xx = 0; xx < 11; ++xx)
+	// 	{
+	// 		float mtx[16];
+	// 		bx::mtxRotateXY(mtx, time + xx * 0.21f, time + yy * 0.37f);
+	// 		mtx[12] = -15.0f + float(xx) * 3.0f;
+	// 		mtx[13] = -15.0f + float(yy) * 3.0f;
+	// 		mtx[14] = 0.0f;
+	//
+	// 		// Set model matrix for rendering.
+	// 		bgfx::setTransform(mtx);
+	//
+	// 		// Set vertex and index buffer.
+	// 		bgfx::setVertexBuffer(0, m_vbh);
+	// 		bgfx::setIndexBuffer(m_ibh);
+	//
+	// 		// Set render states.
+	// 		bgfx::setState(state);
+	//
+	// 		// Submit primitive for rendering to view 0.
+	// 		bgfx::submit(0, m_program);
+	// 	}
+	// }
 
 	bgfx::frame();
 
