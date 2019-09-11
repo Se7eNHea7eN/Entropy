@@ -17,11 +17,9 @@ namespace Entropy {
 
 		std::unique_ptr<BaseSceneNode> SceneGraph;
 		std::list<std::shared_ptr<SceneGeometryNode>> Geometries;
-		std::list<std::shared_ptr<SceneObjectCamera>> Cameras;
+		std::list<std::shared_ptr<Camera>> Cameras;
 		// std::list<std::shared_ptr<SceneObjectLight>> Lights;
-
-		std::shared_ptr<SceneObjectCamera> MainCamera;
-
+		std::shared_ptr<Camera> MainCamera;
 		void Tick();
 		void SetOnTick(std::function<void()> onTick) {
 			this->onTick = onTick;

@@ -2,7 +2,7 @@
 #include "Common/Camera.hpp"
 using namespace Entropy;
 
-Eigen::Matrix4f SceneObjectCamera::perspective(float fovy, float aspect, float zNear, float zFar)
+Eigen::Matrix4f Camera::perspective(float fovy, float aspect, float zNear, float zFar)
 {
 	float const tanHalfFovy = tan(fovy / 2);
 
@@ -15,7 +15,7 @@ Eigen::Matrix4f SceneObjectCamera::perspective(float fovy, float aspect, float z
 	return Result;
 }
 
-Eigen::Matrix4f SceneObjectCamera::ortho(float left, float right, float bottom, float top, float zNear, float zFar)
+Eigen::Matrix4f Camera::ortho(float left, float right, float bottom, float top, float zNear, float zFar)
 {
 	Eigen::Matrix4f Result = Eigen::Matrix4f::Identity();
 	Result(0, 0) = 2 / (right - left);
@@ -27,7 +27,7 @@ Eigen::Matrix4f SceneObjectCamera::ortho(float left, float right, float bottom, 
 	return Result;
 }
 
-Eigen::Matrix4f SceneObjectCamera::lookAt(Eigen::Vector3f const& eye, Eigen::Vector3f const& center, Eigen::Vector3f const& up)
+Eigen::Matrix4f Camera::lookAt(Eigen::Vector3f const& eye, Eigen::Vector3f const& center, Eigen::Vector3f const& up)
 {
 	Eigen::Vector3f f(center - eye);
 	Eigen::Vector3f s(f.cross(up));

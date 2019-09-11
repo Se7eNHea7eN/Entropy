@@ -14,7 +14,7 @@
 #include "bx/timer.h"
 #include "Common/EntropyCore.hpp"
 #include "Common/Scene.hpp"
-
+using namespace Eigen;
 struct PosColorVertex {
 	float m_x;
 	float m_y;
@@ -140,9 +140,8 @@ Entropy::BgfxRenderer::~BgfxRenderer() {
 void Entropy::BgfxRenderer::Initialize() {
 
 	for (auto obj : engine->CurrentScene()->Geometries) {
-		auto meshes = obj->GetMesh();
 
-		for (auto mesh : meshes) {
+		for (auto mesh : obj->m_Mesh) {
 			auto vbh = bgfx::createVertexBuffer(
 				// Static data can be passed with bgfx::makeRef
 				bgfx::makeRef(mesh->m_vertexBuffer, sizeof(mesh->m_vertexCount))
@@ -195,12 +194,11 @@ void Entropy::BgfxRenderer::Draw() {
 
 	// Set view and projection matrix for view 0.
 	{
-		float view[16];
-		bx::mtxLookAt(view, eye, at);
-		engine->CurrentScene()->MainCamera->lookAt()
-		float proj[16];
-		bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-		bgfx::setViewTransform(0, view, proj);
+		auto camera = engine->CurrentScene()->MainCamera;
+		auto viewMatrix = camera->lookAt(camera->m_Transform->Position(), camera->m_Transform->Forward(), camera->m_Transform->Up());
+		auto projectionMatrix = camera->perspective(60, float(width) / float(height), 0.1f, 100.0f);
+		//bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+		bgfx::setViewTransform(0, viewMatrix.array, projectionMatrix.array);
 
 		// Set view 0 default viewport.
 		bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));

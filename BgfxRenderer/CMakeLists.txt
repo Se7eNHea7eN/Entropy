@@ -39,3 +39,4 @@ include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bimg/include")
 
 
 add_compile_definitions("__STDC_LIMIT_MACROS;__STDC_FORMAT_MACROS;__STDC_CONSTANT_MACROS;")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Eigen")
