@@ -18,7 +18,7 @@ namespace Entropy {
 		Isometry3f Isometry() { return m_isometry; }
 		
 		Vector3f Position() {
-			return m_isometry.translation;
+			return m_isometry.translation();
 		}
 		
 		Vector3f Forward() {
@@ -28,9 +28,9 @@ namespace Entropy {
 		Vector3f Up() {
 			return m_isometry.rotation() * Vector3f(0, 1, 0);
 		}
-		Vector3f Scale() {
-			return m_isometry.scale;
-		}
+		// Vector3f Scale() {
+		// 	return m_isometry.scale();
+		// }
 		
 	};
 }
