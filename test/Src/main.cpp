@@ -3,6 +3,7 @@
 #include "Common/SceneNode.hpp"
 #include "Common/Transform.hpp"
 #include "Eigen/Core"	
+#include "Utils/Debug.hpp"
 using namespace Entropy;
 
 struct PosColorVertex
@@ -21,17 +22,17 @@ int main(int _argc, const char* const* _argv)
 	auto cubeNode = std::shared_ptr<SceneGeometryNode>(std::make_shared<SceneGeometryNode>());
 	auto mesh = std::make_shared<Mesh>();
 
-	// static PosColorVertex s_cubeVertices[] =
-	// {
-	// 	{-1.0f,  1.0f,  1.0f, 0xff000000 },
-	// 	{ 1.0f,  1.0f,  1.0f, 0xff0000ff },
-	// 	{-1.0f, -1.0f,  1.0f, 0xff00ff00 },
-	// 	{ 1.0f, -1.0f,  1.0f, 0xff00ffff },
-	// 	{-1.0f,  1.0f, -1.0f, 0xffff0000 },
-	// 	{ 1.0f,  1.0f, -1.0f, 0xffff00ff },
-	// 	{-1.0f, -1.0f, -1.0f, 0xffffff00 },
-	// 	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
-	// };
+	static PosColorVertex s_cubeVertices[] =
+	{
+		{-1.0f,  1.0f,  1.0f, 0xff000000 },
+		{ 1.0f,  1.0f,  1.0f, 0xff0000ff },
+		{-1.0f, -1.0f,  1.0f, 0xff00ff00 },
+		{ 1.0f, -1.0f,  1.0f, 0xff00ffff },
+		{-1.0f,  1.0f, -1.0f, 0xffff0000 },
+		{ 1.0f,  1.0f, -1.0f, 0xffff00ff },
+		{-1.0f, -1.0f, -1.0f, 0xffffff00 },
+		{ 1.0f, -1.0f, -1.0f, 0xffffffff },
+	};
 
 	float v[] =
 	{
@@ -44,10 +45,10 @@ int main(int _argc, const char* const* _argv)
 		-1.0f, -1.0f, -1.0f ,
 		 1.0f, -1.0f, -1.0f 
 	};
-	mesh->m_vertexBuffer = v;
+	mesh->m_vertexBuffer = s_cubeVertices;
 	
 	mesh->m_vertexCount = 8;
-	mesh->m_vertexBufferSize = sizeof(v);
+	mesh->m_vertexBufferSize = sizeof(s_cubeVertices);
 	uint16_t i[] = {
 		0, 1, 2,
 		3,
@@ -68,10 +69,10 @@ int main(int _argc, const char* const* _argv)
 	cubeNode->m_Mesh.push_back(mesh);
 
 	scene->Geometries.push_back(cubeNode);
-	// scene->SetOnTick([&cubeNode]()
-	// 	{
-	// 		cubeNode->m_Transform->Isometry().rotate(Vector3f(0.01, 0.01, 0.01));
-	// 	});
+	scene->SetOnTick([&cubeNode]()
+		{
+			cubeNode->GetTransform()->Rotate(0.01,Vector3f(1, 1, 1));
+		});
 	scene->SceneGraph->AppendChild(cubeNode);
 	
 	auto cameraNode = std::shared_ptr<Camera>(std::make_shared<Camera>());

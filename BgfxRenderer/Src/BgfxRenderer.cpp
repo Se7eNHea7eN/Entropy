@@ -166,7 +166,7 @@ void Entropy::BgfxRenderer::Initialize() {
 			geo->vbh = bgfx::createVertexBuffer(
 				bgfx::makeRef(mesh->m_vertexBuffer, mesh->m_vertexBufferSize)
 
-				, SimpleVertexLayout::ms_layout
+				, PosColorVertex::ms_layout
 			);
 	
 			geo->ibh = bgfx::createIndexBuffer(
@@ -194,11 +194,9 @@ float* viewMatrixArray = new float[16];
 float* projectionMatrixArray = new float[16];
 
 void Entropy::BgfxRenderer::Draw() {
-	// bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
+
 	float time = (float)((bx::getHPCounter() - m_timeOffset) / double(bx::getHPFrequency()));
 
-
-	// // Set view and projection matrix for view 0.
 	{
 		auto camera = engine->CurrentScene()->MainCamera;
 		auto viewMatrix = camera->ViewMatrix().matrix();
@@ -220,7 +218,6 @@ void Entropy::BgfxRenderer::Draw() {
 	// if no other draw calls are submitted to view 0.
 	bgfx::touch(0);
 
-	// bgfx::IndexBufferHandle ibh = m_ibh[m_pt];
 	uint64_t state = 0
 		| BGFX_STATE_WRITE_R
 		| BGFX_STATE_WRITE_G
@@ -247,33 +244,6 @@ void Entropy::BgfxRenderer::Draw() {
 	
 		bgfx::submit(0, m_program);
 	}
-	
-
-	// Submit 11x11 cubes.
-	// for (uint32_t yy = 0; yy < 11; ++yy)
-	// {
-	// 	for (uint32_t xx = 0; xx < 11; ++xx)
-	// 	{
-	// 		float mtx[16];
-	// 		bx::mtxRotateXY(mtx, time + xx * 0.21f, time + yy * 0.37f);
-	// 		mtx[12] = -15.0f + float(xx) * 3.0f;
-	// 		mtx[13] = -15.0f + float(yy) * 3.0f;
-	// 		mtx[14] = 0.0f;
-	//
-	// 		// Set model matrix for rendering.
-	// 		bgfx::setTransform(mtx);
-	//
-	// 		// Set vertex and index buffer.
-	// 		bgfx::setVertexBuffer(0, m_vbh);
-	// 		bgfx::setIndexBuffer(m_ibh);
-	//
-	// 		// Set render states.
-	// 		bgfx::setState(state);
-	// 		// Submit primitive for rendering to view 0.
-	// 		bgfx::submit(0, m_program);
-	// 	}
-	// }
-
 	bgfx::frame();
 
 }

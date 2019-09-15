@@ -1,6 +1,7 @@
 #pragma once
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include "Utils/Debug.hpp"
 
 namespace Entropy {
 	using namespace Eigen;
@@ -9,7 +10,7 @@ namespace Entropy {
 	{
 	protected:
 
-		Quaternionf orientation;
+		Quaternionf orientation = Quaternionf::Identity();
 		Vector3f position;
 		Vector3f scale = Vector3f(1,1,1);
 	public:
@@ -17,13 +18,15 @@ namespace Entropy {
 		friend std::ostream& operator<<(std::ostream& out, const Transform& obj);
 
 		Matrix4f ModelMatrix() {
-			return  Affine3f(Translation3f(position) * orientation * Scaling(scale)).matrix();
+			return Affine3f(Translation3f(position) * orientation * Scaling(scale)).matrix();
 		}
 		
 		void SetPosition(const Vector3f& pos) { position = pos; }
 		inline const Vector3f& Position(void) const { return position; }
 
-		void SetOrientation(const Quaternionf& q) { orientation = q; }
+		void SetOrientation(const Quaternionf& q) {
+			orientation = q;
+		}
 		inline const Quaternionf& Orientation(void) const { return orientation; }
 
 		void SetScale(const Vector3f& scl) { scale = scl; }
@@ -58,10 +61,19 @@ namespace Entropy {
 			return position;
 		}
 
-		Quaternionf Rotate(const Quaternionf& q) {
-			SetOrientation(Orientation() * q);
+		Quaternionf Rotate(float angle, const Vector3f& axis) {
+			return Rotate(AngleAxisf(angle, axis));
 		}
+		Quaternionf Rotate(const AngleAxisf& angleAxis) {
+			return Rotate(Quaternionf(angleAxis));
+		}
+	
+		Quaternionf Rotate(const Quaternionf& q) {
+			orientation = orientation * q;
+			Log("orientation %s", DebugString(orientation.toRotationMatrix()));
 
+			return orientation;
+		}
 		
 	};
 }

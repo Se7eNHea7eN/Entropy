@@ -16,7 +16,19 @@ inline void Log(const char* format, ...) {
 	OutputDebugString(msgbuf);
 #endif
 }
-char msgbuf[1024];
+static char msgbuf[1024];
+
+inline const char* DebugString(Eigen::Matrix3f matrix) {
+
+	float* matrixArray = new float[9];
+	Eigen::Map<Eigen::Matrix3f>(matrixArray, matrix.rows(), matrix.cols()) = matrix;
+	sprintf_s(msgbuf, "%f %f %f \n%f %f %f \n%f %f %f \n",
+		matrixArray[0], matrixArray[1], matrixArray[2],
+		matrixArray[3], matrixArray[4], matrixArray[5],
+		matrixArray[6], matrixArray[7], matrixArray[8]
+	);  
+	return msgbuf;
+}
 
 inline const char* DebugString(Eigen::Matrix4f matrix) {
 
