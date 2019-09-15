@@ -2,5 +2,6 @@
 using namespace Entropy;
 
 void Scene::Tick() {
-	onTick();
+	if(onTick != nullptr)
+		onTick();
 }

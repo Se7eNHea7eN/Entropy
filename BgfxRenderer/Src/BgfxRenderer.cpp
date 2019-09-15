@@ -14,23 +14,9 @@
 #include "bx/timer.h"
 #include "Common/EntropyCore.hpp"
 #include "Common/Scene.hpp"
+#include "Utils/Debug.hpp"
+
 using namespace Eigen;
-struct PosColorVertex {
-	float m_x;
-	float m_y;
-	float m_z;
-	uint32_t m_abgr;
-
-	static void init() {
-		ms_layout
-			.begin()
-			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-			.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
-			.end();
-	};
-
-	static bgfx::VertexLayout ms_layout;
-};
 
 
 struct SimpleVertexLayout {
@@ -48,18 +34,41 @@ struct SimpleVertexLayout {
 	static bgfx::VertexLayout ms_layout;
 };
 
+bgfx::VertexLayout SimpleVertexLayout::ms_layout;
+
+
+struct PosColorVertex
+{
+	float m_x;
+	float m_y;
+	float m_z;
+	uint32_t m_abgr;
+
+	static void init()
+	{
+		ms_layout
+			.begin()
+			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+			.end();
+	};
+
+	static bgfx::VertexLayout ms_layout;
+};
+
 bgfx::VertexLayout PosColorVertex::ms_layout;
+
 
 static PosColorVertex s_cubeVertices[] =
 {
-	{-1.0f, 1.0f, 1.0f, 0xff000000},
-	{1.0f, 1.0f, 1.0f, 0xff0000ff},
-	{-1.0f, -1.0f, 1.0f, 0xff00ff00},
-	{1.0f, -1.0f, 1.0f, 0xff00ffff},
-	{-1.0f, 1.0f, -1.0f, 0xffff0000},
-	{1.0f, 1.0f, -1.0f, 0xffff00ff},
-	{-1.0f, -1.0f, -1.0f, 0xffffff00},
-	{1.0f, -1.0f, -1.0f, 0xffffffff},
+	{-1.0f,  1.0f,  1.0f, 0xff000000 },
+	{ 1.0f,  1.0f,  1.0f, 0xff0000ff },
+	{-1.0f, -1.0f,  1.0f, 0xff00ff00 },
+	{ 1.0f, -1.0f,  1.0f, 0xff00ffff },
+	{-1.0f,  1.0f, -1.0f, 0xffff0000 },
+	{ 1.0f,  1.0f, -1.0f, 0xffff00ff },
+	{-1.0f, -1.0f, -1.0f, 0xffffff00 },
+	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
 };
 
 
@@ -79,17 +88,22 @@ static const uint16_t s_cubeTriStrip[] =
 	5,
 };
 
-// bgfx::VertexBufferHandle m_vbh;
-// bgfx::IndexBufferHandle m_ibh;
 
 bgfx::ProgramHandle m_program;
 int64_t m_timeOffset;
+bgfx::VertexBufferHandle m_vbh;
+bgfx::IndexBufferHandle m_ibh;
 
 
 struct BgfxGeometry {
 	std::shared_ptr<Entropy::SceneGeometryNode> geometry;
 	bgfx::VertexBufferHandle vbh;
 	bgfx::IndexBufferHandle ibh;
+	~BgfxGeometry() {
+		bgfx::destroy(vbh);
+		bgfx::destroy(ibh);
+		geometry.reset();
+	}
 };
 
 std::list<std::unique_ptr<BgfxGeometry>> geometries;
@@ -105,10 +119,10 @@ Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 
 	bgfx::renderFrame();
 
-
 	bgfx::Init init;
 	// 选择一个渲染后端，当设置为 RendererType::Enum::Count 的时候，系统将默认选择一个平台，可以设置Metal，OpenGL ES，Direct 等
-	init.type = bgfx::RendererType::Enum::Count;
+	// init.type = bgfx::RendererType::Enum::Count;
+	init.type = bgfx::RendererType::Enum::OpenGL;
 	// 设置供应商接口Vendor PCI ID，默认设置为0将选择第一个设备来显示。
 	// #define BGFX_PCI_ID_NONE                UINT16_C(0x0000) //!< Autoselect adapter.
 	// #define BGFX_PCI_ID_SOFTWARE_RASTERIZER UINT16_C(0x0001) //!< Software rasterizer.
@@ -145,48 +159,36 @@ Entropy::BgfxRenderer::~BgfxRenderer() {
 void Entropy::BgfxRenderer::Initialize() {
 
 	for (auto obj : engine->CurrentScene()->Geometries) {
-
+	
 		for (auto mesh : obj->m_Mesh) {
 			auto geo = std::make_unique<BgfxGeometry>();
 			geo->geometry = obj;
 			geo->vbh = bgfx::createVertexBuffer(
-				// Static data can be passed with bgfx::makeRef
-				bgfx::makeRef(mesh->m_vertexBuffer, sizeof(mesh->m_vertexCount))
-				, PosColorVertex::ms_layout
+				bgfx::makeRef(mesh->m_vertexBuffer, mesh->m_vertexBufferSize)
+
+				, SimpleVertexLayout::ms_layout
+			);
+	
+			geo->ibh = bgfx::createIndexBuffer(
+				bgfx::makeRef(mesh->m_indexBuffer, mesh->m_indexBufferSize)
 			);
 
-			auto ibh = bgfx::createIndexBuffer(
-				// Static data can be passed with bgfx::makeRef
-				bgfx::makeRef(mesh->m_indexBuffer, sizeof(mesh->m_indexCount))
-			);
-
-			geometries.push_back(geo);
+			geometries.push_back(std::move(geo));
 		}
 	}
-	// Create vertex stream declaration.
-
-	// Create static vertex buffer.
-	// m_vbh = bgfx::createVertexBuffer(
-	// 	// Static data can be passed with bgfx::makeRef
-	// 	bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices))
-	// 	, SimpleVertexLayout::ms_layout
-	// );
-	//
-	// m_ibh = bgfx::createIndexBuffer(
-	// 	// Static data can be passed with bgfx::makeRef
-	// 	bgfx::makeRef(s_cubeTriStrip, sizeof(s_cubeTriStrip))
-	// );
-
 	// Create program from shaders.
 	m_program = loadProgram("vs_cubes", "fs_cubes");
 
 	m_timeOffset = bx::getHPCounter();
+	auto camera = engine->CurrentScene()->MainCamera;
 }
 
 void Entropy::BgfxRenderer::Resize(int w, int h) {
 	width = w;
 	height = h;
 	bgfx::reset(w, h, BGFX_RESET_VSYNC);
+	auto camera = engine->CurrentScene()->MainCamera;
+	camera->SetViewport(w, h);
 }
 float* viewMatrixArray = new float[16];
 float* projectionMatrixArray = new float[16];
@@ -194,24 +196,22 @@ float* projectionMatrixArray = new float[16];
 void Entropy::BgfxRenderer::Draw() {
 	// bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
 	float time = (float)((bx::getHPCounter() - m_timeOffset) / double(bx::getHPFrequency()));
-	// printf("%f", time);
-	// std::cout << time;
-	const bx::Vec3 at = { 0.0f, 0.0f, 0.0f };
-	const bx::Vec3 eye = { 0.0f, 0.0f, -35.0f };
 
-	// Set view and projection matrix for view 0.
+
+	// // Set view and projection matrix for view 0.
 	{
 		auto camera = engine->CurrentScene()->MainCamera;
-		auto viewMatrix = camera->lookAt(camera->m_Transform->Position(), camera->m_Transform->Forward(), camera->m_Transform->Up());
-
+		auto viewMatrix = camera->ViewMatrix().matrix();
+		
 		Map<Matrix4f>(viewMatrixArray, viewMatrix.rows(), viewMatrix.cols()) = viewMatrix;
 		
-		auto projectionMatrix = camera->perspective(60, float(width) / float(height), 0.1f, 100.0f);
 
-		Map<Matrix4f>(projectionMatrixArray, projectionMatrix.rows(), projectionMatrix.cols()) = projectionMatrix;
+		bx::mtxProj(projectionMatrixArray, bx::toDeg(camera->FovY()), float(width) / float(height), camera->NearDistance(), camera->FarDistance(), bgfx::getCaps()->homogeneousDepth);
+		
+
 		//bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
 		bgfx::setViewTransform(0, viewMatrixArray, projectionMatrixArray);
-
+		
 		// Set view 0 default viewport.
 		bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
 	}
@@ -233,22 +233,23 @@ void Entropy::BgfxRenderer::Draw() {
 		| BGFX_STATE_PT_TRISTRIP;
 
 	for (auto iterator = geometries.begin(); iterator != geometries.end(); ++iterator){
-
-		auto transformMatrix = iterator->get()->geometry->m_Transform->Isometry().matrix();
+	
+		auto transformMatrix = iterator->get()->geometry->GetTransform()->ModelMatrix();
 		float* transformMatrixArray = new float[transformMatrix.size()];
+		Log("transformMatrix = \n %s", DebugString(transformMatrix));
 
-		Map<MatrixXf>(transformMatrixArray, transformMatrix.rows(), transformMatrix.cols()) = transformMatrix;
-
+		Map<Matrix4f>(transformMatrixArray, transformMatrix.rows(), transformMatrix.cols()) = transformMatrix;
+	
 		bgfx::setTransform(transformMatrixArray);
 		bgfx::setVertexBuffer(0, iterator->get()->vbh);
 		bgfx::setIndexBuffer(iterator->get()->ibh);
 		bgfx::setState(state);
-
+	
 		bgfx::submit(0, m_program);
 	}
 	
 
-	// // Submit 11x11 cubes.
+	// Submit 11x11 cubes.
 	// for (uint32_t yy = 0; yy < 11; ++yy)
 	// {
 	// 	for (uint32_t xx = 0; xx < 11; ++xx)
@@ -268,7 +269,6 @@ void Entropy::BgfxRenderer::Draw() {
 	//
 	// 		// Set render states.
 	// 		bgfx::setState(state);
-	//
 	// 		// Submit primitive for rendering to view 0.
 	// 		bgfx::submit(0, m_program);
 	// 	}

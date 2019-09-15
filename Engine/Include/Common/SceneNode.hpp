@@ -24,9 +24,12 @@ namespace Entropy {
 		{
 			m_Children.push_back(sub_node);
 		}
-		std::unique_ptr<Transform> m_Transform = std::make_unique<Transform>();
-
+		std::shared_ptr<Transform> GetTransform() const {
+			return m_Transform;
+		}
 	protected:
+		std::shared_ptr<Transform> m_Transform = std::make_shared<Transform>();
+
 		std::string m_strName;
 		std::list<std::shared_ptr<BaseSceneNode>> m_Children;
 	};
