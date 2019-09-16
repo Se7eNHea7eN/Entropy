@@ -5,7 +5,7 @@ set(PROJECT_NAME Engine)
 project(${PROJECT_NAME})
 
 file(GLOB_RECURSE project_headers *.hpp *.h)
-file(GLOB_RECURSE project_cpps *.cpp *.c)
+file(GLOB_RECURSE project_cpps *.cpp *.c *.cc)
 set(all_files ${project_headers} ${project_cpps})
 
 source_group_by_dir(all_files)

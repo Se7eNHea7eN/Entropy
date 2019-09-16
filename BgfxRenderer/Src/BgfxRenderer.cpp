@@ -24,9 +24,9 @@ struct SimpleVertexLayout {
 	float m_y;
 	float m_z;
 
-	// float m_nx;
-	// float m_ny;
-	// float m_nz;
+	float m_nx;
+	float m_ny;
+	float m_nz;
 	//
 	// float m_tx;
 	// float m_ty;
@@ -35,7 +35,7 @@ struct SimpleVertexLayout {
 		ms_layout
 			.begin()
 			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-			// .add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
 			// .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 			.end();
 	};
@@ -46,62 +46,7 @@ struct SimpleVertexLayout {
 bgfx::VertexLayout SimpleVertexLayout::ms_layout;
 
 
-struct PosColorVertex
-{
-	float m_x;
-	float m_y;
-	float m_z;
-	uint32_t m_abgr;
-
-	static void init()
-	{
-		ms_layout
-			.begin()
-			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-			.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
-			.end();
-	};
-
-	static bgfx::VertexLayout ms_layout;
-};
-
-bgfx::VertexLayout PosColorVertex::ms_layout;
-
-
-static PosColorVertex s_cubeVertices[] =
-{
-	{-1.0f,  1.0f,  1.0f, 0xff000000 },
-	{ 1.0f,  1.0f,  1.0f, 0xff0000ff },
-	{-1.0f, -1.0f,  1.0f, 0xff00ff00 },
-	{ 1.0f, -1.0f,  1.0f, 0xff00ffff },
-	{-1.0f,  1.0f, -1.0f, 0xffff0000 },
-	{ 1.0f,  1.0f, -1.0f, 0xffff00ff },
-	{-1.0f, -1.0f, -1.0f, 0xffffff00 },
-	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
-};
-
-
-static const uint16_t s_cubeTriStrip[] =
-{
-	0, 1, 2,
-	3,
-	7,
-	1,
-	5,
-	0,
-	4,
-	2,
-	6,
-	7,
-	4,
-	5,
-};
-
-
 bgfx::ProgramHandle m_program;
-int64_t m_timeOffset;
-bgfx::VertexBufferHandle m_vbh;
-bgfx::IndexBufferHandle m_ibh;
 
 
 struct BgfxGeometry {
@@ -130,8 +75,8 @@ Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 
 	bgfx::Init init;
 	// 选择一个渲染后端，当设置为 RendererType::Enum::Count 的时候，系统将默认选择一个平台，可以设置Metal，OpenGL ES，Direct 等
-	init.type = bgfx::RendererType::Enum::Count;
-	// init.type = bgfx::RendererType::Enum::OpenGL;
+	// init.type = bgfx::RendererType::Enum::Count;
+	init.type = bgfx::RendererType::Enum::OpenGL;
 	// 设置供应商接口Vendor PCI ID，默认设置为0将选择第一个设备来显示。
 	// #define BGFX_PCI_ID_NONE                UINT16_C(0x0000) //!< Autoselect adapter.
 	// #define BGFX_PCI_ID_SOFTWARE_RASTERIZER UINT16_C(0x0001) //!< Software rasterizer.
@@ -154,7 +99,7 @@ Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 	                   , 1.0f
 	                   , 0
 	);
-	PosColorVertex::init();
+
 	SimpleVertexLayout::init();
 }
 
@@ -177,17 +122,17 @@ void Entropy::BgfxRenderer::Initialize() {
 				, SimpleVertexLayout::ms_layout
 			);
 	
-			geo->ibh = bgfx::createIndexBuffer(
-				bgfx::makeRef(mesh->m_indexBuffer, mesh->m_indexBufferSize)
-			);
+			// geo->ibh = bgfx::createIndexBuffer(
+			// 	bgfx::makeRef(mesh->m_indexBuffer, mesh->m_indexBufferSize)
+			// );
 
 			geometries.push_back(std::move(geo));
 		}
 	}
 	// Create program from shaders.
 	m_program = loadProgram("vs_cubes", "fs_cubes");
+	// m_program = loadProgram("vs_mesh", "fs_mesh");;
 
-	m_timeOffset = bx::getHPCounter();
 	auto camera = engine->CurrentScene()->MainCamera;
 }
 
@@ -201,8 +146,6 @@ void Entropy::BgfxRenderer::Resize(int w, int h) {
 
 
 void Entropy::BgfxRenderer::Draw() {
-
-	float time = (float)((bx::getHPCounter() - m_timeOffset) / double(bx::getHPFrequency()));
 
 	{
 		auto camera = engine->CurrentScene()->MainCamera;
@@ -232,9 +175,9 @@ void Entropy::BgfxRenderer::Draw() {
 		| BGFX_STATE_WRITE_A
 		| BGFX_STATE_WRITE_Z
 		| BGFX_STATE_DEPTH_TEST_LESS
-		| BGFX_STATE_CULL_CW
+		// | BGFX_STATE_CULL_CW
 		| BGFX_STATE_MSAA
-		// | BGFX_STATE_PT_TRISTRIP
+		// | BGFX_STATE_PT_LINESTRIP
 	;
 
 	for (auto iterator = geometries.begin(); iterator != geometries.end(); ++iterator){
@@ -247,7 +190,7 @@ void Entropy::BgfxRenderer::Draw() {
 	
 		bgfx::setTransform(transformMatrixArray);
 		bgfx::setVertexBuffer(0, iterator->get()->vbh);
-		bgfx::setIndexBuffer(iterator->get()->ibh);
+		// bgfx::setIndexBuffer(iterator->get()->ibh);
 		bgfx::setState(state);
 	
 		bgfx::submit(0, m_program);
