@@ -69,9 +69,9 @@ int main(int _argc, const char* const* _argv)
 	cubeNode->m_Mesh.push_back(mesh);
 
 	scene->Geometries.push_back(cubeNode);
-	scene->SetOnTick([&cubeNode]()
+	scene->SetOnTick([&cubeNode](float deltaTime)
 		{
-			cubeNode->GetTransform()->Rotate(0.01,Vector3f(1, 1, 1));
+			cubeNode->GetTransform()->Rotate(deltaTime *3.14,Vector3f(1, 1, 1));
 		});
 	scene->SceneGraph->AppendChild(cubeNode);
 	

@@ -190,8 +190,7 @@ void Entropy::BgfxRenderer::Resize(int w, int h) {
 	auto camera = engine->CurrentScene()->MainCamera;
 	camera->SetViewport(w, h);
 }
-float* viewMatrixArray = new float[16];
-float* projectionMatrixArray = new float[16];
+
 
 void Entropy::BgfxRenderer::Draw() {
 

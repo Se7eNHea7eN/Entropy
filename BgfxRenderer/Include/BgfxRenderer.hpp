@@ -12,6 +12,9 @@ namespace Entropy {
 		void Initialize() override;
 		void Resize(int w, int h) override;
 		void Draw() override;
+	protected:
+		float* viewMatrixArray = new float[16];
+		float* projectionMatrixArray = new float[16];
 	private:
 		HWND hwnd;
 	};

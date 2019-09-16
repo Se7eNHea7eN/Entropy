@@ -19,8 +19,8 @@ void EntropyCore::CreateScene(const char* scene_name) {
 	m_currentScene = new Scene(scene_name);
 }
 
-void EntropyCore::Tick() {
+void EntropyCore::Tick(float deltaTime) {
 	if(m_currentScene != nullptr) {
-		m_currentScene->Tick();
+		m_currentScene->Tick(deltaTime);
 	}
 }

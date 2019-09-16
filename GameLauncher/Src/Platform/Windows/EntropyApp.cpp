@@ -3,6 +3,7 @@
 #include <tchar.h>
 #include "Common/Renderer.hpp"
 #include "EntropyApp.hpp"
+#include <ctime>
 
 using namespace Entropy;
 Renderer* renderer;
@@ -61,8 +62,11 @@ int EntropyApp::run(int _argc, const char* const* _argv) {
 
 	ShowWindow(hWnd, SW_SHOWNORMAL);
 	MSG msg;
+	auto lastTime = GetTickCount();
 	while (!isExit) {
-		entropyCore->Tick();
+		auto thisTime = GetTickCount();
+		entropyCore->Tick((thisTime - lastTime)/1000.0);
+		lastTime = thisTime;
 		if (renderer != nullptr)
 			renderer->Draw();
 		WaitForInputIdle(GetCurrentProcess(), 16);

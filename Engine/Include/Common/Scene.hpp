@@ -20,12 +20,12 @@ namespace Entropy {
 		std::list<std::shared_ptr<Camera>> Cameras;
 		// std::list<std::shared_ptr<SceneObjectLight>> Lights;
 		std::shared_ptr<Camera> MainCamera;
-		void Tick();
-		void SetOnTick(std::function<void()> onTick) {
+		void Tick(float deltaTime);
+		void SetOnTick(std::function<void(float)> onTick) {
 			this->onTick = onTick;
 		}
 	protected:
 		SceneEmptyNode* m_RootNode;
-		std::function<void()> onTick;
+		std::function<void(float)> onTick;
 	};
 }

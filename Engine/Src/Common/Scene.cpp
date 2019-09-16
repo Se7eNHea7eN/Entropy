@@ -1,7 +1,7 @@
 #include "Common/Scene.hpp"
 using namespace Entropy;
 
-void Scene::Tick() {
+void Scene::Tick(float deltaTime) {
 	if(onTick != nullptr)
-		onTick();
+		onTick(deltaTime);
 }
