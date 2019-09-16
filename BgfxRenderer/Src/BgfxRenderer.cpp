@@ -24,10 +24,19 @@ struct SimpleVertexLayout {
 	float m_y;
 	float m_z;
 
+	// float m_nx;
+	// float m_ny;
+	// float m_nz;
+	//
+	// float m_tx;
+	// float m_ty;
+	
 	static void init() {
 		ms_layout
 			.begin()
 			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+			// .add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
+			// .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 			.end();
 	};
 
@@ -121,8 +130,8 @@ Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 
 	bgfx::Init init;
 	// 选择一个渲染后端，当设置为 RendererType::Enum::Count 的时候，系统将默认选择一个平台，可以设置Metal，OpenGL ES，Direct 等
-	// init.type = bgfx::RendererType::Enum::Count;
-	init.type = bgfx::RendererType::Enum::OpenGL;
+	init.type = bgfx::RendererType::Enum::Count;
+	// init.type = bgfx::RendererType::Enum::OpenGL;
 	// 设置供应商接口Vendor PCI ID，默认设置为0将选择第一个设备来显示。
 	// #define BGFX_PCI_ID_NONE                UINT16_C(0x0000) //!< Autoselect adapter.
 	// #define BGFX_PCI_ID_SOFTWARE_RASTERIZER UINT16_C(0x0001) //!< Software rasterizer.
@@ -165,8 +174,7 @@ void Entropy::BgfxRenderer::Initialize() {
 			geo->geometry = obj;
 			geo->vbh = bgfx::createVertexBuffer(
 				bgfx::makeRef(mesh->m_vertexBuffer, mesh->m_vertexBufferSize)
-
-				, PosColorVertex::ms_layout
+				, SimpleVertexLayout::ms_layout
 			);
 	
 			geo->ibh = bgfx::createIndexBuffer(
@@ -226,7 +234,8 @@ void Entropy::BgfxRenderer::Draw() {
 		| BGFX_STATE_DEPTH_TEST_LESS
 		| BGFX_STATE_CULL_CW
 		| BGFX_STATE_MSAA
-		| BGFX_STATE_PT_TRISTRIP;
+		// | BGFX_STATE_PT_TRISTRIP
+	;
 
 	for (auto iterator = geometries.begin(); iterator != geometries.end(); ++iterator){
 	
