@@ -22,5 +22,6 @@ namespace Entropy {
 		void* m_indexBuffer;
 		uint32_t m_indexBufferSize;
 		uint32_t m_indexCount;
+		uint32_t m_materialIndex;
 	};
 }

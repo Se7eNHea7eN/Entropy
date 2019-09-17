@@ -17,6 +17,11 @@ int main(int _argc, const char* const* _argv)
 	std::string inputfile = "Assets/bunny.obj";
 	// std::string inputfile = "Assets/dragon.obj";
 	auto objNode = ParseObj(inputfile);
+	auto material = std::make_shared<Material>();
+	objNode->m_Materials.push_back(material);
+	material->SetName("PBR");
+	material->SetVertexShader("vs_lighting");
+	material->SetFragmentShader("fs_pbr");
 	
 	// cubeNode->GetTransform()->SetScale(Vector3f(0.5, 0.5, 0.5));
 	scene->Geometries.push_back(objNode);
