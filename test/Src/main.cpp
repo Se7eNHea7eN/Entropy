@@ -58,9 +58,9 @@ int main(int _argc, const char* const* _argv)
 	app.entropyCore->CreateScene("Test Scene");
 	auto scene = app.entropyCore->CurrentScene();
 	auto cubeNode = std::shared_ptr<SceneGeometryNode>(std::make_shared<SceneGeometryNode>());
-	auto mesh = std::make_shared<Mesh>();
 
-	std::string inputfile = "Assets/bunny.obj";
+	// std::string inputfile = "Assets/bunny.obj";
+	std::string inputfile = "Assets/dragon.obj";
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -70,11 +70,27 @@ int main(int _argc, const char* const* _argv)
 
 	bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, inputfile.c_str());
 
-	std::vector<Vertex> vertices;
-	// std::vector<uint16_t> indices;
-	// uint16_t index = 0;
+	if (!warn.empty()) {
+		Log(warn.c_str());
+	}
+
+	if (!err.empty()) {
+		Log(err.c_str());
+	}
+
+	if (!ret) {
+		exit(1);
+	}
+
+	
 	// Loop over shapes
-	for (size_t s = 0; s < 1; s++) {
+	for (size_t s = 0; s < shapes.size(); s++) {
+
+		auto mesh = std::make_shared<Mesh>();
+
+		std::vector<Vertex>* vertices = new std::vector<Vertex>;
+		std::vector<uint32_t>* indices = new std::vector<uint32_t>;
+		// uint16_t index = 0;
 		// Loop over faces(polygon)
 		size_t index_offset = 0;
 		for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
@@ -85,7 +101,7 @@ int main(int _argc, const char* const* _argv)
 				// access to vertex
 				tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 
-				// indices.push_back(index++);
+				indices->push_back(indices->size());
 
 				Vertex vertex;
 				vertex.m_x = attrib.vertices[3 * idx.vertex_index + 0];
@@ -94,7 +110,7 @@ int main(int _argc, const char* const* _argv)
 				vertex.m_nx = attrib.normals[3 * idx.normal_index + 0];
 				vertex.m_ny = attrib.normals[3 * idx.normal_index + 1];
 				vertex.m_nz = attrib.normals[3 * idx.normal_index + 2];
-				vertices.push_back(vertex);
+				vertices->push_back(vertex);
 				// tinyobj::real_t tx = attrib.texcoords[2 * idx.texcoord_index + 0];
 				// tinyobj::real_t ty = attrib.texcoords[2 * idx.texcoord_index + 1];
 				// Optional: vertex colors
@@ -105,20 +121,20 @@ int main(int _argc, const char* const* _argv)
 			index_offset += fv;
 
 			// per-face material
-			shapes[s].mesh.material_ids[f];
+			// shapes[s].mesh.material_ids[f];
 		}
-	}
 
+		mesh->m_vertexBuffer = &(*vertices)[0];
+		mesh->m_vertexCount = vertices->size();
+		mesh->m_vertexBufferSize = vertices->size() * 4 * 6;
+
+		//
+		mesh->m_indexBuffer = &(*indices)[0];
+		mesh->m_indexCount = indices->size();
+		mesh->m_indexBufferSize = indices->size() * 4;
+		cubeNode->m_Mesh.push_back(mesh);
+	}
 	
-	mesh->m_vertexBuffer = &vertices[0];
-	mesh->m_vertexCount = vertices.size();
-	mesh->m_vertexBufferSize = vertices.size() * 4 * 6;
-	//
-	// mesh->m_indexBuffer = &indices[0];
-	// mesh->m_indexCount = indices.size();
-	// mesh->m_indexBufferSize = indices.size() * 2;
-	
-	cubeNode->m_Mesh.push_back(mesh);
 	// cubeNode->GetTransform()->SetScale(Vector3f(0.5, 0.5, 0.5));
 	scene->Geometries.push_back(cubeNode);
 	scene->SetOnTick([&cubeNode](float deltaTime)

@@ -122,9 +122,10 @@ void Entropy::BgfxRenderer::Initialize() {
 				, SimpleVertexLayout::ms_layout
 			);
 	
-			// geo->ibh = bgfx::createIndexBuffer(
-			// 	bgfx::makeRef(mesh->m_indexBuffer, mesh->m_indexBufferSize)
-			// );
+			geo->ibh = bgfx::createIndexBuffer(
+				bgfx::makeRef(mesh->m_indexBuffer, mesh->m_indexBufferSize),
+				BGFX_BUFFER_INDEX32
+			);
 
 			geometries.push_back(std::move(geo));
 		}
@@ -146,7 +147,6 @@ void Entropy::BgfxRenderer::Resize(int w, int h) {
 
 
 void Entropy::BgfxRenderer::Draw() {
-
 	{
 		auto camera = engine->CurrentScene()->MainCamera;
 		auto viewMatrix = camera->ViewMatrix().matrix();
@@ -181,16 +181,15 @@ void Entropy::BgfxRenderer::Draw() {
 	;
 
 	for (auto iterator = geometries.begin(); iterator != geometries.end(); ++iterator){
-	
 		auto transformMatrix = iterator->get()->geometry->GetTransform()->ModelMatrix();
 		float* transformMatrixArray = new float[transformMatrix.size()];
-		Log("transformMatrix = \n %s", DebugString(transformMatrix));
+		// Log("transformMatrix = \n %s", DebugString(transformMatrix));
 
 		Map<Matrix4f>(transformMatrixArray, transformMatrix.rows(), transformMatrix.cols()) = transformMatrix;
 	
 		bgfx::setTransform(transformMatrixArray);
 		bgfx::setVertexBuffer(0, iterator->get()->vbh);
-		// bgfx::setIndexBuffer(iterator->get()->ibh);
+		bgfx::setIndexBuffer(iterator->get()->ibh);
 		bgfx::setState(state);
 	
 		bgfx::submit(0, m_program);
