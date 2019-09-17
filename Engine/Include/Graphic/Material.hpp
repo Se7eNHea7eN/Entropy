@@ -47,6 +47,8 @@ namespace Entropy {
 	public:
 	protected:
 		std::string m_Name;
+		std::string m_VertexShader;
+		std::string m_FragmentShader;
 		Color       m_BaseColor;
 		Parameter   m_Metallic;
 		Parameter   m_Roughness;
@@ -55,6 +57,23 @@ namespace Entropy {
 		Parameter   m_AmbientOcclusion;
 
 	public:
+
+		std::string VertexShader() const {
+			return m_VertexShader;
+		}
+
+		void SetVertexShader(const std::string& path) {
+			m_VertexShader = path;
+		}
+
+		std::string FragmentShader() const {
+			return m_FragmentShader;
+		}
+
+		void SetFragmentShader(const std::string& path) {
+			m_FragmentShader = path;
+		}
+		
 		void SetName(const std::string& name) { m_Name = name; };
 		void SetName(std::string&& name) { m_Name = std::move(name); };
 		void SetColor(std::string& attrib, Eigen::Vector4f& color)
