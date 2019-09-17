@@ -56,13 +56,16 @@ namespace Entropy {
 					vertex.m_nx = attrib.normals[3 * idx.normal_index + 0];
 					vertex.m_ny = attrib.normals[3 * idx.normal_index + 1];
 					vertex.m_nz = attrib.normals[3 * idx.normal_index + 2];
-					vertices->push_back(vertex);
-					// tinyobj::real_t tx = attrib.texcoords[2 * idx.texcoord_index + 0];
-					// tinyobj::real_t ty = attrib.texcoords[2 * idx.texcoord_index + 1];
+					if (idx.texcoord_index >= 0) {
+						vertex.m_tx = attrib.texcoords[2 * idx.texcoord_index + 0];
+						vertex.m_ty = attrib.texcoords[2 * idx.texcoord_index + 1];
+					}
 					// Optional: vertex colors
 					// tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
 					// tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
 					// tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
+					//
+					vertices->push_back(vertex);
 				}
 				index_offset += fv;
 
@@ -72,12 +75,12 @@ namespace Entropy {
 
 			mesh->m_vertexBuffer = &(*vertices)[0];
 			mesh->m_vertexCount = vertices->size();
-			mesh->m_vertexBufferSize = vertices->size() * 4 * 6;
+			mesh->m_vertexBufferSize = vertices->size() * sizeof(Vertex);
 
 			//
 			mesh->m_indexBuffer = &(*indices)[0];
 			mesh->m_indexCount = indices->size();
-			mesh->m_indexBufferSize = indices->size() * 4;
+			mesh->m_indexBufferSize = indices->size() * sizeof(uint32_t);
 			objNode->m_Mesh.push_back(mesh);
 		}
 		return objNode;

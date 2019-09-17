@@ -3,64 +3,29 @@
 #include "bgfx/bgfx.h"
 #include "bgfx/platform.h"
 #include <bx/math.h>
-
-#include <bx/pixelformat.h>
-#include <bgfx/bgfx.h>
-
-#include <tinystl/allocator.h>
-#include <tinystl/vector.h>
-
+#include "BgfxGeometry.hpp"
 #include "BgfxRenderer.hpp"
 #include "bx/timer.h"
 #include "Common/EntropyCore.hpp"
 #include "Common/Scene.hpp"
+
 #include "Utils/Debug.hpp"
-
 using namespace Eigen;
-
-
 struct SimpleVertexLayout {
-	float m_x;
-	float m_y;
-	float m_z;
-
-	float m_nx;
-	float m_ny;
-	float m_nz;
-	//
-	// float m_tx;
-	// float m_ty;
-	
 	static void init() {
 		ms_layout
 			.begin()
 			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 			.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
-			// .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 			.end();
 	};
 
 	static bgfx::VertexLayout ms_layout;
 };
-
 bgfx::VertexLayout SimpleVertexLayout::ms_layout;
-
-
 bgfx::ProgramHandle m_program;
-
-
-struct BgfxGeometry {
-	std::shared_ptr<Entropy::SceneGeometryNode> geometry;
-	bgfx::VertexBufferHandle vbh;
-	bgfx::IndexBufferHandle ibh;
-	~BgfxGeometry() {
-		bgfx::destroy(vbh);
-		bgfx::destroy(ibh);
-		geometry.reset();
-	}
-};
-
-std::list<std::unique_ptr<BgfxGeometry>> geometries;
+std::list<std::unique_ptr<Entropy::BgfxGeometry>> geometries;
 
 Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 	bgfx::PlatformData pd;
@@ -75,8 +40,7 @@ Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 
 	bgfx::Init init;
 	// 选择一个渲染后端，当设置为 RendererType::Enum::Count 的时候，系统将默认选择一个平台，可以设置Metal，OpenGL ES，Direct 等
-	// init.type = bgfx::RendererType::Enum::Count;
-	init.type = bgfx::RendererType::Enum::OpenGL;
+	init.type = bgfx::RendererType::Enum::Count;
 	// 设置供应商接口Vendor PCI ID，默认设置为0将选择第一个设备来显示。
 	// #define BGFX_PCI_ID_NONE                UINT16_C(0x0000) //!< Autoselect adapter.
 	// #define BGFX_PCI_ID_SOFTWARE_RASTERIZER UINT16_C(0x0001) //!< Software rasterizer.
@@ -131,7 +95,7 @@ void Entropy::BgfxRenderer::Initialize() {
 		}
 	}
 	// Create program from shaders.
-	m_program = loadProgram("vs_cubes", "fs_cubes");
+	m_program = loadProgram("vs_lighting", "fs_lighting");
 	// m_program = loadProgram("vs_mesh", "fs_mesh");;
 
 	auto camera = engine->CurrentScene()->MainCamera;
