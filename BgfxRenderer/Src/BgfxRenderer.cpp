@@ -24,8 +24,8 @@ struct SimpleVertexLayout {
 	static bgfx::VertexLayout ms_layout;
 };
 bgfx::VertexLayout SimpleVertexLayout::ms_layout;
-bgfx::ProgramHandle m_program;
 std::list<std::unique_ptr<Entropy::BgfxGeometry>> geometries;
+
 
 Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 	bgfx::PlatformData pd;
@@ -68,9 +68,7 @@ Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 }
 
 Entropy::BgfxRenderer::~BgfxRenderer() {
-	// bgfx::destroy(m_ibh);
-	// bgfx::destroy(m_vbh);
-	bgfx::destroy(m_program);
+	geometries.clear();
 	bgfx::shutdown();
 }
 
@@ -90,15 +88,18 @@ void Entropy::BgfxRenderer::Initialize() {
 				bgfx::makeRef(mesh->m_indexBuffer, mesh->m_indexBufferSize),
 				BGFX_BUFFER_INDEX32
 			);
-
+			auto bgfxMaterial = std::make_shared<BgfxMaterial>();
+			bgfxMaterial->mat = obj->m_Materials[mesh->m_materialIndex];
+			bgfxMaterial->m_program = loadProgram(bgfxMaterial->mat->VertexShader().c_str(), bgfxMaterial->mat->FragmentShader().c_str());
+			geo->material = bgfxMaterial;
 			geometries.push_back(std::move(geo));
 		}
 	}
 	// Create program from shaders.
-	m_program = loadProgram("vs_lighting", "fs_lighting");
 	// m_program = loadProgram("vs_mesh", "fs_mesh");;
 
 	auto camera = engine->CurrentScene()->MainCamera;
+	// bgfx::createUniform("",bgfx::UniformType::Count)
 }
 
 void Entropy::BgfxRenderer::Resize(int w, int h) {
@@ -156,7 +157,7 @@ void Entropy::BgfxRenderer::Draw() {
 		bgfx::setIndexBuffer(iterator->get()->ibh);
 		bgfx::setState(state);
 	
-		bgfx::submit(0, m_program);
+		bgfx::submit(0, iterator->get()->material->m_program);
 	}
 	bgfx::frame();
 

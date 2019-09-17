@@ -70,8 +70,6 @@ namespace Entropy {
 	
 		Quaternionf Rotate(const Quaternionf& q) {
 			orientation = (orientation* q).normalized();
-			Log("orientation %s", DebugString(orientation.toRotationMatrix()));
-
 			return orientation;
 		}
 		

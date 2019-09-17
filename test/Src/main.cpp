@@ -20,7 +20,7 @@ int main(int _argc, const char* const* _argv)
 	auto material = std::make_shared<Material>();
 	objNode->m_Materials.push_back(material);
 	material->SetName("PBR");
-	material->SetVertexShader("vs_lighting");
+	material->SetVertexShader("vs_common");
 	material->SetFragmentShader("fs_pbr");
 	
 	// cubeNode->GetTransform()->SetScale(Vector3f(0.5, 0.5, 0.5));

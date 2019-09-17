@@ -13,6 +13,7 @@ namespace Entropy {
 			, m_indexBuffer(nullptr)
 			, m_indexBufferSize(0)
 			, m_indexCount(0)
+			, m_materialIndex (0)
 		{}
 
 		void* m_vertexBuffer;
