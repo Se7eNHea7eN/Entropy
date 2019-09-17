@@ -79,7 +79,7 @@ void Camera::SetTarget(const std::shared_ptr<Entropy::Transform> target) {
 	mTarget = target;
 	if (!mTarget->Position().isApprox( m_Transform->Position()))
 	{
-		Vector3f newDirection = mTarget->Position() - m_Transform->Position();
+		Vector3f newDirection = m_Transform->Position() - mTarget->Position();
 		m_Transform->SetDirection(newDirection.normalized());
 	}
 }

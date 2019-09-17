@@ -27,8 +27,8 @@ int main(int _argc, const char* const* _argv)
 	scene->SceneGraph->AppendChild(objNode);
 	
 	auto cameraNode = std::shared_ptr<Camera>(std::make_shared<Camera>());
-	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0,0,-5));
-	
+	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0,2,-5));
+	cameraNode->SetTarget(objNode->GetTransform());
 	scene->MainCamera = cameraNode;
 	scene->Cameras.push_back(cameraNode);
 	scene->SceneGraph->AppendChild(std::move(cameraNode));
