@@ -68,14 +68,15 @@ void main()
     vec3 Lo = vec3(0.0,0.0,0.0);
     for(int i = 0; i < pointLightCount; ++i)
     {
+        vec3 pointLightPosition = u_lightPosition[i].xyz;
+        vec3 pointLightColor = u_lightColor[i].xyz;
 
-        PointLight pointLight = allPointLights[i];
 
-        vec3 L = normalize(pointLight.lightPosition.xyz - v_pos.xyz);
+        vec3 L = normalize(pointLightPosition - v_pos.xyz);
         vec3 H = normalize(V + L);
-        float distance = length(pointLight.lightPosition.xyz - v_pos.xyz);
+        float distance = length(pointLightPosition - v_pos.xyz);
         float attenuation = 1.0 / (distance * distance);
-        vec3 radiance = pointLight.lightColor.xyz    * attenuation;
+        vec3 radiance = pointLightColor * attenuation;
 
         float NDF = DistributionGGX(N, H, roughness);
         float G   = GeometrySmith(N, V, L, roughness);      

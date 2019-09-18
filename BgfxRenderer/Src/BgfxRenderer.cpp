@@ -91,6 +91,25 @@ void Entropy::BgfxRenderer::Initialize() {
 			auto bgfxMaterial = std::make_shared<BgfxMaterial>();
 			bgfxMaterial->mat = obj->m_Materials[mesh->m_materialIndex];
 			bgfxMaterial->m_program = loadProgram(bgfxMaterial->mat->VertexShader().c_str(), bgfxMaterial->mat->FragmentShader().c_str());
+			if(bgfxMaterial->mat->m_Albedo.ValueMap == nullptr) {
+				bgfxMaterial->t_albedo = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8, 
+					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+					bgfx::makeRef(&bgfxMaterial->mat->m_Albedo.Value, 4));
+
+				bgfxMaterial->t_metallic = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
+					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_Metallic.Value * 255), 1));
+
+				bgfxMaterial->t_roughness = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
+					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_Roughness.Value * 255), 1));
+
+				bgfxMaterial->t_ao = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
+					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_AmbientOcclusion.Value * 255), 1));
+				
+				// texture = loadTexture("Textures/test.png", BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+			}
 			geo->material = bgfxMaterial;
 			geometries.push_back(std::move(geo));
 		}
@@ -156,7 +175,20 @@ void Entropy::BgfxRenderer::Draw() {
 		bgfx::setVertexBuffer(0, iterator->get()->vbh);
 		bgfx::setIndexBuffer(iterator->get()->ibh);
 		bgfx::setState(state);
-	
+		bgfx::setTexture(0, iterator->get()->material->s_albedo, iterator->get()->material->t_albedo);
+		bgfx::setTexture(1, iterator->get()->material->s_metallic, iterator->get()->material->t_metallic);
+		bgfx::setTexture(2, iterator->get()->material->s_roughness, iterator->get()->material->t_roughness);
+		bgfx::setTexture(3, iterator->get()->material->s_ao, iterator->get()->material->t_ao);
+		bgfx::setUniform(iterator->get()->material->u_cameraPos, engine->CurrentScene()->MainCamera->GetTransform()->Position().data());
+		static float* u_pointLightCount = new float[4] {1, 0, 0, 0};
+		bgfx::setUniform(iterator->get()->material->u_pointLightCount, u_pointLightCount);
+
+		static float* u_lightPosition0 = new float[4] {5, 5, 0, 0};
+		bgfx::setUniform(iterator->get()->material->u_lightPosition, u_lightPosition0);
+
+		static float* u_lightColor0 = new float[4] {5, 5, 5, 1};
+		bgfx::setUniform(iterator->get()->material->u_lightColor, u_lightColor0);
+		
 		bgfx::submit(0, iterator->get()->material->m_program);
 	}
 	bgfx::frame();
