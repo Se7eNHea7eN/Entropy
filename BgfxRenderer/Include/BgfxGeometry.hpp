@@ -6,12 +6,17 @@ namespace Entropy {
 	struct BgfxMaterial {
 		std::shared_ptr<Entropy::Material> mat;
 		bgfx::ProgramHandle m_program;
-		bgfx::UniformHandle u_albedo;
-		bgfx::UniformHandle u_params;
+		bgfx::UniformHandle s_albedo;
+		bgfx::UniformHandle s_metallic;
+		bgfx::UniformHandle s_roughness;
+		bgfx::UniformHandle s_ao;
 		bgfx::UniformHandle u_cameraPos;
 		BgfxMaterial() {
-			u_albedo = bgfx::createUniform("u_albedo", bgfx::UniformType::Vec4);
-			u_params = bgfx::createUniform("u_params", bgfx::UniformType::Vec4);
+			s_albedo = bgfx::createUniform("s_albedo", bgfx::UniformType::Sampler);
+			s_metallic = bgfx::createUniform("s_metallic", bgfx::UniformType::Sampler);
+			s_roughness = bgfx::createUniform("s_roughness", bgfx::UniformType::Sampler);
+			s_ao = bgfx::createUniform("s_ao", bgfx::UniformType::Sampler);
+			u_cameraPos = bgfx::createUniform("u_cameraPos", bgfx::UniformType::Vec4);
 		}
 		~BgfxMaterial() {
 			bgfx::destroy(m_program);

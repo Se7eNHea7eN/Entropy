@@ -4,9 +4,14 @@
 
 using namespace Entropy;
 
+MemoryManager* g_pMemoryManager = new MemoryManager();
+
 EntropyCore::EntropyCore()
 {
-
+	int ret;
+	if ((ret = g_pMemoryManager->Initialize()) != 0) {
+		Log("Memory Manager Initialize failed, will exit now.");
+	}
 }
 
 Renderer* EntropyCore::CreateRenderer(HWND hwnd) {

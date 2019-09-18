@@ -2,6 +2,9 @@
 #include <malloc.h>
 
 using namespace Entropy;
+#ifndef ALIGN
+#define ALIGN(x, a)         (((x) + ((a) - 1)) & ~((a) - 1))
+#endif
 
 namespace Entropy {
 	static const uint32_t kBlockSizes[] = {
@@ -27,6 +30,9 @@ namespace Entropy {
 	// largest valid block size
 	static const uint32_t kMaxBlockSize =
 		kBlockSizes[kNumBlockSizes - 1];
+
+	size_t* MemoryManager::m_pBlockSizeLookup;
+	Allocator* MemoryManager::m_pAllocators;
 }
 
 int MemoryManager::Initialize()
@@ -83,6 +89,20 @@ void* MemoryManager::Allocate(size_t size)
 		return malloc(size);
 }
 
+void* MemoryManager::Allocate(size_t size, size_t alignment)
+{
+	uint8_t* p;
+	size += alignment;
+	Allocator* pAlloc = LookUpAllocator(size);
+	if (pAlloc)
+		p = reinterpret_cast<uint8_t*>(pAlloc->Allocate());
+	else
+		p = reinterpret_cast<uint8_t*>(malloc(size));
+
+	p = reinterpret_cast<uint8_t*>(ALIGN(reinterpret_cast<size_t>(p), alignment));
+
+	return static_cast<void*>(p);
+}
 void MemoryManager::Free(void* p, size_t size)
 {
 	Allocator* pAlloc = LookUpAllocator(size);

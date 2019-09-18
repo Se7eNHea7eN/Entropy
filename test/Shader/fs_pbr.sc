@@ -3,21 +3,18 @@ $input v_pos, v_normal, v_texcoord0
 
 #include "../common/common.sh"
 
-// material parameters
-uniform vec3 u_albedo;
-
-uniform vec4 u_params;
-#define u_metallic u_params.x
-#define u_roughness u_params.y
-#define u_ao u_params.z
+SAMPLER2D(s_albedo, 0);
+SAMPLER2D(s_metallic, 1);
+SAMPLER2D(s_roughness, 2);
+SAMPLER2D(s_ao, 3);
 
 uniform vec3 u_cameraPos;
 
 const float PI = 3.14159265359;
 
-float DistributionGGX(vec3 N, vec3 H, float u_roughness)
+float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
-    float a = u_roughness*u_roughness;
+    float a = roughness*roughness;
     float a2 = a*a;
     float NdotH = max(dot(N, H), 0.0);
     float NdotH2 = NdotH*NdotH;
@@ -26,12 +23,12 @@ float DistributionGGX(vec3 N, vec3 H, float u_roughness)
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
 
-    return nom / max(denom, 0.001); // prevent divide by zero for u_roughness=0.0 and NdotH=1.0
+    return nom / max(denom, 0.001); // prevent divide by zero for roughness=0.0 and NdotH=1.0
 }
 
-float GeometrySchlickGGX(float NdotV, float u_roughness)
+float GeometrySchlickGGX(float NdotV, float roughness)
 {
-    float r = (u_roughness + 1.0);
+    float r = (roughness + 1.0);
     float k = (r*r) / 8.0;
 
     float nom   = NdotV;
@@ -40,12 +37,12 @@ float GeometrySchlickGGX(float NdotV, float u_roughness)
     return nom / denom;
 }
 
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float u_roughness)
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 {
     float NdotV = max(dot(N, V), 0.0);
     float NdotL = max(dot(N, L), 0.0);
-    float ggx2 = GeometrySchlickGGX(NdotV, u_roughness);
-    float ggx1 = GeometrySchlickGGX(NdotL, u_roughness);
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
 
     return ggx1 * ggx2;
 }
@@ -57,11 +54,16 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 
 void main()
 {		
+    vec3 albedo = texture2D(s_albedo, v_texcoord0).xyz;
+    float metallic = texture2D(s_metallic, v_texcoord0).x;
+    float roughness = texture2D(s_roughness, v_texcoord0).x;
+    float ao = texture2D(s_ao, v_texcoord0).x;
+
     vec3 N = normalize(v_normal);
     vec3 V = normalize(u_cameraPos - v_pos);
 
     vec3 F0 = vec3(0.04,0.04,0.04); 
-    F0 = mix(F0, u_albedo, u_metallic);
+    F0 = mix(F0, albedo, metallic);
 
     vec3 Lo = vec3(0.0,0.0,0.0);
     for(int i = 0; i < pointLightCount; ++i)
@@ -75,8 +77,8 @@ void main()
         float attenuation = 1.0 / (distance * distance);
         vec3 radiance = pointLight.lightColor.xyz    * attenuation;
 
-        float NDF = DistributionGGX(N, H, u_roughness);
-        float G   = GeometrySmith(N, V, L, u_roughness);      
+        float NDF = DistributionGGX(N, H, roughness);
+        float G   = GeometrySmith(N, V, L, roughness);      
         vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
            
         vec3 nominator    = NDF * G * F; 
@@ -87,15 +89,15 @@ void main()
 
         vec3 kD = vec3(1.0,1.0,1.0) - kS;
 
-        kD *= 1.0 - u_metallic;	  
+        kD *= 1.0 - metallic;	  
 
         float NdotL = max(dot(N, L), 0.0);
 
-        Lo += (kD * u_albedo / PI + specular) * radiance * NdotL;
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
     }   
     
 
-    vec3 ambient = vec3(0.03,0.03,0.03) * u_albedo * u_ao;
+    vec3 ambient = vec3(0.03,0.03,0.03) * albedo * ao;
 
     vec3 color = ambient + Lo;
 
