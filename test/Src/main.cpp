@@ -34,6 +34,8 @@ int main(int _argc, const char* const* _argv)
 	material->m_Metallic = std::make_shared<Texture>(Texture(0, std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/gun_M.png", bimg::TextureFormat::RGBA8))));
 	// material->m_Roughness = 0.4f;
 	material->m_Roughness = std::make_shared<Texture>(Texture(0, std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/gun_R.png", bimg::TextureFormat::RGBA8))));
+	material->m_Normal = std::make_shared<Texture>(Texture(0, std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/gun_N.png", bimg::TextureFormat::RGBA8))));
+
 	material->m_AmbientOcclusion = 1.0f;
 	objNode->GetTransform()->SetScale(Vector3f(16,16,16));
 	scene->Geometries.push_back(objNode);

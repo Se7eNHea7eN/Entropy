@@ -117,6 +117,16 @@ void Entropy::BgfxRenderer::Initialize() {
 				bgfxMaterial->t_roughness = loadTexture(bgfxMaterial->mat->m_Roughness.ValueMap->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 			}
 
+			if (bgfxMaterial->mat->m_Normal.ValueMap == nullptr) {
+
+				bgfxMaterial->t_normal = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
+					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+					bgfx::makeRef(&bgfxMaterial->mat->m_Normal.Value, 4));
+			}
+			else {
+				bgfxMaterial->t_normal = loadTexture(bgfxMaterial->mat->m_Normal.ValueMap->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+			}
+
 			
 			bgfxMaterial->t_ao = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
 				BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
@@ -192,6 +202,7 @@ void Entropy::BgfxRenderer::Draw() {
 		bgfx::setTexture(1, iterator->get()->material->s_metallic, iterator->get()->material->t_metallic);
 		bgfx::setTexture(2, iterator->get()->material->s_roughness, iterator->get()->material->t_roughness);
 		bgfx::setTexture(3, iterator->get()->material->s_ao, iterator->get()->material->t_ao);
+		bgfx::setTexture(4, iterator->get()->material->s_normal, iterator->get()->material->t_normal);
 		bgfx::setUniform(iterator->get()->material->u_cameraPos, engine->CurrentScene()->MainCamera->GetTransform()->Position().data());
 		static float* u_pointLightCount = new float[4] {1, 0, 0, 0};
 		bgfx::setUniform(iterator->get()->material->u_pointLightCount, u_pointLightCount);

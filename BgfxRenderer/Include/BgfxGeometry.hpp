@@ -14,6 +14,10 @@ namespace Entropy {
 		bgfx::TextureHandle	t_roughness;
 		bgfx::UniformHandle s_ao;
 		bgfx::TextureHandle	t_ao;
+		bgfx::UniformHandle s_normal;
+		bgfx::TextureHandle	t_normal;
+
+
 		bgfx::UniformHandle u_cameraPos;
 
 		bgfx::UniformHandle u_pointLightCount;
@@ -25,6 +29,8 @@ namespace Entropy {
 			s_metallic = bgfx::createUniform("s_metallic", bgfx::UniformType::Sampler);
 			s_roughness = bgfx::createUniform("s_roughness", bgfx::UniformType::Sampler);
 			s_ao = bgfx::createUniform("s_ao", bgfx::UniformType::Sampler);
+			s_normal = bgfx::createUniform("s_normal", bgfx::UniformType::Sampler);
+
 			u_cameraPos = bgfx::createUniform("u_cameraPos", bgfx::UniformType::Vec4);
 
 			u_pointLightCount = bgfx::createUniform("u_pointLightCount", bgfx::UniformType::Vec4);

@@ -7,10 +7,31 @@ SAMPLER2D(s_albedo, 0);
 SAMPLER2D(s_metallic, 1);
 SAMPLER2D(s_roughness, 2);
 SAMPLER2D(s_ao, 3);
+SAMPLER2D(s_normal, 4);
 
 uniform vec3 u_cameraPos;
 
 const float PI = 3.14159265359;
+
+
+
+vec3 getNormalFromMap(vec3 position,vec2 texCoord , vec3 vnormal)
+{
+    vec3 tangentNormal = texture2D(s_normal, texCoord).xyz * 2.0 - 1.0;
+
+    vec3 Q1  = dFdx(position);
+    vec3 Q2  = dFdy(position);
+    vec2 st1 = dFdx(texCoord);
+    vec2 st2 = dFdy(texCoord);
+
+    vec3 N   = normalize(vnormal);
+    vec3 T  = normalize(Q1*st2.y - Q2*st1.y);
+    vec3 B  = -normalize(cross(N, T));
+    mat3 TBN = mat3(T, B, N);
+
+    return normalize(mul(TBN , tangentNormal));
+}
+
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -59,7 +80,9 @@ void main()
     float roughness = texture2D(s_roughness, v_texcoord0).x;
     float ao = texture2D(s_ao, v_texcoord0).x;
 
-    vec3 N = normalize(v_normal);
+    //vec3 N = normalize(v_normal);
+    vec3 N = getNormalFromMap(v_pos,v_texcoord0,v_normal);
+
     vec3 V = normalize(u_cameraPos - v_pos);
 
     vec3 F0 = vec3(0.04,0.04,0.04); 

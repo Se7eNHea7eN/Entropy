@@ -52,9 +52,9 @@ int EntropyApp::run(int _argc, const char* const* _argv) {
 	                      _T("Entropy"), // title of the window
 	                      WS_OVERLAPPEDWINDOW | WS_VISIBLE, // window style
 	                      300, // x-position of the window
-	                      300, // y-position of the window
-	                      1024, // width of the window
-	                      768, // height of the window
+	                      0, // y-position of the window
+	                      2536, // width of the window
+	                      1426, // height of the window
 	                      nullptr, // we have no parent window, NULL
 	                      nullptr, // we aren't using menus, NULL
 	                      instance, // application handle
@@ -62,9 +62,9 @@ int EntropyApp::run(int _argc, const char* const* _argv) {
 
 	ShowWindow(hWnd, SW_SHOWNORMAL);
 	MSG msg;
-	auto lastTime = GetTickCount();
+	auto lastTime = GetTickCount64();
 	while (!isExit) {
-		auto thisTime = GetTickCount();
+		auto thisTime = GetTickCount64();
 		entropyCore->Tick((thisTime - lastTime)/1000.0);
 		lastTime = thisTime;
 		if (renderer != nullptr)
