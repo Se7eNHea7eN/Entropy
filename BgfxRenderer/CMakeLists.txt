@@ -23,19 +23,19 @@ include_directories(SYSTEM "Include")
  include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Include")
 
  
- include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx")
- target_link_libraries(${PROJECT_NAME} bx)
- include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bimg")
- target_link_libraries(${PROJECT_NAME} bimg)
- 
-
- include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bgfx/include")
- include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bgfx/3rdparty")
-
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx/include")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx/include/compat/msvc")
-
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx")
+target_link_libraries(${PROJECT_NAME} bx)
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bimg/include")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bimg")
+target_link_libraries(${PROJECT_NAME} bimg)
+
+
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bgfx/include")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bgfx/3rdparty")
+
+
 
 
 add_compile_definitions("__STDC_LIMIT_MACROS;__STDC_FORMAT_MACROS;__STDC_CONSTANT_MACROS;")

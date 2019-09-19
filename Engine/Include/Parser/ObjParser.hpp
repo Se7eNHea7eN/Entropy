@@ -34,21 +34,26 @@ namespace Entropy {
 
 			auto mesh = std::make_shared<Mesh>();
 
-			std::vector<Vertex>* vertices = new std::vector<Vertex>;
-			std::vector<uint32_t>* indices = new std::vector<uint32_t>;
+			std::vector<Vertex>* vertices = new std::vector<Vertex>(shapes[s].mesh.num_face_vertices.size()*3);
+			
+			std::vector<uint32_t>* indices = new std::vector<uint32_t>(shapes[s].mesh.num_face_vertices.size() * 3);
+
+			int index = 0;
 			// uint16_t index = 0;
 			// Loop over faces(polygon)
 			size_t index_offset = 0;
 			for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
 				int fv = shapes[s].mesh.num_face_vertices[f];
-
+				if(fv != 3) {
+					Log("fv = %d", fv);
+				}
 				// Loop over vertices in the face.
 				for (size_t v = 0; v < fv; v++) {
 					// access to vertex
 					tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 
-					indices->push_back(indices->size());
-
+					// indices->push_back(indices->size());
+					indices->at(index) = index;
 					Vertex vertex;
 					vertex.m_x = attrib.vertices[3 * idx.vertex_index + 0];
 					vertex.m_y = attrib.vertices[3 * idx.vertex_index + 1];
@@ -65,7 +70,10 @@ namespace Entropy {
 					// tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
 					// tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
 					//
-					vertices->push_back(vertex);
+					vertices->at(index) = vertex;
+					// vertices->push_back(vertex);
+
+					index++;
 				}
 				index_offset += fv;
 

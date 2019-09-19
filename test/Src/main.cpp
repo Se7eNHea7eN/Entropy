@@ -5,6 +5,7 @@
 #include "Eigen/Core"	
 #include "Utils/Debug.hpp"
 #include "Parser/ObjParser.hpp"
+#include "Parser/BMP.hpp"
 
 using namespace Entropy;
 
@@ -13,10 +14,10 @@ int main(int _argc, const char* const* _argv)
 	EntropyApp app;
 	app.entropyCore->CreateScene("Test Scene");
 	auto scene = app.entropyCore->CurrentScene();
-
 	// std::string inputfile = "Assets/bunny.obj";
 	std::string inputfile = "Assets/dragon.obj";
 	// std::string inputfile = "Assets/cube.obj";
+	
 	auto objNode = ParseObj(inputfile);
 	auto material = std::make_shared<Material>();
 	objNode->m_Materials.push_back(material);

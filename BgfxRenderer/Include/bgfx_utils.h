@@ -22,11 +22,6 @@
 
 namespace stl = tinystl;
 
-///
-void* load(const char* _filePath, uint32_t* _size = NULL);
-
-///
-void unload(void* _ptr);
 
 ///
 bgfx::ShaderHandle loadShader(const char* _name);
@@ -159,9 +154,4 @@ struct Args
 	bgfx::RendererType::Enum m_type;
 	uint16_t m_pciId;
 };
-
-
-bx::FileReaderI* getFileReader();
-bx::FileWriterI* getFileWriter();
-bx::AllocatorI* getAllocator();
 

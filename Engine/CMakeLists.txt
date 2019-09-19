@@ -32,6 +32,14 @@ include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/BgfxRenderer")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/BgfxRenderer/Include")
 target_link_libraries(${PROJECT_NAME} BgfxRenderer)
 
+ 
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx/include")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx/include/compat/msvc")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx")
+target_link_libraries(${PROJECT_NAME} bx)
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bimg/include")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bimg")
+target_link_libraries(${PROJECT_NAME} bimg)
 
 #set (CMAKE_C_COMPILER               "clang-cl")
 #set (CMAKE_C_FLAGS                  "-Wall")
