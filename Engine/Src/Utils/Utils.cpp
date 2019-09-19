@@ -1,7 +1,6 @@
-
 #include "Utils/Utils.hpp"
 #include <string>
-
+#include <bimg/decode.h>
 extern bx::AllocatorI* getDefaultAllocator();
 bx::AllocatorI* g_allocator = getDefaultAllocator();
 
@@ -42,6 +41,8 @@ public:
 
 static bx::FileReaderI* s_fileReader = BX_NEW(g_allocator, FileReader);
 static bx::FileWriterI* s_fileWriter = BX_NEW(g_allocator, FileWriter);
+
+
 
 void* load(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size)
 {
@@ -100,4 +101,34 @@ bx::AllocatorI* getAllocator()
 	}
 
 	return g_allocator;
+}
+
+
+static void* loadMem(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size)
+{
+	if (bx::open(_reader, _filePath))
+	{
+		uint32_t size = (uint32_t)bx::getSize(_reader);
+		void* data = BX_ALLOC(_allocator, size);
+		bx::read(_reader, data, size);
+		bx::close(_reader);
+
+		if (NULL != _size)
+		{
+			*_size = size;
+		}
+		return data;
+	}
+
+	// DBG("Failed to load %s.", _filePath);
+	return NULL;
+}
+
+
+bimg::ImageContainer* imageLoad(const char* _filePath, bimg::TextureFormat::Enum _dstFormat)
+{
+	uint32_t size = 0;
+	void* data = loadMem(getFileReader(), getAllocator(), _filePath, &size);
+
+	return bimg::imageParse(getAllocator(), data, size, _dstFormat);
 }

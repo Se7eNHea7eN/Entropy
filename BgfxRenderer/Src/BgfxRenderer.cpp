@@ -96,20 +96,33 @@ void Entropy::BgfxRenderer::Initialize() {
 					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
 					bgfx::makeRef(&bgfxMaterial->mat->m_Albedo.Value, 4));
 
+			}else {
+				bgfxMaterial->t_albedo = loadTexture(bgfxMaterial->mat->m_Albedo.ValueMap->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+			}
+
+			if (bgfxMaterial->mat->m_Metallic.ValueMap == nullptr) {
 				bgfxMaterial->t_metallic = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
 					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
 					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_Metallic.Value * 255), 1));
+			}else {
+				bgfxMaterial->t_metallic = loadTexture(bgfxMaterial->mat->m_Metallic.ValueMap->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+			}
+
+			if (bgfxMaterial->mat->m_Roughness.ValueMap == nullptr) {
 
 				bgfxMaterial->t_roughness = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
 					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
 					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_Roughness.Value * 255), 1));
-
-				bgfxMaterial->t_ao = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
-					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
-					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_AmbientOcclusion.Value * 255), 1));
-				
-				// texture = loadTexture("Textures/test.png", BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+			}else {
+				bgfxMaterial->t_roughness = loadTexture(bgfxMaterial->mat->m_Roughness.ValueMap->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 			}
+
+			
+			bgfxMaterial->t_ao = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
+				BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+				bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_AmbientOcclusion.Value * 255), 1));
+
+			// texture = loadTexture("Textures/test.png", BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 			geo->material = bgfxMaterial;
 			geometries.push_back(std::move(geo));
 		}
@@ -186,7 +199,7 @@ void Entropy::BgfxRenderer::Draw() {
 		static float* u_lightPosition0 = new float[4] {5, 5, 0, 0};
 		bgfx::setUniform(iterator->get()->material->u_lightPosition, u_lightPosition0);
 
-		static float* u_lightColor0 = new float[4] {5, 5, 5, 1};
+		static float* u_lightColor0 = new float[4] {10, 10, 10, 1};
 		bgfx::setUniform(iterator->get()->material->u_lightColor, u_lightColor0);
 		
 		bgfx::submit(0, iterator->get()->material->m_program);

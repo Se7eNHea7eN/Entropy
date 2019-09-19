@@ -14,8 +14,8 @@ void* load(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _fi
 ///
 void unload(void* _ptr);
 
-
 bx::FileReaderI* getFileReader();
 bx::FileWriterI* getFileWriter();
 bx::AllocatorI* getAllocator();
 
+bimg::ImageContainer* imageLoad(const char* _filePath, bimg::TextureFormat::Enum _dstFormat);
