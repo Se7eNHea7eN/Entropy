@@ -16,11 +16,11 @@ namespace Entropy {
 			, m_materialIndex (0)
 		{}
 
-		void* m_vertexBuffer;
+		const void* m_vertexBuffer;
 		uint32_t m_vertexBufferSize;
 		uint32_t m_vertexCount;
 		uint32_t m_vertexAttributeCount;
-		void* m_indexBuffer;
+		const void* m_indexBuffer;
 		uint32_t m_indexBufferSize;
 		uint32_t m_indexCount;
 		uint32_t m_materialIndex;

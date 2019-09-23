@@ -69,6 +69,7 @@ BX_PRAGMA_DIAGNOSTIC_POP();
 
 namespace bimg
 {
+	struct ImageContainer;
 	static ImageContainer* imageParseLodePng(bx::AllocatorI* _allocator, const void* _data, uint32_t _size, bx::Error* _err)
 	{
 		BX_ERROR_SCOPE(_err);

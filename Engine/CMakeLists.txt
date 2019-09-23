@@ -39,6 +39,7 @@ include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx")
 target_link_libraries(${PROJECT_NAME} bx)
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bimg/include")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bimg")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bimg/3rdparty")
 target_link_libraries(${PROJECT_NAME} bimg)
 
 #set (CMAKE_C_COMPILER               "clang-cl")

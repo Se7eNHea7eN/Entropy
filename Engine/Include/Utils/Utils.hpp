@@ -5,6 +5,7 @@
 #include <bx/filepath.h>
 #include "bx/file.h"
 #include <bimg/bimg.h>
+#include <string>
 
 namespace stl = tinystl;
 
@@ -19,3 +20,10 @@ bx::FileWriterI* getFileWriter();
 bx::AllocatorI* getAllocator();
 
 bimg::ImageContainer* imageLoad(const char* _filePath, bimg::TextureFormat::Enum _dstFormat);
+
+
+inline bool ends_with(std::string const& value, std::string const& ending)
+{
+	if (ending.size() > value.size()) return false;
+	return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}

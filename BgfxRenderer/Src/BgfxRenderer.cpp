@@ -184,7 +184,7 @@ void Entropy::BgfxRenderer::Draw() {
 		| BGFX_STATE_DEPTH_TEST_LESS
 		// | BGFX_STATE_CULL_CW
 		| BGFX_STATE_MSAA
-		// | BGFX_STATE_PT_LINESTRIP
+		// | BGFX_STATE_PT_TRISTRIP
 	;
 
 	for (auto iterator = geometries.begin(); iterator != geometries.end(); ++iterator){
