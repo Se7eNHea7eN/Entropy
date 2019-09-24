@@ -32,7 +32,7 @@ namespace Entropy{
 
 				auto t = geometry->getUVs()[i];
 				vertex.m_tx = t.x;
-				vertex.m_ty = t.y;
+				vertex.m_ty = 1- t.y;
 
 				auto n = geometry->getNormals()[i];
 				vertex.m_nx = n.x;
