@@ -153,7 +153,7 @@ void Entropy::BgfxRenderer::Resize(int w, int h) {
 	height = h;
 	bgfx::reset(w, h, BGFX_RESET_VSYNC);
 	auto camera = engine->CurrentScene()->MainCamera;
-	camera->SetViewport(w*2, h*2);
+	camera->SetViewport(w, h);
 }
 
 

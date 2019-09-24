@@ -52,7 +52,7 @@ int main(int _argc, const char* const* _argv)
 	material->m_AmbientOcclusion = std::make_shared<Texture>(Texture(0,imageLoad("Textures/Rifle_2_AO.png", bimg::TextureFormat::R8)));
 
 	// material->m_AmbientOcclusion = 1.0f;
-	objNode->GetTransform()->SetScale(Vector3f(0.01, 0.01,0.01));
+	objNode->GetTransform()->SetScale(Vector3f(0.02, 0.02,0.02));
 	// objNode->GetTransform()->SetScale(Vector3f(16, 16,16));
 	scene->SetOnTick([&objNode](float deltaTime)
 		{
