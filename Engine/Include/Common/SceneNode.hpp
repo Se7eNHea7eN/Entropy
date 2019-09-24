@@ -9,7 +9,7 @@
 namespace Entropy {
 	class Component;
 	class Transform;
-	class SceneNode : std::enable_shared_from_this<SceneNode> {
+	class SceneNode :public std::enable_shared_from_this<SceneNode> {
 	public:
 		SceneNode();;
 		SceneNode(const char* name);;
@@ -36,9 +36,9 @@ namespace Entropy {
 		std::unique_ptr<Transform> m_Transform;
 
 		std::shared_ptr<SceneNode> m_Parent;
-		std::vector<std::shared_ptr<SceneNode>> m_Children;
+		std::list<std::shared_ptr<SceneNode>> m_Children;
 
-		std::vector<std::shared_ptr<Component>> m_Components;
+		std::list<std::shared_ptr<Component>> m_Components;
 
 	protected:
 

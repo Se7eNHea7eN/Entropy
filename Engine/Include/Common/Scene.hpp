@@ -26,7 +26,7 @@ namespace Entropy {
 			return m_RootNode.get();
 		}
 	protected:
-		std::unique_ptr<SceneEmptyNode> m_RootNode;
+		std::shared_ptr<SceneEmptyNode> m_RootNode;
 		std::function<void(float)> onTick;
 	};
 }

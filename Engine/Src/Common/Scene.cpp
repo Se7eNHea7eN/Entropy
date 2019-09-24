@@ -2,11 +2,10 @@
 using namespace Entropy;
 
 Scene::Scene(const char* scene_name) {
-	m_RootNode = std::make_unique<SceneEmptyNode>();
+	m_RootNode = std::shared_ptr<SceneEmptyNode>(new SceneEmptyNode());
 }
 
 Scene::~Scene() {
-	m_RootNode.reset();
 }
 
 void Scene::Tick(float deltaTime) {

@@ -6,7 +6,7 @@ namespace Entropy {
 
 	std::vector<std::shared_ptr<StaticMeshComponent>> StaticMeshComponent::AllStaticMeshComponents;
 
-	StaticMeshComponent::StaticMeshComponent() {
+	StaticMeshComponent::StaticMeshComponent() : Component() {
 	}
 
 	StaticMeshComponent::~StaticMeshComponent() {
