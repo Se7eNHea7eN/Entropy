@@ -5,7 +5,7 @@ typedef unsigned int uint;
 namespace Entropy {
 	using namespace Eigen;
 
-	class Camera : public BaseSceneNode {
+	class Camera : public SceneNode {
 	public:
 		Matrix4f perspective(float fovy, float aspect, float zNear, float zFar);
 		Matrix4f ortho(float left, float right, float bottom, float top, float zNear, float zFar);

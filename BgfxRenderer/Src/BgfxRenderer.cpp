@@ -3,13 +3,17 @@
 #include "bgfx/bgfx.h"
 #include "bgfx/platform.h"
 #include <bx/math.h>
-#include "BgfxGeometry.hpp"
-#include "BgfxRenderer.hpp"
+
 #include "bx/timer.h"
 #include "Common/EntropyCore.hpp"
 #include "Common/Scene.hpp"
+#include "Common/Transform.hpp"
 
-#include "Utils/Debug.hpp"
+#include "Graphic/StaticMeshComponent.hpp"
+#include "Graphic/Mesh.hpp"
+
+#include "BgfxGeometry.hpp"
+#include "BgfxRenderer.hpp"
 using namespace Eigen;
 struct SimpleVertexLayout {
 	static void init() {
@@ -74,9 +78,9 @@ Entropy::BgfxRenderer::~BgfxRenderer() {
 
 void Entropy::BgfxRenderer::Initialize() {
 
-	for (auto obj : engine->CurrentScene()->Geometries) {
+	for (auto obj : StaticMeshComponent::AllStaticMeshComponents) {
 	
-		for (auto mesh : obj->m_Mesh) {
+		for (auto mesh : *(obj->GetMeshes())) {
 			auto geo = std::make_unique<BgfxGeometry>();
 			geo->geometry = obj;
 			geo->vbh = bgfx::createVertexBuffer(
@@ -89,7 +93,7 @@ void Entropy::BgfxRenderer::Initialize() {
 				BGFX_BUFFER_INDEX32
 			);
 			auto bgfxMaterial = std::make_shared<BgfxMaterial>();
-			bgfxMaterial->mat = obj->m_Materials[mesh->m_materialIndex];
+			bgfxMaterial->mat = (*obj->GetMaterials())[mesh->m_materialIndex];
 			bgfxMaterial->m_program = loadProgram(bgfxMaterial->mat->VertexShader().c_str(), bgfxMaterial->mat->FragmentShader().c_str());
 			if(bgfxMaterial->mat->m_Albedo.ValueMap == nullptr) {
 				bgfxMaterial->t_albedo = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8, 
@@ -184,11 +188,12 @@ void Entropy::BgfxRenderer::Draw() {
 		| BGFX_STATE_DEPTH_TEST_LESS
 		// | BGFX_STATE_CULL_CW
 		| BGFX_STATE_MSAA
+		| BGFX_STATE_LINEAA
 		// | BGFX_STATE_PT_TRISTRIP
 	;
 
 	for (auto iterator = geometries.begin(); iterator != geometries.end(); ++iterator){
-		auto transformMatrix = iterator->get()->geometry->GetTransform()->ModelMatrix();
+		auto transformMatrix = iterator->get()->geometry->GetNode()->GetTransform()->ModelMatrix();
 		float* transformMatrixArray = new float[transformMatrix.size()];
 		// Log("transformMatrix = \n %s", DebugString(transformMatrix));
 

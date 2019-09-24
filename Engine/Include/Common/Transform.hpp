@@ -2,14 +2,14 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include "Utils/Debug.hpp"
+#include "Component.hpp"
 
 namespace Entropy {
 	using namespace Eigen;
 
-	class Transform
+	class Transform : public Component
 	{
 	protected:
-
 		Quaternionf orientation = Quaternionf::Identity();
 		Vector3f position;
 		Vector3f scale = Vector3f(1,1,1);

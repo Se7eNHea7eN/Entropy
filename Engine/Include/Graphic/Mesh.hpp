@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 #include <cstdint>
 #include "Common/Object.hpp"
 

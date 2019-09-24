@@ -2,8 +2,11 @@
 #include "Common/Scene.hpp"
 #include "../../3rdparty/open_fbx/ofbx.h"
 #include "Graphic/Vertex.hpp"
+#include "Graphic/StaticMeshComponent.hpp"
+#include "Graphic/Mesh.hpp"
+#include "Utils/Debug.hpp"
 namespace Entropy{
-	std::shared_ptr<SceneGeometryNode> ParseFBX(std::string path) {
+	std::shared_ptr<StaticMeshComponent> ParseFBX(std::string path) {
 		FILE* fp = fopen(path.c_str(), "rb");
 		if (!fp) return false;
 
@@ -16,7 +19,7 @@ namespace Entropy{
 		if (!g_scene) {
 			Log(ofbx::getError());
 		}
-		auto objNode = std::shared_ptr<SceneGeometryNode>(std::make_shared<SceneGeometryNode>());
+		auto staticMeshComponent = std::shared_ptr<StaticMeshComponent>(std::make_shared<StaticMeshComponent>());
 		for (int m = 0; m < g_scene->getMeshCount(); m++) {
 			auto mesh = std::make_shared<Mesh>();
 			auto geometry = g_scene->getMesh(m)->getGeometry();
@@ -57,9 +60,9 @@ namespace Entropy{
 			mesh->m_indexBuffer = &(*indices)[0];
 			mesh->m_indexCount = indices->size();
 			mesh->m_indexBufferSize = indices->size() * sizeof(uint32_t);
-			objNode->m_Mesh.push_back(mesh);
+			staticMeshComponent->GetMeshes()->push_back(mesh);
 		}
 
-		return objNode;
+		return staticMeshComponent;
 	}
 }

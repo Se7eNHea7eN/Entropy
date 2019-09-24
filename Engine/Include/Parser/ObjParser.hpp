@@ -2,10 +2,13 @@
 #include "Common/Scene.hpp"
 #include "../../Engine/3rdparty/tiny_obj_loader/tiny_obj_loader.h"
 #include "Graphic/Vertex.hpp"
+#include "Graphic/StaticMeshComponent.hpp"
+#include <Graphic\Mesh.hpp>
+
 
 namespace Entropy {
-	std::shared_ptr<SceneGeometryNode> ParseObj(std::string path) {
-		auto objNode = std::shared_ptr<SceneGeometryNode>(std::make_shared<SceneGeometryNode>());
+	std::shared_ptr<StaticMeshComponent> ParseObj(std::string path) {
+		auto meshComponent = std::shared_ptr<StaticMeshComponent>(std::make_shared<StaticMeshComponent>());
 
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
@@ -89,8 +92,8 @@ namespace Entropy {
 			mesh->m_indexBuffer = &(*indices)[0];
 			mesh->m_indexCount = indices->size();
 			mesh->m_indexBufferSize = indices->size() * sizeof(uint32_t);
-			objNode->m_Mesh.push_back(mesh);
+			meshComponent->GetMeshes()->push_back(mesh);
 		}
-		return objNode;
+		return meshComponent;
 	}
 }

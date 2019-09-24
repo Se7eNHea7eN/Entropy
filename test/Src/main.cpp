@@ -8,6 +8,8 @@
 #include "Utils/Debug.hpp"
 #include "Parser/ObjParser.hpp"
 #include "Parser/FbxParser.hpp"
+#include "Graphic/Material.hpp"
+#include "Graphic/Texture.hpp"
 
 using namespace Entropy;
 
@@ -22,17 +24,19 @@ int main(int _argc, const char* const* _argv)
 	// std::string inputfile = "Assets/cube.obj";
 	std::string inputfile = "Assets/Rifle_2.fbx";
 
-	std::shared_ptr<SceneGeometryNode> objNode;
+	std::shared_ptr<SceneNode> objNode = std::shared_ptr<SceneNode>(std::make_shared<SceneNode>());
+	
+	std::shared_ptr<StaticMeshComponent> meshComponent;
 	if(ends_with(inputfile,".obj")) {
-		objNode = ParseObj(inputfile);
+		meshComponent = ParseObj(inputfile);
 	}else if(ends_with(inputfile, ".fbx")) {
-		objNode = ParseFBX(inputfile);
+		meshComponent = ParseFBX(inputfile);
 	}else {
 		return -1;
 	}
 	
 	auto material = std::make_shared<Material>();
-	objNode->m_Materials.push_back(material);
+	meshComponent->GetMaterials()->push_back(material);
 	material->SetName("PBR");
 	material->SetVertexShader("vs_common");
 	material->SetFragmentShader("fs_pbr");
@@ -50,12 +54,12 @@ int main(int _argc, const char* const* _argv)
 	// material->m_AmbientOcclusion = 1.0f;
 	objNode->GetTransform()->SetScale(Vector3f(0.01, 0.01,0.01));
 	// objNode->GetTransform()->SetScale(Vector3f(16, 16,16));
-	scene->Geometries.push_back(objNode);
 	scene->SetOnTick([&objNode](float deltaTime)
 		{
 			objNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
 		});
-	scene->SceneGraph->AppendChild(objNode);
+
+	objNode->AppendComponent(meshComponent);
 	
 	auto cameraNode = std::shared_ptr<Camera>(std::make_shared<Camera>());
 	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0,2,-5));
@@ -64,8 +68,8 @@ int main(int _argc, const char* const* _argv)
 	// 
 	// cameraNode->SetTarget(objNode->GetTransform());
 	scene->MainCamera = cameraNode;
-	scene->Cameras.push_back(cameraNode);
-	scene->SceneGraph->AppendChild(std::move(cameraNode));
-
+	// scene->Cameras.push_back(cameraNode);
+	scene->GetRootNode()->AppendChild(std::move(objNode));
+	scene->GetRootNode()->AppendChild(std::move(cameraNode));
 	return app.run(_argc, _argv);
 }

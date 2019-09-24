@@ -1,10 +1,10 @@
 #pragma once
 #include "Common/RendererFactory.hpp"
-#include "MemoryManager.hpp"
 
 namespace Entropy {
 	class Scene;
 	class Renderer;
+	class RendererFactory;
 	class EntropyCore {
 	public:
 		EntropyCore();

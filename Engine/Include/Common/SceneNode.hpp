@@ -3,59 +3,46 @@
 #include <list>
 #include <memory>
 #include <string>
-#include <vector>
-#include "Transform.hpp"
-#include "Graphic/Material.hpp"
-#include "Graphic/Mesh.hpp"
+
 
 namespace Entropy {
-	class BaseSceneNode {
+	class Component;
+	class Transform;
+	class SceneNode {
 	public:
-		BaseSceneNode() {
-		};
-		BaseSceneNode(const char* name) { m_strName = name; };
-		BaseSceneNode(const std::string& name) { m_strName = name; };
-		BaseSceneNode(const std::string&& name) { m_strName = std::move(name); };
+		SceneNode();;
+		SceneNode(const char* name);;
+		SceneNode(const std::string& name);;
+		SceneNode(const std::string&& name);;
 
-		virtual ~BaseSceneNode() {
-		};
+		virtual ~SceneNode();;
 
-		void AppendChild(std::shared_ptr<BaseSceneNode>&& sub_node)
-		{
-			m_Children.push_back(sub_node);
-		}
+		void AppendChild(std::shared_ptr<SceneNode>&& sub_node);
+
+		void AppendComponent(std::shared_ptr<Component>&& c);
+
 		std::shared_ptr<Transform> GetTransform() const {
 			return m_Transform;
 		}
+
+		virtual void Tick(float deltaTime);;
 	protected:
-		std::shared_ptr<Transform> m_Transform = std::make_shared<Transform>();
 
 		std::string m_strName;
-		std::list<std::shared_ptr<BaseSceneNode>> m_Children;
-	};
-	typedef BaseSceneNode SceneEmptyNode;
-	
-	class SceneGeometryNode : public BaseSceneNode
-	{
-	protected:
-		virtual void dump(std::ostream& out) const
-		{
-			// out << "Visible: " << m_bVisible << std::endl;
-			// out << "Shadow: " << m_bShadow << std::endl;
-			out << "Material(s): " << std::endl;
-			// for (auto material : m_Materials) {
-				// out << *material << std::endl;
-			// }
-		};
+		std::shared_ptr<Transform> m_Transform;
 
-	public:
-		std::vector<std::shared_ptr<Material>> m_Materials;
-		std::vector<std::shared_ptr<Mesh>> m_Mesh;
-		// void SetVisibility(bool visible) { m_bVisible = visible; };
-		// const bool Visible() { return m_bVisible; };
-		// void SetIfCastShadow(bool shadow) { m_bShadow = shadow; };
-		// const bool CastShadow() { return m_bShadow; };
-		void AddSceneObjectRef(const std::shared_ptr<Material>& object) { m_Materials.push_back(object); };
+		std::shared_ptr<SceneNode> m_Parent;
+		std::list<std::shared_ptr<SceneNode>> m_Children;
+
+		std::list<std::shared_ptr<Component>> m_Components;
+
+	protected:
+
+		void setParent(std::shared_ptr<SceneNode> p) {
+			m_Parent = p;
+		}
 	};
+	typedef SceneNode SceneEmptyNode;
+	
 
 }

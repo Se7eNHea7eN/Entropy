@@ -1,10 +1,12 @@
 #pragma once
 #include "bgfx/bgfx.h"
 #include "Common/Scene.hpp"
+#include "Graphic/Material.hpp"
+#include "Graphic/StaticMeshComponent.hpp"
 
 namespace Entropy {
 	struct BgfxMaterial {
-		std::shared_ptr<Entropy::Material> mat;
+		std::shared_ptr<Material> mat;
 		bgfx::ProgramHandle m_program;
 		bgfx::UniformHandle s_albedo;
 		bgfx::TextureHandle	t_albedo;
@@ -41,8 +43,10 @@ namespace Entropy {
 			bgfx::destroy(m_program);
 		}
 	};
+
+	
 	struct BgfxGeometry {
-		std::shared_ptr<Entropy::SceneGeometryNode> geometry;
+		std::shared_ptr<StaticMeshComponent> geometry;
 		std::shared_ptr<BgfxMaterial> material;
 		bgfx::VertexBufferHandle vbh;
 		bgfx::IndexBufferHandle ibh;
