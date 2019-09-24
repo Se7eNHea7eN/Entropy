@@ -15,8 +15,8 @@ namespace Entropy {
 		Vector3f scale = Vector3f(1,1,1);
 
 	public:
-		~Transform() {
-		}
+		Transform() = default;
+		~Transform() = default;
 		friend std::ostream& operator<<(std::ostream& out, const Transform& obj);
 
 		Matrix4f ModelMatrix() {

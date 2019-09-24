@@ -9,7 +9,7 @@
 namespace Entropy {
 	class Component;
 	class Transform;
-	class SceneNode {
+	class SceneNode : std::enable_shared_from_this<SceneNode> {
 	public:
 		SceneNode();;
 		SceneNode(const char* name);;
@@ -26,9 +26,12 @@ namespace Entropy {
 			return m_Transform.get();
 		}
 
-		virtual void Tick(float deltaTime);;
-	protected:
+		virtual void Tick(float deltaTime);
 
+		std::shared_ptr<SceneNode> SharedPtr() {
+			return shared_from_this();
+		}
+	protected:
 		std::string m_strName;
 		std::unique_ptr<Transform> m_Transform;
 

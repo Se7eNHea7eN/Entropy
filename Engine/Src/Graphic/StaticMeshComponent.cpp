@@ -7,15 +7,13 @@ namespace Entropy {
 	std::vector<std::shared_ptr<StaticMeshComponent>> StaticMeshComponent::AllStaticMeshComponents;
 
 	StaticMeshComponent::StaticMeshComponent() {
-		Initialize();
 	}
 
 	StaticMeshComponent::~StaticMeshComponent() {
-		Finalize();
 	}
 
 	int StaticMeshComponent::Initialize() {
-		AllStaticMeshComponents.push_back(std::shared_ptr<StaticMeshComponent>(this));
+		AllStaticMeshComponents.push_back(std::dynamic_pointer_cast<StaticMeshComponent>(SharedPtr()));
 		return 0;
 	}
 

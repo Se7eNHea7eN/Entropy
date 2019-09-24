@@ -19,7 +19,9 @@ namespace Entropy{
 		if (!g_scene) {
 			Log(ofbx::getError());
 		}
-		auto staticMeshComponent = std::shared_ptr<StaticMeshComponent>(std::make_shared<StaticMeshComponent>());
+		auto staticMeshComponent = std::make_shared<StaticMeshComponent>();
+		staticMeshComponent->Initialize();
+
 		for (int m = 0; m < g_scene->getMeshCount(); m++) {
 			auto mesh = std::make_shared<Mesh>();
 			auto geometry = g_scene->getMesh(m)->getGeometry();

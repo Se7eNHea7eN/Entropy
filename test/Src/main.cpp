@@ -59,7 +59,7 @@ int main(int _argc, const char* const* _argv)
 			objNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
 		});
 
-	objNode->AppendComponent(meshComponent);
+	objNode->AppendComponent(meshComponent->SharedPtr());
 	
 	auto cameraNode = std::shared_ptr<Camera>(std::make_shared<Camera>());
 	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0,2,-5));
@@ -69,8 +69,8 @@ int main(int _argc, const char* const* _argv)
 	// cameraNode->SetTarget(objNode->GetTransform());
 	scene->MainCamera = cameraNode;
 	// scene->Cameras.push_back(cameraNode);
-	scene->GetRootNode()->AppendChild(std::move(objNode));
-	scene->GetRootNode()->AppendChild(std::move(cameraNode));
+	scene->GetRootNode()->AppendChild(objNode->SharedPtr());
+	scene->GetRootNode()->AppendChild(cameraNode->SharedPtr());
 	try {
 		return app.run(_argc, _argv);
 

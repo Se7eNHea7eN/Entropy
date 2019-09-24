@@ -8,8 +8,8 @@
 
 namespace Entropy {
 	std::shared_ptr<StaticMeshComponent> ParseObj(std::string path) {
-		auto meshComponent = std::shared_ptr<StaticMeshComponent>(std::make_shared<StaticMeshComponent>());
-
+		auto meshComponent = std::make_shared<StaticMeshComponent>();
+		meshComponent->Initialize();
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
