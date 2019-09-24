@@ -2,7 +2,7 @@
 #include "Common/Transform.hpp"
 
 Entropy::SceneNode::SceneNode() {
-	m_Transform = std::make_shared<Transform>();
+	m_Transform = std::make_unique<Transform>();
 }
 
 Entropy::SceneNode::SceneNode(const char* name) { m_strName = name; }
@@ -12,7 +12,13 @@ Entropy::SceneNode::SceneNode(const std::string& name) { m_strName = name; }
 Entropy::SceneNode::SceneNode(const std::string&& name) { m_strName = std::move(name); }
 
 Entropy::SceneNode::~SceneNode() {
+	for(auto c : m_Children) {
+		c.reset();
+	}
 	m_Children.clear();
+	for (auto c : m_Components) {
+		c.reset();
+	}
 	m_Components.clear();
 }
 

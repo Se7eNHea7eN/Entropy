@@ -13,8 +13,10 @@ namespace Entropy {
 		Quaternionf orientation = Quaternionf::Identity();
 		Vector3f position;
 		Vector3f scale = Vector3f(1,1,1);
-	public:
 
+	public:
+		~Transform() {
+		}
 		friend std::ostream& operator<<(std::ostream& out, const Transform& obj);
 
 		Matrix4f ModelMatrix() {

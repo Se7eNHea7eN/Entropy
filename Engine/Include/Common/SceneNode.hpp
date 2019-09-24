@@ -3,6 +3,7 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <vector>
 
 
 namespace Entropy {
@@ -21,20 +22,20 @@ namespace Entropy {
 
 		void AppendComponent(std::shared_ptr<Component>&& c);
 
-		std::shared_ptr<Transform> GetTransform() const {
-			return m_Transform;
+		Transform* GetTransform() const {
+			return m_Transform.get();
 		}
 
 		virtual void Tick(float deltaTime);;
 	protected:
 
 		std::string m_strName;
-		std::shared_ptr<Transform> m_Transform;
+		std::unique_ptr<Transform> m_Transform;
 
 		std::shared_ptr<SceneNode> m_Parent;
-		std::list<std::shared_ptr<SceneNode>> m_Children;
+		std::vector<std::shared_ptr<SceneNode>> m_Children;
 
-		std::list<std::shared_ptr<Component>> m_Components;
+		std::vector<std::shared_ptr<Component>> m_Components;
 
 	protected:
 
