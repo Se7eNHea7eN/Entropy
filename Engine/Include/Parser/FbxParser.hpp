@@ -22,36 +22,41 @@ namespace Entropy{
 			auto geometry = g_scene->getMesh(m)->getGeometry();
 			std::vector<Vertex>* vertices = new std::vector<Vertex>(geometry->getVertexCount());
 
-			for (int offset = 0; offset < geometry->getVertexCount(); offset ++) {
+			for (int i = 0; i < geometry->getVertexCount(); i ++) {
 				Vertex vertex;
 
-				auto v = geometry->getVertices()[offset];
+				auto v = geometry->getVertices()[i];
 				vertex.m_x = v.x;
 				vertex.m_y = v.y;
 				vertex.m_z = v.z;
 
-				auto t = geometry->getUVs()[offset];
+				auto t = geometry->getUVs()[i];
 				vertex.m_tx = t.x;
 				vertex.m_ty = t.y;
 
-				auto n = geometry->getNormals()[offset];
+				auto n = geometry->getNormals()[i];
 				vertex.m_nx = n.x;
 				vertex.m_ny = n.y;
 				vertex.m_nz = n.z;
 
-				vertices->at(offset) = vertex;
+				vertices->at(i) = vertex;
 			}
 
 			std::vector<uint32_t>* indices = new std::vector<uint32_t>(geometry->getIndexCount());
+
+			for (int i = 0; i < geometry->getIndexCount(); i++) {
+				// indices->at(i) = (uint32_t)geometry->getFaceIndices()[i];
+				indices->at(i) = i;
+			}
 			
 			mesh->m_vertexBuffer = &(*vertices)[0];
 			mesh->m_vertexCount = vertices->size();
 			mesh->m_vertexBufferSize = vertices->size() * sizeof(Vertex);
 
 			//
-			mesh->m_indexBuffer = geometry->getFaceIndices();
-			mesh->m_indexCount = geometry->getIndexCount();
-			mesh->m_indexBufferSize = geometry->getIndexCount() * sizeof(int);
+			mesh->m_indexBuffer = &(*indices)[0];
+			mesh->m_indexCount = indices->size();
+			mesh->m_indexBufferSize = indices->size() * sizeof(uint32_t);
 			objNode->m_Mesh.push_back(mesh);
 		}
 

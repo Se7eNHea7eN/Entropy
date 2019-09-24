@@ -51,10 +51,10 @@ int EntropyApp::run(int _argc, const char* const* _argv) {
 	                      _T("Entropy"), // name of the window class
 	                      _T("Entropy"), // title of the window
 	                      WS_OVERLAPPEDWINDOW | WS_VISIBLE, // window style
-	                      300, // x-position of the window
+	                      0, // x-position of the window
 	                      0, // y-position of the window
-	                      2536, // width of the window
-	                      1426, // height of the window
+	                      1920, // width of the window
+	                      1080, // height of the window
 	                      nullptr, // we have no parent window, NULL
 	                      nullptr, // we aren't using menus, NULL
 	                      instance, // application handle
@@ -75,6 +75,7 @@ int EntropyApp::run(int _argc, const char* const* _argv) {
 			DispatchMessageW(&msg);
 		}
 	}
+	delete renderer;
 	return 0;
 }
 

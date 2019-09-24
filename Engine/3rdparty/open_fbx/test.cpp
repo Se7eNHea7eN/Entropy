@@ -1,2 +1,0 @@
-#include "tinyexr/tinyexr.h"
-
