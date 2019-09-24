@@ -8,9 +8,9 @@ namespace Entropy {
 
 	class Scene {
 	public:
-	public:
+
 		Scene(const char* scene_name);
-		~Scene() = default;
+		~Scene();
 
 		// std::unique_ptr<SceneNode> SceneGraph;
 		// std::list<std::shared_ptr<SceneGeometryNode>> Geometries;

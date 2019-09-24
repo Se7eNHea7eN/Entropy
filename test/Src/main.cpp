@@ -43,13 +43,13 @@ int main(int _argc, const char* const* _argv)
 	// material->SetFragmentShader("fs_lighting");
 	// material->m_Albedo = ColorRGBA(51, 255, 0,255);
 	// material->m_Albedo = ColorRGBA(0, 0, 255,255);
-	material->m_Albedo = std::make_shared<Texture>(Texture(0, std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/Rifle_2_Albedo.jpg", bimg::TextureFormat::RGBA8))));
+	material->m_Albedo = std::make_shared<Texture>(Texture(0, imageLoad("Textures/Rifle_2_Albedo.jpg", bimg::TextureFormat::RGBA8)));
 	// material->m_Metallic = 0.85f;
-	material->m_Metallic = std::make_shared<Texture>(Texture(0, std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/Rifle_2_Metallic.png", bimg::TextureFormat::R8))));
+	material->m_Metallic = std::make_shared<Texture>(Texture(0, imageLoad("Textures/Rifle_2_Metallic.png", bimg::TextureFormat::R8)));
 	// material->m_Roughness = 0.4f;
-	material->m_Roughness = std::make_shared<Texture>(Texture(0, std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/Rifle_2_Roughness.png", bimg::TextureFormat::R8))));
-	material->m_Normal = std::make_shared<Texture>(Texture(0, std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/Rifle_2_Normal.jpg", bimg::TextureFormat::R8))));
-	material->m_AmbientOcclusion = std::make_shared<Texture>(Texture(0, std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/Rifle_2_AO.png", bimg::TextureFormat::R8))));
+	material->m_Roughness = std::make_shared<Texture>(Texture(0,imageLoad("Textures/Rifle_2_Roughness.png", bimg::TextureFormat::R8)));
+	material->m_Normal = std::make_shared<Texture>(Texture(0, imageLoad("Textures/Rifle_2_Normal.jpg", bimg::TextureFormat::R8)));
+	material->m_AmbientOcclusion = std::make_shared<Texture>(Texture(0,imageLoad("Textures/Rifle_2_AO.png", bimg::TextureFormat::R8)));
 
 	// material->m_AmbientOcclusion = 1.0f;
 	objNode->GetTransform()->SetScale(Vector3f(0.01, 0.01,0.01));
@@ -71,5 +71,10 @@ int main(int _argc, const char* const* _argv)
 	// scene->Cameras.push_back(cameraNode);
 	scene->GetRootNode()->AppendChild(std::move(objNode));
 	scene->GetRootNode()->AppendChild(std::move(cameraNode));
-	return app.run(_argc, _argv);
+	try {
+		return app.run(_argc, _argv);
+
+	}catch(std::exception e) {
+		Log(e.what());
+	}
 }

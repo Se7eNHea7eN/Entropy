@@ -13,7 +13,7 @@ public:
 			return 0;
 		};
 		virtual void Finalize() {
-			node.reset();
+			// node.reset();
 		};
 
 		virtual void Tick(){};

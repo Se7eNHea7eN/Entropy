@@ -12,6 +12,8 @@ Entropy::SceneNode::SceneNode(const std::string& name) { m_strName = name; }
 Entropy::SceneNode::SceneNode(const std::string&& name) { m_strName = std::move(name); }
 
 Entropy::SceneNode::~SceneNode() {
+	m_Children.clear();
+	m_Components.clear();
 }
 
 void Entropy::SceneNode::AppendChild(std::shared_ptr<SceneNode>&& sub_node) {

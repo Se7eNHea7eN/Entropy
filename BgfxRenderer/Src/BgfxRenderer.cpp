@@ -101,7 +101,7 @@ void Entropy::BgfxRenderer::Initialize() {
 					bgfx::makeRef(&bgfxMaterial->mat->m_Albedo.Value, 4));
 
 			}else {
-				bgfxMaterial->t_albedo = loadTexture(bgfxMaterial->mat->m_Albedo.ValueMap->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+				bgfxMaterial->t_albedo = loadTexture(bgfxMaterial->mat->m_Albedo.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 			}
 
 			if (bgfxMaterial->mat->m_Metallic.ValueMap == nullptr) {
@@ -109,7 +109,7 @@ void Entropy::BgfxRenderer::Initialize() {
 					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
 					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_Metallic.Value * 255), 1));
 			}else {
-				bgfxMaterial->t_metallic = loadTexture(bgfxMaterial->mat->m_Metallic.ValueMap->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+				bgfxMaterial->t_metallic = loadTexture(bgfxMaterial->mat->m_Metallic.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 			}
 
 			if (bgfxMaterial->mat->m_Roughness.ValueMap == nullptr) {
@@ -118,7 +118,7 @@ void Entropy::BgfxRenderer::Initialize() {
 					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
 					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_Roughness.Value * 255), 1));
 			}else {
-				bgfxMaterial->t_roughness = loadTexture(bgfxMaterial->mat->m_Roughness.ValueMap->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+				bgfxMaterial->t_roughness = loadTexture(bgfxMaterial->mat->m_Roughness.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 			}
 
 			if (bgfxMaterial->mat->m_Normal.ValueMap == nullptr) {
@@ -128,7 +128,7 @@ void Entropy::BgfxRenderer::Initialize() {
 					bgfx::makeRef(&bgfxMaterial->mat->m_Normal.Value, 4));
 			}
 			else {
-				bgfxMaterial->t_normal = loadTexture(bgfxMaterial->mat->m_Normal.ValueMap->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+				bgfxMaterial->t_normal = loadTexture(bgfxMaterial->mat->m_Normal.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 			}
 
 			
@@ -153,7 +153,7 @@ void Entropy::BgfxRenderer::Resize(int w, int h) {
 	height = h;
 	bgfx::reset(w, h, BGFX_RESET_VSYNC);
 	auto camera = engine->CurrentScene()->MainCamera;
-	camera->SetViewport(w, h);
+	camera->SetViewport(w*2, h*2);
 }
 
 

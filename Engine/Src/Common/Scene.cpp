@@ -5,6 +5,10 @@ Scene::Scene(const char* scene_name) {
 	m_RootNode = std::make_unique<SceneEmptyNode>();
 }
 
+Scene::~Scene() {
+	m_RootNode.reset();
+}
+
 void Scene::Tick(float deltaTime) {
 	if(onTick != nullptr)
 		onTick(deltaTime);
