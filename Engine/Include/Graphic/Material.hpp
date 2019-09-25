@@ -4,6 +4,7 @@
 #include "Texture.hpp"
 #include <map>
 #include <bimg/decode.h>
+#include "Utils/Utils.hpp"
 
 namespace Entropy {
 	using namespace Eigen;
@@ -89,14 +90,10 @@ namespace Entropy {
 		std::string m_VertexShader;
 		std::string m_FragmentShader;
 		std::map<std::string, Parameter> parameters;
-	public:
 
-		// Color       m_Albedo;
-		// ParameterValueMap<float>    m_Metallic;
-		// ParameterValueMap<float>    m_Roughness;
-		// Normal      m_Normal;
-		// ParameterValueMap<float>    m_Specular;
-		// ParameterValueMap<float>    m_AmbientOcclusion;
+		bimg::ImageContainer* buildImageByFloat(float value);
+
+	public:
 
 		std::string VertexShader() const {
 			return m_VertexShader;
@@ -124,7 +121,6 @@ namespace Entropy {
 		friend std::ostream& operator<<(std::ostream& out, const Texture& obj);
 	};
 
-	std::shared_ptr<bimg::ImageContainer> buildImageByFloat(float value);
 
 	class StandardPBRMaterial : public Material {
 	public:
@@ -134,16 +130,18 @@ namespace Entropy {
 		}
 
 		void SetAlbedo(ColorRGBA color) {
-			auto image = std::make_shared<bimg::ImageContainer>();
-			image->m_data = new ColorRGBA(color);
-			image->m_size = sizeof(ColorRGBA);
-			image->m_width = 1;
-			image->m_height = 1;
-			image->m_depth = sizeof(ColorRGBA);
-			image->m_numLayers = 1;
-			image->m_numMips = 0;
-			image->m_hasAlpha = true;
-			image->m_format = bimg::TextureFormat::RGBA8;
+
+			auto img = bimg::imageAlloc(getAllocator()
+				, bimg::TextureFormat::RGBA8
+				, uint16_t(1)
+				, uint16_t(1)
+				, 0
+				, 1
+				, false
+				, false
+				, new ColorRGBA(color)
+			);
+			auto image = std::shared_ptr<bimg::ImageContainer>(img);
 			auto texture = new Texture(image);
 			parameters["s_albedo"] = Parameter(texture,Sampler);
 		}
@@ -176,8 +174,7 @@ namespace Entropy {
 
 
 		void SetAmbientOcclusion(float value) {
-			auto texture = new Texture(std::move(buildImageByFloat(value)));
-
+			auto texture = new Texture(buildImageByFloat(value));
 			parameters["s_ao"] = Parameter(texture, Sampler);
 		}
 

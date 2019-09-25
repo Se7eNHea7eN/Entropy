@@ -22,6 +22,7 @@ namespace Entropy  {
 
 		Texture(std::string& name) : Object(), m_Name(name) {};
 		Texture(std::shared_ptr<bimg::ImageContainer>& image) : m_pImage(image) {};
+		Texture(bimg::ImageContainer* image) : m_pImage(image) {};
 		Texture(Texture&) = default;
 		Texture(Texture&&) = default;
 	

@@ -3,17 +3,19 @@ $input v_pos, v_normal, v_texcoord0
 
 #include "../common/common.sh"
 
+uniform vec4 u_params;
+
+
 SAMPLER2D(s_albedo, 0);
-SAMPLER2D(s_metallic, 1);
-SAMPLER2D(s_roughness, 2);
-SAMPLER2D(s_ao, 3);
-SAMPLER2D(s_normal, 4);
+SAMPLER2D(s_normal, 1);
+
+SAMPLER2D(s_metallic, 2);
+SAMPLER2D(s_roughness, 3);
+SAMPLER2D(s_ao, 4);
 
 uniform vec3 u_cameraPos;
 
 const float PI = 3.14159265359;
-
-
 
 vec3 getNormalFromMap(vec3 position,vec2 texCoord , vec3 vnormal)
 {
