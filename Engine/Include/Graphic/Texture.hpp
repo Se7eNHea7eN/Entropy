@@ -15,14 +15,13 @@ namespace Entropy  {
 	protected:
 		std::string m_Name;
 
-		uint32_t m_nTexCoordIndex;
 		std::vector<Matrix4f> m_Transforms;
 
 	public:
-		bimg::ImageContainer* m_pImage;
+		std::shared_ptr<bimg::ImageContainer> m_pImage;
 
-		Texture(std::string& name) : Object(), m_Name(name), m_nTexCoordIndex(0) {};
-		Texture(uint32_t coord_index, bimg::ImageContainer* image) : m_nTexCoordIndex(coord_index), m_pImage(image) {};
+		Texture(std::string& name) : Object(), m_Name(name) {};
+		Texture(std::shared_ptr<bimg::ImageContainer>& image) : m_pImage(image) {};
 		Texture(Texture&) = default;
 		Texture(Texture&&) = default;
 	

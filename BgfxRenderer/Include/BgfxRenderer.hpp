@@ -1,7 +1,11 @@
 #pragma once
 #include "Common/Renderer.hpp"
 #include <windows.h>		// Header File For Windows
+#include <list>
+#include <memory>
+
 namespace Entropy {
+	struct BgfxGeometry;
 	class BgfxRenderer :public Renderer {
 	public:
 		BgfxRenderer(HWND hwnd) ;
@@ -12,7 +16,7 @@ namespace Entropy {
 	protected:
 		float* viewMatrixArray = new float[16];
 		float* projectionMatrixArray = new float[16];
-
+		std::list<std::unique_ptr<BgfxGeometry>> geometries;
 	private:
 		HWND hwnd;
 	};

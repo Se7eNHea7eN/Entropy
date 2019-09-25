@@ -35,21 +35,20 @@ int main(int _argc, const char* const* _argv)
 		return -1;
 	}
 	
-	auto material = std::make_shared<Material>();
+	auto material = std::make_shared<StandardPBRMaterial>();
 	meshComponent->GetMaterials()->push_back(material);
-	material->SetName("PBR");
-	material->SetVertexShader("vs_common");
-	material->SetFragmentShader("fs_pbr");
+	// material->SetName("PBR");
+	// material->SetVertexShader("vs_common");
+	// material->SetFragmentShader("fs_pbr");
 	// material->SetFragmentShader("fs_lighting");
 	// material->m_Albedo = ColorRGBA(51, 255, 0,255);
 	// material->m_Albedo = ColorRGBA(0, 0, 255,255);
-	material->m_Albedo = std::make_shared<Texture>(Texture(0, imageLoad("Assets/Rifle2/Rifle_2_Albedo.jpg", bimg::TextureFormat::RGBA8)));
-	// material->m_Metallic = 0.85f;
-	material->m_Metallic = std::make_shared<Texture>(Texture(0, imageLoad("Assets/Rifle2/Rifle_2_Metallic.png", bimg::TextureFormat::R8)));
-	// material->m_Roughness = 0.4f;
-	material->m_Roughness = std::make_shared<Texture>(Texture(0,imageLoad("Assets/Rifle2/Rifle_2_Roughness.png", bimg::TextureFormat::R8)));
-	material->m_Normal = std::make_shared<Texture>(Texture(0, imageLoad("Assets/Rifle2/Rifle_2_Normal.jpg", bimg::TextureFormat::R8)));
-	material->m_AmbientOcclusion = std::make_shared<Texture>(Texture(0,imageLoad("Assets/Rifle2/Rifle_2_AO.png", bimg::TextureFormat::R8)));
+	
+	material->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Albedo.jpg", bimg::TextureFormat::RGBA8))));
+	material->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Metallic.jpg", bimg::TextureFormat::R8))));
+	material->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Roughness.jpg", bimg::TextureFormat::R8))));
+	material->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_AO.jpg", bimg::TextureFormat::R8))));
+	material->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Normal.jpg", bimg::TextureFormat::RGBA8))));
 
 	// material->m_AmbientOcclusion = 1.0f;
 	objNode->GetTransform()->SetScale(Vector3f(0.02, 0.02,0.02));
