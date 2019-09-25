@@ -101,15 +101,26 @@ void Entropy::BgfxRenderer::Initialize() {
 					bgfx::makeRef(&bgfxMaterial->mat->m_Albedo.Value, 4));
 
 			}else {
-				bgfxMaterial->t_albedo = loadTexture(bgfxMaterial->mat->m_Albedo.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+				bgfxMaterial->t_albedo = createTexture(bgfxMaterial->mat->m_Albedo.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 			}
+
+			if (bgfxMaterial->mat->m_Normal.ValueMap == nullptr) {
+
+				bgfxMaterial->t_normal = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8,
+					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+					bgfx::makeRef(&bgfxMaterial->mat->m_Normal.Value, 4));
+			}
+			else {
+				bgfxMaterial->t_normal = createTexture(bgfxMaterial->mat->m_Normal.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+			}
+
 
 			if (bgfxMaterial->mat->m_Metallic.ValueMap == nullptr) {
 				bgfxMaterial->t_metallic = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
 					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
 					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_Metallic.Value * 255), 1));
 			}else {
-				bgfxMaterial->t_metallic = loadTexture(bgfxMaterial->mat->m_Metallic.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+				bgfxMaterial->t_metallic = createTexture(bgfxMaterial->mat->m_Metallic.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 			}
 
 			if (bgfxMaterial->mat->m_Roughness.ValueMap == nullptr) {
@@ -118,25 +129,20 @@ void Entropy::BgfxRenderer::Initialize() {
 					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
 					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_Roughness.Value * 255), 1));
 			}else {
-				bgfxMaterial->t_roughness = loadTexture(bgfxMaterial->mat->m_Roughness.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+				bgfxMaterial->t_roughness = createTexture(bgfxMaterial->mat->m_Roughness.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 			}
 
-			if (bgfxMaterial->mat->m_Normal.ValueMap == nullptr) {
+			if (bgfxMaterial->mat->m_AmbientOcclusion.ValueMap == nullptr) {
 
-				bgfxMaterial->t_normal = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
+				bgfxMaterial->t_roughness = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
 					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
-					bgfx::makeRef(&bgfxMaterial->mat->m_Normal.Value, 4));
+					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_AmbientOcclusion.Value * 255), 1));
 			}
 			else {
-				bgfxMaterial->t_normal = loadTexture(bgfxMaterial->mat->m_Normal.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+				bgfxMaterial->t_ao = createTexture(bgfxMaterial->mat->m_AmbientOcclusion.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 			}
+	
 
-			
-			bgfxMaterial->t_ao = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
-				BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
-				bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_AmbientOcclusion.Value * 255), 1));
-
-			// texture = loadTexture("Textures/test.png", BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 			geo->material = bgfxMaterial;
 			geometries.push_back(std::move(geo));
 		}
