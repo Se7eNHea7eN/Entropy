@@ -28,7 +28,7 @@ namespace Entropy {
 			bgfx::destroy(m_program);
 		}
 
-		void Submit() {
+		void Submit(Scene* scene) {
 			int index = 0;
 			for (auto pair : uniformMap) {
 				auto name = pair.first;
@@ -40,12 +40,25 @@ namespace Entropy {
 			// bgfx::setTexture(2, iterator->get()->material->s_roughness, iterator->get()->material->t_roughness);
 			// bgfx::setTexture(3, iterator->get()->material->s_ao, iterator->get()->material->t_ao);
 			// bgfx::setTexture(4, iterator->get()->material->s_normal, iterator->get()->material->t_normal);
+			//
+			//
+			bgfx::setUniform(u_cameraPos, scene->MainCamera->GetTransform()->Position().data());
+			static float* pointLightCount = new float[4]{ 1, 0, 0, 0 };
+			bgfx::setUniform(u_pointLightCount, pointLightCount);
+
+			static float* u_lightPosition0 = new float[4]{ 5, 5, 0, 0 };
+			bgfx::setUniform(u_lightPosition, u_lightPosition0);
+
+			static float* u_lightColor0 = new float[4]{ 20, 20, 20, 1 };
+			bgfx::setUniform(u_lightColor, u_lightColor0);
+
+			bgfx::submit(0, m_program);
 		}
 
-		static BgfxMaterial* buildFromMaterial(Entropy::Material* mat);
+		static BgfxMaterial* buildFromMaterial(std::shared_ptr<Material> mat);
 	};
 
-	BgfxMaterial* BgfxMaterial::buildFromMaterial(Entropy::Material* mat) {
+	BgfxMaterial* BgfxMaterial::buildFromMaterial(std::shared_ptr<Material> mat) {
 		auto bgfxMat = new BgfxMaterial();
 		bgfxMat->m_program = loadProgram(mat->VertexShader().c_str(), mat->FragmentShader().c_str());
 		for (auto pair : mat->GetParams()) {
@@ -68,19 +81,32 @@ namespace Entropy {
 				// 	break;
 			}
 		}
+		bgfxMat->mat = mat;
 		return bgfxMat;
 	}
 	
 	struct BgfxGeometry {
-		std::shared_ptr<StaticMeshComponent> geometry;
+		std::shared_ptr<StaticMeshComponent> meshComponent;
 		std::shared_ptr<BgfxMaterial> material;
 		bgfx::VertexBufferHandle vbh;
 		bgfx::IndexBufferHandle ibh;
 		~BgfxGeometry() {
 			bgfx::destroy(vbh);
 			bgfx::destroy(ibh);
-			geometry.reset();
+			meshComponent.reset();
 			material.reset();
+		}
+
+		void Submit(Scene* scene) {
+			auto transformMatrix = meshComponent->GetNode()->GetTransform()->ModelMatrix();
+			float* transformMatrixArray = new float[transformMatrix.size()];
+			// Log("transformMatrix = \n %s", DebugString(transformMatrix));
+
+			Map<Matrix4f>(transformMatrixArray, transformMatrix.rows(), transformMatrix.cols()) = transformMatrix;
+			bgfx::setTransform(transformMatrixArray);
+			bgfx::setVertexBuffer(0, vbh);
+			bgfx::setIndexBuffer(ibh);
+			material->Submit(scene);
 		}
 	};
 }

@@ -81,8 +81,8 @@ void Entropy::BgfxRenderer::Initialize() {
 	for (auto obj : StaticMeshComponent::AllStaticMeshComponents) {
 	
 		for (auto mesh : *(obj->GetMeshes())) {
-			auto geo = std::make_unique<BgfxGeometry>();
-			geo->geometry = obj;
+			auto geo = std::make_shared<BgfxGeometry>();
+			geo->meshComponent = obj;
 			geo->vbh = bgfx::createVertexBuffer(
 				bgfx::makeRef(mesh->m_vertexBuffer, mesh->m_vertexBufferSize)
 				, SimpleVertexLayout::ms_layout
@@ -92,51 +92,9 @@ void Entropy::BgfxRenderer::Initialize() {
 				bgfx::makeRef(mesh->m_indexBuffer, mesh->m_indexBufferSize),
 				BGFX_BUFFER_INDEX32
 			);
-			auto bgfxMaterial = BgfxMaterial::buildFromMaterial((*obj->GetMaterials())[mesh->m_materialIndex].get());
-			// bgfxMaterial->mat = (*obj->GetMaterials())[mesh->m_materialIndex];
-			// bgfxMaterial->m_program = loadProgram(bgfxMaterial->mat->VertexShader().c_str(), bgfxMaterial->mat->FragmentShader().c_str());
-			// if(bgfxMaterial->mat->m_Albedo.ValueMap != nullptr) {
-			// 	bgfxMaterial->t_albedo = createTexture(bgfxMaterial->mat->m_Albedo.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
-			// }else {
-			// 	bgfxMaterial->t_albedo = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8, 
-			// 	                                               BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
-			// 	                                               bgfx::makeRef(&bgfxMaterial->mat->m_Albedo.Value, 4));
-			// }
-			//
-			// if (bgfxMaterial->mat->m_Normal.ValueMap != nullptr) {
-			// 	bgfxMaterial->t_normal = createTexture(bgfxMaterial->mat->m_Normal.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
-			// }
-			//
-			// if (bgfxMaterial->mat->m_Metallic.ValueMap != nullptr) {
-			// 	bgfxMaterial->t_metallic = createTexture(bgfxMaterial->mat->m_Metallic.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
-			// }else {
-			// 	bgfxMaterial->t_metallic = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
-			// 	                                                 BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
-			// 	                                                 bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_Metallic.Value * 255), 1));
-			// }
-			//
-			// if (bgfxMaterial->mat->m_Roughness.ValueMap != nullptr) {
-			// 	bgfxMaterial->t_roughness = createTexture(bgfxMaterial->mat->m_Roughness.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
-			// }else {
-			//
-			// 	bgfxMaterial->t_roughness = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
-			// 	                                                  BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
-			// 	                                                  bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_Roughness.Value * 255), 1));
-			// }
-			//
-			// if (bgfxMaterial->mat->m_AmbientOcclusion.ValueMap != nullptr) {
-			// 	bgfxMaterial->t_ao = createTexture(bgfxMaterial->mat->m_AmbientOcclusion.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
-			// }
-			// else {
-			//
-			// 	bgfxMaterial->t_roughness = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
-			// 	                                                  BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
-			// 	                                                  bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_AmbientOcclusion.Value * 255), 1));
-			// }
-	
-
+			auto bgfxMaterial = BgfxMaterial::buildFromMaterial((*obj->GetMaterials())[mesh->m_materialIndex]);
 			geo->material = std::shared_ptr<BgfxMaterial>(bgfxMaterial);
-			geometries.push_back(std::move(geo));
+			geometries.push_back(geo);
 		}
 	}
 	// Create program from shaders.
@@ -189,30 +147,10 @@ void Entropy::BgfxRenderer::Draw() {
 		| BGFX_STATE_LINEAA
 		// | BGFX_STATE_PT_TRISTRIP
 	;
-
-	for (auto iterator = geometries.begin(); iterator != geometries.end(); ++iterator){
-		auto transformMatrix = iterator->get()->geometry->GetNode()->GetTransform()->ModelMatrix();
-		float* transformMatrixArray = new float[transformMatrix.size()];
-		// Log("transformMatrix = \n %s", DebugString(transformMatrix));
-
-		Map<Matrix4f>(transformMatrixArray, transformMatrix.rows(), transformMatrix.cols()) = transformMatrix;
 	
-		bgfx::setTransform(transformMatrixArray);
-		bgfx::setVertexBuffer(0, iterator->get()->vbh);
-		bgfx::setIndexBuffer(iterator->get()->ibh);
+	for(auto g : geometries) {
 		bgfx::setState(state);
-		iterator->get()->material->Submit();
-		bgfx::setUniform(iterator->get()->material->u_cameraPos, engine->CurrentScene()->MainCamera->GetTransform()->Position().data());
-		static float* u_pointLightCount = new float[4] {1, 0, 0, 0};
-		bgfx::setUniform(iterator->get()->material->u_pointLightCount, u_pointLightCount);
-
-		static float* u_lightPosition0 = new float[4] {5, 5, 0, 0};
-		bgfx::setUniform(iterator->get()->material->u_lightPosition, u_lightPosition0);
-
-		static float* u_lightColor0 = new float[4] {10, 10, 10, 1};
-		bgfx::setUniform(iterator->get()->material->u_lightColor, u_lightColor0);
-		
-		bgfx::submit(0, iterator->get()->material->m_program);
+		g->Submit(engine->CurrentScene());
 	}
 	bgfx::frame();
 
