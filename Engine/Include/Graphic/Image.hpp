@@ -2,7 +2,9 @@
 #include <iostream>
 
 namespace Entropy {
-	typedef uint8_t* R8G8B8A8Unorm;
+	typedef struct R8G8B8A8Unorm{
+		uint8_t data[4];
+	};
 	
     typedef struct _Image {
         uint32_t Width;

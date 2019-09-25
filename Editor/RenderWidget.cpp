@@ -50,7 +50,7 @@ void RenderWidget::resizeEvent(QResizeEvent* resizeEvent) {
 	QSize size = resizeEvent->size();
 	int width = size.width();
 	int height = size.height();
-	renderer->resize(width, height);
+	renderer->Resize(width, height);
 
 	// because Qt is not sending update request when resizing smaller
 	render();
@@ -82,7 +82,7 @@ void RenderWidget::_doRender() {
 	//
 	// do your custom rendering here...
 	//
-	renderer->draw();
+	renderer->Draw();
 	// next frame if rendering continuously
 	if (continuousRender == true)
 		render();
@@ -99,7 +99,7 @@ void RenderWidget::_init() {
 	// GetClientRect(hwnd, &rc);
 	// int width = rc.right - rc.left;
 	// int height = rc.bottom - rc.top;
-	renderer->initialize();
+	renderer->Initialize();
 	// mD3DApp->SetClientWidth(width);
 	// mD3DApp->SetClientHeight(height);
 	// mD3DApp->InitQt(hwnd);

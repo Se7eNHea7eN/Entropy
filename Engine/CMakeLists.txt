@@ -5,7 +5,7 @@ set(PROJECT_NAME Engine)
 project(${PROJECT_NAME})
 
 file(GLOB_RECURSE project_headers *.hpp *.h)
-file(GLOB_RECURSE project_cpps *.cpp *.c)
+file(GLOB_RECURSE project_cpps *.cpp *.c *.cc)
 set(all_files ${project_headers} ${project_cpps})
 
 source_group_by_dir(all_files)
@@ -32,9 +32,15 @@ include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/BgfxRenderer")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/BgfxRenderer/Include")
 target_link_libraries(${PROJECT_NAME} BgfxRenderer)
 
-#add_compile_definitions("__STDC_LIMIT_MACROS;__STDC_FORMAT_MACROS;__STDC_CONSTANT_MACROS;_DEBUG;WIN32;_WIN32;_HAS_EXCEPTIONS=0;_SCL_SECURE=0;_SECURE_SCL=0;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;BX_CONFIG_DEBUG=1;")
-
-
+ 
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx/include")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx/include/compat/msvc")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx")
+target_link_libraries(${PROJECT_NAME} bx)
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bimg/include")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bimg")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bimg/3rdparty")
+target_link_libraries(${PROJECT_NAME} bimg)
 
 #set (CMAKE_C_COMPILER               "clang-cl")
 #set (CMAKE_C_FLAGS                  "-Wall")

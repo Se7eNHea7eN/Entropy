@@ -3,6 +3,7 @@
 #include <tchar.h>
 #include "Common/Renderer.hpp"
 #include "EntropyApp.hpp"
+#include <ctime>
 
 using namespace Entropy;
 Renderer* renderer;
@@ -50,10 +51,10 @@ int EntropyApp::run(int _argc, const char* const* _argv) {
 	                      _T("Entropy"), // name of the window class
 	                      _T("Entropy"), // title of the window
 	                      WS_OVERLAPPEDWINDOW | WS_VISIBLE, // window style
-	                      300, // x-position of the window
-	                      300, // y-position of the window
-	                      1024, // width of the window
-	                      768, // height of the window
+	                      0, // x-position of the window
+	                      0, // y-position of the window
+	                      1920, // width of the window
+	                      1080, // height of the window
 	                      nullptr, // we have no parent window, NULL
 	                      nullptr, // we aren't using menus, NULL
 	                      instance, // application handle
@@ -61,15 +62,20 @@ int EntropyApp::run(int _argc, const char* const* _argv) {
 
 	ShowWindow(hWnd, SW_SHOWNORMAL);
 	MSG msg;
-	while (true) {
+	auto lastTime = GetTickCount64();
+	while (!isExit) {
+		auto thisTime = GetTickCount64();
+		entropyCore->Tick((thisTime - lastTime)/1000.0);
+		lastTime = thisTime;
 		if (renderer != nullptr)
-			renderer->draw();
+			renderer->Draw();
 		WaitForInputIdle(GetCurrentProcess(), 16);
 		while (0 != PeekMessageW(&msg, nullptr, 0U, 0U, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
 		}
 	}
+	delete renderer;
 	return 0;
 }
 
@@ -80,13 +86,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	switch (message) {
 	case WM_CREATE: {
 		renderer = instance->entropyCore->CreateRenderer(hWnd);
-		renderer->initialize();
+		renderer->Initialize();
 	}
 	break;
 	case WM_SIZE: {
 		RECT rc;
 		GetClientRect(hWnd, &rc);
-		renderer->resize(rc.right - rc.left, rc.bottom - rc.top);
+		renderer->Resize(rc.right - rc.left, rc.bottom - rc.top);
 	}
 	break;
 		// this message is read when the window is closed

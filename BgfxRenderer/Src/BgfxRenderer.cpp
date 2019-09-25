@@ -4,82 +4,34 @@
 #include "bgfx/platform.h"
 #include <bx/math.h>
 
-#include <bx/pixelformat.h>
-#include <bgfx/bgfx.h>
-
-#include <tinystl/allocator.h>
-#include <tinystl/vector.h>
-
-#include "BgfxRenderer.hpp"
 #include "bx/timer.h"
+#include "Common/EntropyCore.hpp"
+#include "Common/Scene.hpp"
+#include "Common/Transform.hpp"
 
-struct PosColorVertex
-{
-	float m_x;
-	float m_y;
-	float m_z;
-	uint32_t m_abgr;
+#include "Graphic/StaticMeshComponent.hpp"
+#include "Graphic/Mesh.hpp"
 
-	static void init()
-	{
+#include "BgfxGeometry.hpp"
+#include "BgfxRenderer.hpp"
+using namespace Eigen;
+struct SimpleVertexLayout {
+	static void init() {
 		ms_layout
 			.begin()
 			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-			.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+			.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 			.end();
 	};
 
 	static bgfx::VertexLayout ms_layout;
 };
+bgfx::VertexLayout SimpleVertexLayout::ms_layout;
+std::list<std::unique_ptr<Entropy::BgfxGeometry>> geometries;
 
-bgfx::VertexLayout PosColorVertex::ms_layout;
-
-static PosColorVertex s_cubeVertices[] =
-{
-	{-1.0f,  1.0f,  1.0f, 0xff000000 },
-	{ 1.0f,  1.0f,  1.0f, 0xff0000ff },
-	{-1.0f, -1.0f,  1.0f, 0xff00ff00 },
-	{ 1.0f, -1.0f,  1.0f, 0xff00ffff },
-	{-1.0f,  1.0f, -1.0f, 0xffff0000 },
-	{ 1.0f,  1.0f, -1.0f, 0xffff00ff },
-	{-1.0f, -1.0f, -1.0f, 0xffffff00 },
-	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
-};
-
-
-static const uint16_t s_cubeTriStrip[] =
-{
-	0, 1, 2,
-	3,
-	7,
-	1,
-	5,
-	0,
-	4,
-	2,
-	6,
-	7,
-	4,
-	5,
-};
-
-bgfx::VertexBufferHandle m_vbh;
-bgfx::ProgramHandle m_program;
-int64_t m_timeOffset;
-
-bgfx::IndexBufferHandle m_ibh;
 
 Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
-}
-
-Entropy::BgfxRenderer::~BgfxRenderer() {
-	bgfx::destroy(m_ibh);
-	bgfx::destroy(m_vbh);
-	bgfx::destroy(m_program);
-	bgfx::shutdown();
-}
-
-void Entropy::BgfxRenderer::initialize() {
 	bgfx::PlatformData pd;
 	pd.ndt = NULL;
 	pd.nwh = hwnd;
@@ -89,7 +41,6 @@ void Entropy::BgfxRenderer::initialize() {
 	bgfx::setPlatformData(pd); // 设置平台信息，绑定上层 view
 
 	bgfx::renderFrame();
-
 
 	bgfx::Init init;
 	// 选择一个渲染后端，当设置为 RendererType::Enum::Count 的时候，系统将默认选择一个平台，可以设置Metal，OpenGL ES，Direct 等
@@ -111,58 +62,121 @@ void Entropy::BgfxRenderer::initialize() {
 	// Enable debug text.
 	// bgfx::setDebug(true);
 	bgfx::setViewClear(0
-		, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
-		, 0x303030ff
-		, 1.0f
-		, 0
+	                   , BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
+	                   , 0x303030ff
+	                   , 1.0f
+	                   , 0
 	);
 
-	// Create vertex stream declaration.
-	PosColorVertex::init();
-
-	// Create static vertex buffer.
-	m_vbh = bgfx::createVertexBuffer(
-		// Static data can be passed with bgfx::makeRef
-		bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices))
-		, PosColorVertex::ms_layout
-	);
-
-	m_ibh = bgfx::createIndexBuffer(
-		// Static data can be passed with bgfx::makeRef
-		bgfx::makeRef(s_cubeTriStrip, sizeof(s_cubeTriStrip))
-	);
-
-	// Create program from shaders.
-	m_program = loadProgram("vs_cubes", "fs_cubes");
-
-	m_timeOffset = bx::getHPCounter();
-
-	
+	SimpleVertexLayout::init();
 }
 
-void Entropy::BgfxRenderer::resize(int w, int h) {
+Entropy::BgfxRenderer::~BgfxRenderer() {
+	geometries.clear();
+	bgfx::shutdown();
+}
+
+void Entropy::BgfxRenderer::Initialize() {
+
+	for (auto obj : StaticMeshComponent::AllStaticMeshComponents) {
+	
+		for (auto mesh : *(obj->GetMeshes())) {
+			auto geo = std::make_unique<BgfxGeometry>();
+			geo->geometry = obj;
+			geo->vbh = bgfx::createVertexBuffer(
+				bgfx::makeRef(mesh->m_vertexBuffer, mesh->m_vertexBufferSize)
+				, SimpleVertexLayout::ms_layout
+			);
+	
+			geo->ibh = bgfx::createIndexBuffer(
+				bgfx::makeRef(mesh->m_indexBuffer, mesh->m_indexBufferSize),
+				BGFX_BUFFER_INDEX32
+			);
+			auto bgfxMaterial = std::make_shared<BgfxMaterial>();
+			bgfxMaterial->mat = (*obj->GetMaterials())[mesh->m_materialIndex];
+			bgfxMaterial->m_program = loadProgram(bgfxMaterial->mat->VertexShader().c_str(), bgfxMaterial->mat->FragmentShader().c_str());
+			if(bgfxMaterial->mat->m_Albedo.ValueMap == nullptr) {
+				bgfxMaterial->t_albedo = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8, 
+					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+					bgfx::makeRef(&bgfxMaterial->mat->m_Albedo.Value, 4));
+
+			}else {
+				bgfxMaterial->t_albedo = createTexture(bgfxMaterial->mat->m_Albedo.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+			}
+
+			if (bgfxMaterial->mat->m_Normal.ValueMap == nullptr) {
+
+				bgfxMaterial->t_normal = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8,
+					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+					bgfx::makeRef(&bgfxMaterial->mat->m_Normal.Value, 4));
+			}
+			else {
+				bgfxMaterial->t_normal = createTexture(bgfxMaterial->mat->m_Normal.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+			}
+
+
+			if (bgfxMaterial->mat->m_Metallic.ValueMap == nullptr) {
+				bgfxMaterial->t_metallic = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
+					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_Metallic.Value * 255), 1));
+			}else {
+				bgfxMaterial->t_metallic = createTexture(bgfxMaterial->mat->m_Metallic.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+			}
+
+			if (bgfxMaterial->mat->m_Roughness.ValueMap == nullptr) {
+
+				bgfxMaterial->t_roughness = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
+					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_Roughness.Value * 255), 1));
+			}else {
+				bgfxMaterial->t_roughness = createTexture(bgfxMaterial->mat->m_Roughness.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+			}
+
+			if (bgfxMaterial->mat->m_AmbientOcclusion.ValueMap == nullptr) {
+
+				bgfxMaterial->t_roughness = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::R8,
+					BGFX_TEXTURE_NONE | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP,
+					bgfx::makeRef(new uint8_t(bgfxMaterial->mat->m_AmbientOcclusion.Value * 255), 1));
+			}
+			else {
+				bgfxMaterial->t_ao = createTexture(bgfxMaterial->mat->m_AmbientOcclusion.ValueMap->m_pImage, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+			}
+	
+
+			geo->material = bgfxMaterial;
+			geometries.push_back(std::move(geo));
+		}
+	}
+	// Create program from shaders.
+	// m_program = loadProgram("vs_mesh", "fs_mesh");;
+
+	auto camera = engine->CurrentScene()->MainCamera;
+	// bgfx::createUniform("",bgfx::UniformType::Count)
+}
+
+void Entropy::BgfxRenderer::Resize(int w, int h) {
 	width = w;
 	height = h;
 	bgfx::reset(w, h, BGFX_RESET_VSYNC);
+	auto camera = engine->CurrentScene()->MainCamera;
+	camera->SetViewport(w, h);
 }
 
-void Entropy::BgfxRenderer::draw() {
-	// bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
-	float time = (float)((bx::getHPCounter() - m_timeOffset) / double(bx::getHPFrequency()));
-	// printf("%f", time);
-	// std::cout << time;
-	const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
-	const bx::Vec3 eye = { 0.0f, 0.0f, -35.0f };
 
-	// Set view and projection matrix for view 0.
+void Entropy::BgfxRenderer::Draw() {
 	{
-		float view[16];
-		bx::mtxLookAt(view, eye, at);
+		auto camera = engine->CurrentScene()->MainCamera;
+		auto viewMatrix = camera->ViewMatrix().matrix();
+		
+		Map<Matrix4f>(viewMatrixArray, viewMatrix.rows(), viewMatrix.cols()) = viewMatrix;
+		
 
-		float proj[16];
-		bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-		bgfx::setViewTransform(0, view, proj);
+		bx::mtxProj(projectionMatrixArray, bx::toDeg(camera->FovY()), float(width) / float(height), camera->NearDistance(), camera->FarDistance(), bgfx::getCaps()->homogeneousDepth);
+		
 
+		//bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+		bgfx::setViewTransform(0, viewMatrixArray, projectionMatrixArray);
+		
 		// Set view 0 default viewport.
 		bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
 	}
@@ -171,45 +185,47 @@ void Entropy::BgfxRenderer::draw() {
 	// if no other draw calls are submitted to view 0.
 	bgfx::touch(0);
 
-	// bgfx::IndexBufferHandle ibh = m_ibh[m_pt];
 	uint64_t state = 0
-		| BGFX_STATE_WRITE_R 
-		| BGFX_STATE_WRITE_G 
-		| BGFX_STATE_WRITE_B 
-		| BGFX_STATE_WRITE_A 
+		| BGFX_STATE_WRITE_R
+		| BGFX_STATE_WRITE_G
+		| BGFX_STATE_WRITE_B
+		| BGFX_STATE_WRITE_A
 		| BGFX_STATE_WRITE_Z
 		| BGFX_STATE_DEPTH_TEST_LESS
-		| BGFX_STATE_CULL_CW
+		// | BGFX_STATE_CULL_CW
 		| BGFX_STATE_MSAA
-		| BGFX_STATE_PT_TRISTRIP
-		;
+		| BGFX_STATE_LINEAA
+		// | BGFX_STATE_PT_TRISTRIP
+	;
 
-	// Submit 11x11 cubes.
-	for (uint32_t yy = 0; yy < 11; ++yy)
-	{
-		for (uint32_t xx = 0; xx < 11; ++xx)
-		{
-			float mtx[16];
-			bx::mtxRotateXY(mtx, time + xx * 0.21f, time + yy * 0.37f);
-			mtx[12] = -15.0f + float(xx) * 3.0f;
-			mtx[13] = -15.0f + float(yy) * 3.0f;
-			mtx[14] = 0.0f;
+	for (auto iterator = geometries.begin(); iterator != geometries.end(); ++iterator){
+		auto transformMatrix = iterator->get()->geometry->GetNode()->GetTransform()->ModelMatrix();
+		float* transformMatrixArray = new float[transformMatrix.size()];
+		// Log("transformMatrix = \n %s", DebugString(transformMatrix));
 
-			// Set model matrix for rendering.
-			bgfx::setTransform(mtx);
+		Map<Matrix4f>(transformMatrixArray, transformMatrix.rows(), transformMatrix.cols()) = transformMatrix;
+	
+		bgfx::setTransform(transformMatrixArray);
+		bgfx::setVertexBuffer(0, iterator->get()->vbh);
+		bgfx::setIndexBuffer(iterator->get()->ibh);
+		bgfx::setState(state);
+		bgfx::setTexture(0, iterator->get()->material->s_albedo, iterator->get()->material->t_albedo);
+		bgfx::setTexture(1, iterator->get()->material->s_metallic, iterator->get()->material->t_metallic);
+		bgfx::setTexture(2, iterator->get()->material->s_roughness, iterator->get()->material->t_roughness);
+		bgfx::setTexture(3, iterator->get()->material->s_ao, iterator->get()->material->t_ao);
+		bgfx::setTexture(4, iterator->get()->material->s_normal, iterator->get()->material->t_normal);
+		bgfx::setUniform(iterator->get()->material->u_cameraPos, engine->CurrentScene()->MainCamera->GetTransform()->Position().data());
+		static float* u_pointLightCount = new float[4] {1, 0, 0, 0};
+		bgfx::setUniform(iterator->get()->material->u_pointLightCount, u_pointLightCount);
 
-			// Set vertex and index buffer.
-			bgfx::setVertexBuffer(0, m_vbh);
-			bgfx::setIndexBuffer(m_ibh);
+		static float* u_lightPosition0 = new float[4] {5, 5, 0, 0};
+		bgfx::setUniform(iterator->get()->material->u_lightPosition, u_lightPosition0);
 
-			// Set render states.
-			bgfx::setState(state);
-
-			// Submit primitive for rendering to view 0.
-			bgfx::submit(0, m_program);
-		}
+		static float* u_lightColor0 = new float[4] {10, 10, 10, 1};
+		bgfx::setUniform(iterator->get()->material->u_lightColor, u_lightColor0);
+		
+		bgfx::submit(0, iterator->get()->material->m_program);
 	}
-
 	bgfx::frame();
 
 }

@@ -26,113 +26,7 @@ namespace stl = tinystl;
 
 #include <bx/timer.h>
 #include <bx/math.h>
-extern bx::AllocatorI* getDefaultAllocator();
-bx::AllocatorI* g_allocator = getDefaultAllocator();
-static bgfx::String s_currentDir = "";
-
-
-class FileReader : public bx::FileReader
-{
-	typedef bx::FileReader super;
-
-public:
-	virtual bool open(const bx::FilePath& _filePath, bx::Error* _err) override
-	{
-		bgfx::String filePath(s_currentDir);
-		filePath.append(_filePath);
-		return super::open(filePath.getPtr(), _err);
-	}
-};
-
-class FileWriter : public bx::FileWriter
-{
-	typedef bx::FileWriter super;
-
-public:
-	virtual bool open(const bx::FilePath& _filePath, bool _append, bx::Error* _err) override
-	{
-		bgfx::String filePath(s_currentDir);
-		filePath.append(_filePath);
-		return super::open(filePath.getPtr(), _append, _err);
-	}
-};
-
-void setCurrentDir(const char* _dir)
-{
-	s_currentDir.set(_dir);
-}
-
-static bx::FileReaderI* s_fileReader = BX_NEW(g_allocator, FileReader);
-static bx::FileWriterI* s_fileWriter = BX_NEW(g_allocator, FileWriter);
-
-bx::AllocatorI* getDefaultAllocator()
-{
-	BX_PRAGMA_DIAGNOSTIC_PUSH();
-	BX_PRAGMA_DIAGNOSTIC_IGNORED_MSVC(4459); // warning C4459: declaration of 's_allocator' hides global declaration
-	BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wshadow");
-	static bx::DefaultAllocator s_allocator;
-	return &s_allocator;
-	BX_PRAGMA_DIAGNOSTIC_POP();
-}
-
-
-bx::FileReaderI* getFileReader()
-{
-	return s_fileReader;
-}
-
-bx::FileWriterI* getFileWriter()
-{
-	return s_fileWriter;
-}
-
-bx::AllocatorI* getAllocator()
-{
-	if (NULL == g_allocator)
-	{
-		g_allocator = getDefaultAllocator();
-	}
-
-	return g_allocator;
-}
-
-
-void* load(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size)
-{
-	if (bx::open(_reader, _filePath) )
-	{
-		uint32_t size = (uint32_t)bx::getSize(_reader);
-		void* data = BX_ALLOC(_allocator, size);
-		bx::read(_reader, data, size);
-		bx::close(_reader);
-		if (NULL != _size)
-		{
-			*_size = size;
-		}
-		return data;
-	}
-	else
-	{
-		// DBG("Failed to open: %s.", _filePath);
-	}
-
-	if (NULL != _size)
-	{
-		*_size = 0;
-	}
-
-	return NULL;
-}
-
-void* load(const char* _filePath, uint32_t* _size)
-{
-	return load(getFileReader(), getAllocator(), _filePath, _size);
-}
-
-void unload(void* _ptr)
-{
-	BX_FREE(getAllocator(), _ptr);
-}
+#include "Utils/Utils.hpp"
 
 static const bgfx::Memory* loadMem(bx::FileReaderI* _reader, const char* _filePath)
 {
@@ -144,26 +38,6 @@ static const bgfx::Memory* loadMem(bx::FileReaderI* _reader, const char* _filePa
 		bx::close(_reader);
 		mem->data[mem->size-1] = '\0';
 		return mem;
-	}
-
-	// DBG("Failed to load %s.", _filePath);
-	return NULL;
-}
-
-static void* loadMem(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size)
-{
-	if (bx::open(_reader, _filePath) )
-	{
-		uint32_t size = (uint32_t)bx::getSize(_reader);
-		void* data = BX_ALLOC(_allocator, size);
-		bx::read(_reader, data, size);
-		bx::close(_reader);
-
-		if (NULL != _size)
-		{
-			*_size = size;
-		}
-		return data;
 	}
 
 	// DBG("Failed to load %s.", _filePath);
@@ -233,103 +107,93 @@ static void imageReleaseCb(void* _ptr, void* _userData)
 	bimg::imageFree(imageContainer);
 }
 
-bgfx::TextureHandle loadTexture(bx::FileReaderI* _reader, const char* _filePath, uint64_t _flags, uint8_t _skip, bgfx::TextureInfo* _info, bimg::Orientation::Enum* _orientation)
-{
+bgfx::TextureHandle createTexture(bimg::ImageContainer* imageContainer, uint64_t _flags, uint8_t _skip, bgfx::TextureInfo* _info, bimg::Orientation::Enum* _orientation) {
+
 	BX_UNUSED(_skip);
 	bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
-
-	uint32_t size;
-	void* data = load(_reader, getAllocator(), _filePath, &size);
-	if (NULL != data)
+	if (NULL != imageContainer)
 	{
-		bimg::ImageContainer* imageContainer = bimg::imageParse(getAllocator(), data, size);
-
-		if (NULL != imageContainer)
+		if (NULL != _orientation)
 		{
-			if (NULL != _orientation)
-			{
-				*_orientation = imageContainer->m_orientation;
-			}
+			*_orientation = imageContainer->m_orientation;
+		}
 
-			const bgfx::Memory* mem = bgfx::makeRef(
-					  imageContainer->m_data
-					, imageContainer->m_size
-					, imageReleaseCb
-					, imageContainer
-					);
-			unload(data);
+		const bgfx::Memory* mem = bgfx::makeRef(
+			imageContainer->m_data
+			, imageContainer->m_size
+			, imageReleaseCb
+			, imageContainer
+		);
+		//unload(data);
 
-			if (imageContainer->m_cubeMap)
-			{
-				handle = bgfx::createTextureCube(
-					  uint16_t(imageContainer->m_width)
-					, 1 < imageContainer->m_numMips
-					, imageContainer->m_numLayers
-					, bgfx::TextureFormat::Enum(imageContainer->m_format)
-					, _flags
-					, mem
-					);
-			}
-			else if (1 < imageContainer->m_depth)
-			{
-				handle = bgfx::createTexture3D(
-					  uint16_t(imageContainer->m_width)
-					, uint16_t(imageContainer->m_height)
-					, uint16_t(imageContainer->m_depth)
-					, 1 < imageContainer->m_numMips
-					, bgfx::TextureFormat::Enum(imageContainer->m_format)
-					, _flags
-					, mem
-					);
-			}
-			else if (bgfx::isTextureValid(0, false, imageContainer->m_numLayers, bgfx::TextureFormat::Enum(imageContainer->m_format), _flags) )
-			{
-				handle = bgfx::createTexture2D(
-					  uint16_t(imageContainer->m_width)
-					, uint16_t(imageContainer->m_height)
-					, 1 < imageContainer->m_numMips
-					, imageContainer->m_numLayers
-					, bgfx::TextureFormat::Enum(imageContainer->m_format)
-					, _flags
-					, mem
-					);
-			}
+		if (imageContainer->m_cubeMap)
+		{
+			handle = bgfx::createTextureCube(
+				uint16_t(imageContainer->m_width)
+				, 1 < imageContainer->m_numMips
+				, imageContainer->m_numLayers
+				, bgfx::TextureFormat::Enum(imageContainer->m_format)
+				, _flags
+				, mem
+			);
+		}
+		else if (1 < imageContainer->m_depth)
+		{
+			handle = bgfx::createTexture3D(
+				uint16_t(imageContainer->m_width)
+				, uint16_t(imageContainer->m_height)
+				, uint16_t(imageContainer->m_depth)
+				, 1 < imageContainer->m_numMips
+				, bgfx::TextureFormat::Enum(imageContainer->m_format)
+				, _flags
+				, mem
+			);
+		}
+		else if (bgfx::isTextureValid(0, false, imageContainer->m_numLayers, bgfx::TextureFormat::Enum(imageContainer->m_format), _flags))
+		{
+			handle = bgfx::createTexture2D(
+				uint16_t(imageContainer->m_width)
+				, uint16_t(imageContainer->m_height)
+				, 1 < imageContainer->m_numMips
+				, imageContainer->m_numLayers
+				, bgfx::TextureFormat::Enum(imageContainer->m_format)
+				, _flags
+				, mem
+			);
+		}
 
-			if (bgfx::isValid(handle) )
-			{
-				bgfx::setName(handle, _filePath);
-			}
+		if (bgfx::isValid(handle))
+		{
+			bgfx::setName(handle, "");
+		}
 
-			if (NULL != _info)
-			{
-				bgfx::calcTextureSize(
-					  *_info
-					, uint16_t(imageContainer->m_width)
-					, uint16_t(imageContainer->m_height)
-					, uint16_t(imageContainer->m_depth)
-					, imageContainer->m_cubeMap
-					, 1 < imageContainer->m_numMips
-					, imageContainer->m_numLayers
-					, bgfx::TextureFormat::Enum(imageContainer->m_format)
-					);
-			}
+		if (NULL != _info)
+		{
+			bgfx::calcTextureSize(
+				*_info
+				, uint16_t(imageContainer->m_width)
+				, uint16_t(imageContainer->m_height)
+				, uint16_t(imageContainer->m_depth)
+				, imageContainer->m_cubeMap
+				, 1 < imageContainer->m_numMips
+				, imageContainer->m_numLayers
+				, bgfx::TextureFormat::Enum(imageContainer->m_format)
+			);
 		}
 	}
-
 	return handle;
+}
+
+bgfx::TextureHandle loadTexture(bx::FileReaderI* _reader, const char* _filePath, uint64_t _flags, uint8_t _skip, bgfx::TextureInfo* _info, bimg::Orientation::Enum* _orientation)
+{
+	uint32_t size;
+	void* data = load(_reader, getAllocator(), _filePath, &size);
+	return createTexture(bimg::imageParse(getAllocator(), data, size),_flags,_skip,_info,_orientation);
 }
 
 bgfx::TextureHandle loadTexture(const char* _name, uint64_t _flags, uint8_t _skip, bgfx::TextureInfo* _info, bimg::Orientation::Enum* _orientation)
 {
 	return loadTexture(getFileReader(), _name, _flags, _skip, _info, _orientation);
-}
-
-bimg::ImageContainer* imageLoad(const char* _filePath, bgfx::TextureFormat::Enum _dstFormat)
-{
-	uint32_t size = 0;
-	void* data = loadMem(getFileReader(), getAllocator(), _filePath, &size);
-
-	return bimg::imageParse(getAllocator(), data, size, bimg::TextureFormat::Enum(_dstFormat) );
 }
 
 void calcTangents(void* _vertices, uint16_t _numVertices, bgfx::VertexLayout _layout, const uint16_t* _indices, uint32_t _numIndices)

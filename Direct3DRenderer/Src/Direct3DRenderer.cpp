@@ -33,7 +33,7 @@ Direct3DRenderer::~Direct3DRenderer() {
 	SafeRelease(&g_pDevcon);
 }
 
-void Direct3DRenderer::initialize() {
+void Direct3DRenderer::Initialize() {
 	HRESULT hr = S_OK;
 	if (g_pSwapchain == nullptr) {
 		// create a struct to hold information about the swap chain
@@ -106,7 +106,7 @@ void Direct3DRenderer::initialize() {
 	}
 }
 
-void Direct3DRenderer::resize(int w, int h) {
+void Direct3DRenderer::Resize(int w, int h) {
 	width = w;
 	height = h;
 	//g_pSwapchain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
@@ -212,8 +212,8 @@ void Direct3DRenderer::InitGraphics() {
  
 }
 
-void Direct3DRenderer::draw() {
-	initialize();
+void Direct3DRenderer::Draw() {
+	Initialize();
 	const FLOAT clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	g_pDevcon->ClearRenderTargetView(g_pRTView, clearColor);
 
