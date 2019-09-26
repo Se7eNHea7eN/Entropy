@@ -22,7 +22,7 @@ void Entropy::SceneNode::AppendChild(std::shared_ptr<SceneNode>&& sub_node) {
 	sub_node->setParent(SharedPtr());
 }
 
-void Entropy::SceneNode::AppendComponent(std::shared_ptr<Component>&& c) {
+void Entropy::SceneNode::AddComponent(std::shared_ptr<Component>&& c) {
 	m_Components.push_back(c);
 	c->SetNode(SharedPtr());
 }

@@ -6,55 +6,82 @@
 
 namespace Entropy {
 
-	std::shared_ptr<Mesh> GenerateSphere() {
+	std::shared_ptr<Mesh> GenerateSphere(float radius = 1,uint16_t sectorCount = 64, uint16_t stackCount = 64) {
 		std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
 
 		std::vector<Vertex>* vertices = new std::vector<Vertex>;
 		std::vector<uint32_t>* indices= new std::vector<uint32_t>;
 
-		const unsigned int X_SEGMENTS = 64;
-		const unsigned int Y_SEGMENTS = 64;
+		float x, y, z, xy;                              // vertex position
+		float lengthInv = 1.0f / radius;    // vertex normal
+		float s, t;                                     // vertex texCoord
 		const float PI = 3.14159265359;
-		for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
+
+		float sectorStep = 2 * PI / sectorCount;
+		float stackStep = PI / stackCount;
+		float sectorAngle, stackAngle;
+
+		for (int i = 0; i <= stackCount; ++i)
 		{
-			for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
+			stackAngle = PI / 2 - i * stackStep;        // starting from pi/2 to -pi/2
+			xy = radius * cosf(stackAngle);             // r * cos(u)
+			z = radius * sinf(stackAngle);              // r * sin(u)
+
+			// add (sectorCount+1) vertices per stack
+			// the first and last vertices have same position and normal, but different tex coords
+			for (int j = 0; j <= sectorCount; ++j)
 			{
-		
 				Vertex v;
-				float xSegment = (float)x / (float)X_SEGMENTS;
-				float ySegment = (float)y / (float)Y_SEGMENTS;
-				v.m_x = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-				v.m_y = std::cos(ySegment * PI);
-				v.m_z = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-				v.m_tx = xSegment;
-				v.m_ty = ySegment;
-				v.m_nx = v.m_x;
-				v.m_ny = v.m_y;
-				v.m_nz = v.m_z;
+				sectorAngle = j * sectorStep;           // starting from 0 to 2pi
+
+				// vertex position (x, y, z)
+				x = xy * cosf(sectorAngle);             // r * cos(u) * cos(v)
+				y = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
+				v.m_x = x;
+				v.m_y = y;
+				v.m_z = z;
+
+				// normalized vertex normal (nx, ny, nz)
+				v.m_nx = x * lengthInv;
+				v.m_ny = y * lengthInv;
+				v.m_nz = z * lengthInv;
+			
+
+				// vertex tex coord (s, t) range between [0, 1]
+				s = (float)j / sectorCount;
+				t = (float)i / stackCount;
+				v.m_tx = s;
+				v.m_ty = t;
 				vertices->push_back(v);
 			}
 		}
-		
-		bool oddRow = false;
-		for (int y = 0; y < Y_SEGMENTS; ++y)
+
+
+		int k1, k2;
+		for (int i = 0; i < stackCount; ++i)
 		{
-			if (!oddRow) // even rows: y == 0, y == 2; and so on
+			k1 = i * (sectorCount + 1);     // beginning of current stack
+			k2 = k1 + sectorCount + 1;      // beginning of next stack
+
+			for (int j = 0; j < sectorCount; ++j, ++k1, ++k2)
 			{
-				for (int x = 0; x <= X_SEGMENTS; ++x)
+				// 2 triangles per sector excluding first and last stacks
+				// k1 => k2 => k1+1
+				if (i != 0)
 				{
-					indices->push_back(y * (X_SEGMENTS + 1) + x);
-					indices->push_back((y + 1) * (X_SEGMENTS + 1) + x);
+					indices->push_back(k1);
+					indices->push_back(k2);
+					indices->push_back(k1 + 1);
+				}
+
+				// k1+1 => k2 => k2+1
+				if (i != (stackCount - 1))
+				{
+					indices->push_back(k1 + 1);
+					indices->push_back(k2);
+					indices->push_back(k2 + 1);
 				}
 			}
-			else
-			{
-				for (int x = X_SEGMENTS; x >= 0; --x)
-				{
-					indices->push_back((y + 1) * (X_SEGMENTS + 1) + x);
-					indices->push_back(y * (X_SEGMENTS + 1) + x);
-				}
-			}
-			oddRow = !oddRow;
 		}
 
 		mesh->m_vertexBuffer = &(vertices)[0];
@@ -62,10 +89,10 @@ namespace Entropy {
 		mesh->m_vertexBufferSize = vertices->size() * sizeof(Vertex);
 
 		//	
-		mesh->m_indexBuffer = &(*indices)[0];
+		mesh->m_indexBuffer = &(*indices)[1];
 		mesh->m_indexCount = indices->size();
 		mesh->m_indexBufferSize = indices->size() * sizeof(uint32_t);
-		// mesh->m_indiceType = UINT64_C(0x0001000000000000);
+		mesh->m_indiceType = UINT64_C(0x0001000000000000);
 
 		return mesh;
 	}

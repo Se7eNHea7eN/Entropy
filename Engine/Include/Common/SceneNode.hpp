@@ -18,7 +18,7 @@ namespace Entropy {
 
 		void AppendChild(std::shared_ptr<SceneNode>&& sub_node);
 
-		void AppendComponent(std::shared_ptr<Component>&& c);
+		void AddComponent(std::shared_ptr<Component>&& c);
 
 		Transform* GetTransform() const {
 			return m_Transform.get();

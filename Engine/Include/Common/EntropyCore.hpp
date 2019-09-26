@@ -10,6 +10,8 @@ namespace Entropy {
 		EntropyCore();
 		Renderer* CreateRenderer(HWND hwnd);
 		RenderAPI renderAPI = Bgfx;
+
+		bool debugMode = false;
 		void CreateScene(const char* scene_name);
 
 		Scene* CurrentScene() {
