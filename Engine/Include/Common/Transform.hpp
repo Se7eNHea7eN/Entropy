@@ -3,6 +3,7 @@
 #include <Eigen/Geometry>
 #include "Utils/Debug.hpp"
 #include "Component.hpp"
+#include "SceneNode.hpp"
 
 namespace Entropy {
 	using namespace Eigen;
@@ -20,7 +21,11 @@ namespace Entropy {
 		friend std::ostream& operator<<(std::ostream& out, const Transform& obj);
 
 		Matrix4f ModelMatrix() {
-			return Affine3f(Translation3f(position) * orientation * Scaling(scale)).matrix();
+			auto model = Affine3f(Translation3f(position) * orientation * Scaling(scale)).matrix();
+			if(GetNode()!= nullptr) {
+				model = GetNode()->GetTransform()->ModelMatrix() * model;
+			}
+			return model;
 		}
 		void SetPosition(float x,float y,float z) { SetPosition(Vector3f(x,y,z)); }
 
