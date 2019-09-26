@@ -58,7 +58,8 @@ std::shared_ptr<SceneNode> createSphere() {
 	std::shared_ptr<StaticMeshComponent> sphereComponent(new StaticMeshComponent());
 	sphereComponent->Initialize();
 
-	sphereComponent->GetMeshes().push_back(GenerateSphere(0.1, 16, 16));
+	// sphereComponent->GetMeshes().push_back(GenerateSphere());
+	// sphereComponent->GetMeshes().push_back((*ParseObj("Assets/bunny.obj"))[0]);
 	auto mat = std::make_shared<StandardPBRMaterial>();
 	sphereComponent->GetMaterials().push_back(mat);
 
@@ -75,7 +76,7 @@ std::shared_ptr<SceneNode> createSphere() {
 int main(int _argc, const char* const* _argv)
 {
 	EntropyApp app;
-	app.entropyCore->debugMode = true;
+	// app.entropyCore->debugMode = true;
 	app.entropyCore->CreateScene("Test Scene");
 	auto scene = app.entropyCore->CurrentScene();
 
@@ -97,7 +98,6 @@ int main(int _argc, const char* const* _argv)
 	scene->SetOnTick([&](float deltaTime)
 	{
 		// rifleNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
-		sphereNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
 	});
 	try {
 		return app.run(_argc, _argv);

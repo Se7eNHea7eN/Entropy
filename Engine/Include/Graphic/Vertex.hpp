@@ -15,6 +15,16 @@ namespace Entropy {
 		float m_ty = 0;
 
 		Vertex() = default;
+
+		Vertex(float x, float y, float z, float nx, float ny, float nz)
+			: m_x(x),
+			  m_y(y),
+			  m_z(z),
+			  m_nx(nx),
+			  m_ny(ny),
+			  m_nz(nz) {
+		}
+
 		Vertex(float x, float y, float z, float nx, float ny, float nz, float tx, float ty)
 			: m_x(x),
 			  m_y(y),
