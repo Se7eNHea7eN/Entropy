@@ -19,7 +19,7 @@ namespace Entropy {
 		{
 			for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
 			{
-
+		
 				Vertex v;
 				float xSegment = (float)x / (float)X_SEGMENTS;
 				float ySegment = (float)y / (float)Y_SEGMENTS;
@@ -34,7 +34,7 @@ namespace Entropy {
 				vertices->push_back(v);
 			}
 		}
-
+		
 		bool oddRow = false;
 		for (int y = 0; y < Y_SEGMENTS; ++y)
 		{
@@ -61,13 +61,13 @@ namespace Entropy {
 		mesh->m_vertexCount = vertices->size();
 		mesh->m_vertexBufferSize = vertices->size() * sizeof(Vertex);
 
-		//
+		//	
 		mesh->m_indexBuffer = &(*indices)[0];
 		mesh->m_indexCount = indices->size();
 		mesh->m_indexBufferSize = indices->size() * sizeof(uint32_t);
-		mesh->m_indiceType = UINT64_C(0x0001000000000000);
+		// mesh->m_indiceType = UINT64_C(0x0001000000000000);
 
 		return mesh;
 	}
-	
+
 }

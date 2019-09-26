@@ -11,6 +11,9 @@ namespace Entropy {
 		bgfx::UniformType::Enum uniformType;
 		bgfx::TextureHandle textureHandle;
 		int textureIndex;
+
+		const void* value;
+		uint32_t num;
 	};
 	
 	struct BgfxMaterial {
@@ -39,7 +42,15 @@ namespace Entropy {
 			for (auto pair : uniformMap) {
 				auto name = pair.first;
 				auto uniform = pair.second;
-				bgfx::setTexture(uniform.textureIndex, uniform.uniformHandle, uniform.textureHandle);
+				switch(uniform.uniformType) {
+
+				case bgfx::UniformType::Sampler:
+					bgfx::setTexture(uniform.textureIndex, uniform.uniformHandle, uniform.textureHandle);
+					break;
+				case bgfx::UniformType::Vec4:
+					bgfx::setUniform(uniform.uniformHandle, uniform.value, uniform.num);
+					break;
+				}
 			}
 	
 			bgfx::setUniform(u_cameraPos, scene->MainCamera->GetNode()->GetTransform()->Position().data());
@@ -64,18 +75,27 @@ namespace Entropy {
 		for (auto pair : mat->GetParams()) {
 			auto name = pair.first;
 			auto mat = pair.second;
-			BgfxUniform bgfxUniform;
 			switch (mat.type) {
-			case Sampler:
+			case Sampler: {
+				BgfxUniform bgfxUniform;
 				auto texture = static_cast<const Texture*>(mat.Value);
 				bgfxUniform.textureHandle = createTexture(texture->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 				bgfxUniform.uniformHandle = bgfx::createUniform(name.c_str(), bgfx::UniformType::Sampler);
 				bgfxUniform.uniformType = bgfx::UniformType::Sampler;
 				bgfxUniform.textureIndex = mat.index;
 				bgfxMat->uniformMap[name] = bgfxUniform;
+			}
 				break;
-				// case Vector4:
-				// 	break;
+			case Vector4: {
+				BgfxUniform bgfxUniform;
+				bgfxUniform.uniformHandle = bgfx::createUniform(name.c_str(), bgfx::UniformType::Vec4);
+				bgfxUniform.uniformType = bgfx::UniformType::Vec4;
+				bgfxUniform.value = mat.Value;
+				bgfxUniform.num = mat.num;
+				bgfxMat->uniformMap[name] = bgfxUniform;
+			}
+			
+				break;
 				// case Vector3:
 				// 	break;
 				// case Float:

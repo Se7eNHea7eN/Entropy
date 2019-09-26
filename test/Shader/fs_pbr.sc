@@ -3,8 +3,8 @@ $input v_pos, v_normal, v_texcoord0
 
 #include "../common/common.sh"
 
-uniform vec4 u_params;
-
+uniform vec4 u_params[1];
+#define useNormalMap int(u_params[0].x)
 
 SAMPLER2D(s_albedo, 0);
 SAMPLER2D(s_normal, 1);
@@ -82,8 +82,12 @@ void main()
     float roughness = texture2D(s_roughness, v_texcoord0).x;
     float ao = texture2D(s_ao, v_texcoord0).x;
 
-    //vec3 N = normalize(v_normal);
-    vec3 N = getNormalFromMap(v_pos,v_texcoord0,v_normal);
+    vec3 N;
+    if(useNormalMap > 0)
+        N = getNormalFromMap(v_pos,v_texcoord0,v_normal);
+    else
+        N = normalize(v_normal);
+
 
     vec3 V = normalize(u_cameraPos - v_pos);
 

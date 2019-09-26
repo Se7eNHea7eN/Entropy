@@ -58,7 +58,6 @@ std::shared_ptr<SceneNode> createSphere() {
 	std::shared_ptr<StaticMeshComponent> sphereComponent(new StaticMeshComponent());
 	sphereComponent->Initialize();
 
-
 	sphereComponent->GetMeshes().push_back(GenerateSphere());
 	auto mat = std::make_shared<StandardPBRMaterial>();
 	sphereComponent->GetMaterials().push_back(mat);
@@ -80,16 +79,12 @@ int main(int _argc, const char* const* _argv)
 	auto scene = app.entropyCore->CurrentScene();
 
 	auto rifleNode = createRifle();
-	scene->SetOnTick([&rifleNode](float deltaTime)
-		{
-			rifleNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
-		});
 	scene->GetRootNode()->AppendChild(rifleNode->SharedPtr());
 
 	
 	auto camera = std::shared_ptr<Camera>(std::make_shared<Camera>());
 	auto cameraNode = std::shared_ptr<SceneNode>(std::make_shared<SceneNode>());
-	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0,0,-5));
+	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0,0,-10));
 	// cameraNode->GetTransform()->Rotate(0.3, Vector3f::UnitX());
 	cameraNode->AppendComponent(camera);
 	scene->MainCamera = camera;
@@ -97,9 +92,13 @@ int main(int _argc, const char* const* _argv)
 
 	auto sphereNode = createSphere();
 	// sphereNode->GetTransform()->SetPosition(5, 5, 0);
-	sphereNode->GetTransform()->SetScale(Vector3f( 0.0001, 0.0001, 0.0001));
+	// sphereNode->GetTransform()->SetScale(Vector3f( 0.0001, 0.0001, 0.0001));
 	scene->GetRootNode()->AppendChild(sphereNode->SharedPtr());
-	
+	scene->SetOnTick([&](float deltaTime)
+	{
+			rifleNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
+		sphereNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
+	});
 	try {
 		return app.run(_argc, _argv);
 

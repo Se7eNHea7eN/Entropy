@@ -40,6 +40,24 @@ namespace Entropy {
 		float z = 0;
 	};
 
+
+	struct Vec4 {
+		Vec4(float x, float y, float z, float w)
+			: x(x),
+			  y(y),
+			  z(z),
+			  w(w) {
+		}
+
+		Vec4() = default;
+
+		float x = 0;
+		float y = 0;
+		float z = 0;
+		float w = 0;
+	};
+
+	
 	enum ParameterType {
 		Sampler,
 		Vector4,
@@ -51,11 +69,13 @@ namespace Entropy {
 	struct Parameter
 	{
 		const void* Value;
+		uint32_t num = 0;
 		ParameterType type;
-		int index;
+		int index = 0;
 		Parameter() = default;
 
 		Parameter(const void* value, ParameterType type,int index = 0) : Value(value) , type(type), index(index){};
+		Parameter(const void* value, uint32_t num, ParameterType type) : Value(value), type(type), num(num) {};
 
 		Parameter(const Parameter& rhs) = default;
 
@@ -123,10 +143,13 @@ namespace Entropy {
 
 
 	class StandardPBRMaterial : public Material {
+	protected:
+		std::vector<Vec4> u_params;
 	public:
 		StandardPBRMaterial() {
 			m_VertexShader = "vs_common";
 			m_FragmentShader = "fs_pbr";
+			u_params.push_back(Vec4());
 		}
 
 		void SetAlbedo(ColorRGBA color) {
@@ -151,7 +174,9 @@ namespace Entropy {
 		}
 
 		void SetNormal(Texture* texture) {
+			u_params[0].x = 1;
 			parameters["s_normal"] = Parameter(texture, Sampler, 1);
+			parameters["u_params"] = Parameter(&u_params[0], 1,Vector4);
 		}
 		
 		void SetMetallic(float value) {
