@@ -94,14 +94,12 @@ void Entropy::BgfxRenderer::Initialize() {
 			);
 			auto bgfxMaterial = BgfxMaterial::buildFromMaterial(obj->GetMaterials()[mesh->m_materialIndex]);
 			geo->material = std::shared_ptr<BgfxMaterial>(bgfxMaterial);
+			geo->indiceType = mesh->m_indiceType;
 			geometries.push_back(geo);
 		}
 	}
-	// Create program from shaders.
-	// m_program = loadProgram("vs_mesh", "fs_mesh");;
 
 	auto camera = engine->CurrentScene()->MainCamera;
-	// bgfx::createUniform("",bgfx::UniformType::Count)
 }
 
 void Entropy::BgfxRenderer::Resize(int w, int h) {
@@ -145,11 +143,10 @@ void Entropy::BgfxRenderer::Draw() {
 		// | BGFX_STATE_CULL_CW
 		| BGFX_STATE_MSAA
 		| BGFX_STATE_LINEAA
-		// | BGFX_STATE_PT_TRISTRIP
 	;
 	
 	for(auto g : geometries) {
-		bgfx::setState(state);
+		bgfx::setState(state | g->indiceType);
 		g->Submit(engine->CurrentScene());
 	}
 	bgfx::frame();

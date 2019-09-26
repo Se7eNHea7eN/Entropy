@@ -22,7 +22,8 @@ namespace Entropy {
 		Matrix4f ModelMatrix() {
 			return Affine3f(Translation3f(position) * orientation * Scaling(scale)).matrix();
 		}
-		
+		void SetPosition(float x,float y,float z) { SetPosition(Vector3f(x,y,z)); }
+
 		void SetPosition(const Vector3f& pos) { position = pos; }
 		inline const Vector3f& Position(void) const { return position; }
 

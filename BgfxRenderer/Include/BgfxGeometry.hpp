@@ -91,6 +91,7 @@ namespace Entropy {
 		std::shared_ptr<BgfxMaterial> material;
 		bgfx::VertexBufferHandle vbh;
 		bgfx::IndexBufferHandle ibh;
+		uint64_t indiceType;
 		~BgfxGeometry() {
 			bgfx::destroy(vbh);
 			bgfx::destroy(ibh);
@@ -101,7 +102,7 @@ namespace Entropy {
 		void Submit(Scene* scene) {
 			auto transformMatrix = meshComponent->GetNode()->GetTransform()->ModelMatrix();
 			float* transformMatrixArray = new float[transformMatrix.size()];
-			// Log("transformMatrix = \n %s", DebugString(transformMatrix));
+			Log("transformMatrix = \n %s", DebugString(transformMatrix));
 
 			Map<Matrix4f>(transformMatrixArray, transformMatrix.rows(), transformMatrix.cols()) = transformMatrix;
 			bgfx::setTransform(transformMatrixArray);

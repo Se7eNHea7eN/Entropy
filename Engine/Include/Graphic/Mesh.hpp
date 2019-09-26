@@ -14,6 +14,7 @@ namespace Entropy {
 			, m_indexBufferSize(0)
 			, m_indexCount(0)
 			, m_materialIndex (0)
+			, m_indiceType()
 		{}
 
 		const void* m_vertexBuffer;
@@ -24,5 +25,6 @@ namespace Entropy {
 		uint32_t m_indexBufferSize;
 		uint32_t m_indexCount;
 		uint32_t m_materialIndex;
+		uint64_t m_indiceType;
 	};
 }
