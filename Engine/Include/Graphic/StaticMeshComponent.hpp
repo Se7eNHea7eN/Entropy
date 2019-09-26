@@ -26,12 +26,12 @@ namespace Entropy {
 		std::vector<std::shared_ptr<Material>> m_Materials;
 		std::vector<std::shared_ptr<Mesh>> m_Mesh;
 	public:
-		std::vector<std::shared_ptr<Material>>* GetMaterials() {
-			return &m_Materials;
+		std::vector<std::shared_ptr<Material>>& GetMaterials() {
+			return m_Materials;
 		}
 
-		std::vector<std::shared_ptr<Mesh>>* GetMeshes() {
-			return &m_Mesh;
+		std::vector<std::shared_ptr<Mesh>>& GetMeshes() {
+			return m_Mesh;
 		}
 		
 		// void SetVisibility(bool visible) { m_bVisible = visible; };

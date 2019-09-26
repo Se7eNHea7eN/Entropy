@@ -26,36 +26,31 @@ int main(int _argc, const char* const* _argv)
 
 	std::shared_ptr<SceneNode> objNode(new SceneNode());
 	
-	std::shared_ptr<StaticMeshComponent> meshComponent;
+	std::shared_ptr<StaticMeshComponent> rifleMeshComponent(new StaticMeshComponent());
+	rifleMeshComponent->Initialize();
+
+	std::vector<std::shared_ptr<Mesh>>* meshes;
+	
 	if(ends_with(inputfile,".obj")) {
-		meshComponent = ParseObj(inputfile);
+		meshes = ParseObj(inputfile);
 	}else if(ends_with(inputfile, ".fbx")) {
-		meshComponent = ParseFBX(inputfile);
+		meshes = ParseFBX(inputfile);
 	}else {
 		return -1;
 	}
-	
-	auto material = std::make_shared<StandardPBRMaterial>();
-	meshComponent->GetMaterials()->push_back(material);
-	// material->SetName("PBR");
-	// material->SetVertexShader("vs_common");
-	// material->SetFragmentShader("fs_pbr");
-	// material->SetFragmentShader("fs_lighting");
-	// material->m_Albedo = ColorRGBA(51, 255, 0,255);
-	// material->m_Albedo = ColorRGBA(0, 0, 255,255);
-	
-	material->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Albedo.jpg", bimg::TextureFormat::RGB8))));
-	// material->SetAlbedo(ColorRGBA(51, 255, 0, 255));
-	material->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Normal.jpg", bimg::TextureFormat::RGB8))));
 
-	material->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Metallic.jpg", bimg::TextureFormat::R8))));
-	// material->SetMetallic(0.9);
-	material->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Roughness.jpg", bimg::TextureFormat::R8))));
-	// material->SetRoughness(0.3);
-	material->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_AO.jpg", bimg::TextureFormat::R8))));
-	// material->SetAmbientOcclusion(1.0);
+	for(auto m : *meshes) {
+		rifleMeshComponent->GetMeshes().push_back(m);
+	}
+	auto rifleMat = std::make_shared<StandardPBRMaterial>();
+	rifleMeshComponent->GetMaterials().push_back(rifleMat);
+	
+	rifleMat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Albedo.jpg", bimg::TextureFormat::RGB8))));
+	rifleMat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Normal.jpg", bimg::TextureFormat::RGB8))));
+	rifleMat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Metallic.jpg", bimg::TextureFormat::R8))));
+	rifleMat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Roughness.jpg", bimg::TextureFormat::R8))));
+	rifleMat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_AO.jpg", bimg::TextureFormat::R8))));
 
-	// material->m_AmbientOcclusion = 1.0f;
 	objNode->GetTransform()->SetScale(Vector3f(0.02, 0.02,0.02));
 	// objNode->GetTransform()->SetScale(Vector3f(16, 16,16));
 	scene->SetOnTick([&objNode](float deltaTime)
@@ -63,13 +58,11 @@ int main(int _argc, const char* const* _argv)
 			objNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
 		});
 
-	objNode->AppendComponent(meshComponent->SharedPtr());
+	objNode->AppendComponent(rifleMeshComponent->SharedPtr());
 	
 	auto cameraNode = std::shared_ptr<Camera>(std::make_shared<Camera>());
 	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0,2,-5));
-	cameraNode->GetTransform()->Rotate(0.2, Vector3f::UnitX());
-	// cameraNode->GetTransform()->Rotate(0.4, Vector3f::UnitX());
-	// 
+	cameraNode->GetTransform()->Rotate(0.3, Vector3f::UnitX());
 	// cameraNode->SetTarget(objNode->GetTransform());
 	scene->MainCamera = cameraNode;
 	// scene->Cameras.push_back(cameraNode);

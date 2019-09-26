@@ -7,9 +7,9 @@
 
 
 namespace Entropy {
-	std::shared_ptr<StaticMeshComponent> ParseObj(std::string path) {
-		auto meshComponent = std::make_shared<StaticMeshComponent>();
-		meshComponent->Initialize();
+	std::vector<std::shared_ptr<Mesh>>* ParseObj(std::string path) {
+		std::vector<std::shared_ptr<Mesh>>* meshes = new std::vector<std::shared_ptr<Mesh>>;
+
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
@@ -92,8 +92,8 @@ namespace Entropy {
 			mesh->m_indexBuffer = &(*indices)[0];
 			mesh->m_indexCount = indices->size();
 			mesh->m_indexBufferSize = indices->size() * sizeof(uint32_t);
-			meshComponent->GetMeshes()->push_back(mesh);
+			meshes->push_back(mesh);
 		}
-		return meshComponent;
+		return meshes;
 	}
 }

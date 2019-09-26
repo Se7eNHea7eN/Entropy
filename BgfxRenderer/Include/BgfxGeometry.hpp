@@ -41,13 +41,7 @@ namespace Entropy {
 				auto uniform = pair.second;
 				bgfx::setTexture(uniform.textureIndex, uniform.uniformHandle, uniform.textureHandle);
 			}
-			// bgfx::setTexture(0, iterator->get()->material->s_albedo, iterator->get()->material->t_albedo);
-			// bgfx::setTexture(1, iterator->get()->material->s_metallic, iterator->get()->material->t_metallic);
-			// bgfx::setTexture(2, iterator->get()->material->s_roughness, iterator->get()->material->t_roughness);
-			// bgfx::setTexture(3, iterator->get()->material->s_ao, iterator->get()->material->t_ao);
-			// bgfx::setTexture(4, iterator->get()->material->s_normal, iterator->get()->material->t_normal);
-			//
-			//
+	
 			bgfx::setUniform(u_cameraPos, scene->MainCamera->GetTransform()->Position().data());
 			static float* pointLightCount = new float[4]{ 1, 0, 0, 0 };
 			bgfx::setUniform(u_pointLightCount, pointLightCount);

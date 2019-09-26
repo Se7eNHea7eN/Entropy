@@ -6,9 +6,11 @@
 #include "Graphic/Mesh.hpp"
 #include "Utils/Debug.hpp"
 namespace Entropy{
-	std::shared_ptr<StaticMeshComponent> ParseFBX(std::string path) {
+	std::vector<std::shared_ptr<Mesh>>* ParseFBX(std::string path) {
 		FILE* fp = fopen(path.c_str(), "rb");
-		if (!fp) return false;
+		if (!fp) {
+			Log("open file faild!");
+		}
 
 		fseek(fp, 0, SEEK_END);
 		long file_size = ftell(fp);
@@ -19,9 +21,8 @@ namespace Entropy{
 		if (!g_scene) {
 			Log(ofbx::getError());
 		}
-		std::shared_ptr<StaticMeshComponent> staticMeshComponent(new StaticMeshComponent());
-		//auto staticMeshComponent = std::make_shared<StaticMeshComponent>();
-		staticMeshComponent->Initialize();
+
+		auto meshes = new std::vector<std::shared_ptr<Mesh>>;
 
 		for (int m = 0; m < g_scene->getMeshCount(); m++) {
 			auto mesh = std::make_shared<Mesh>();
@@ -63,9 +64,9 @@ namespace Entropy{
 			mesh->m_indexBuffer = &(*indices)[0];
 			mesh->m_indexCount = indices->size();
 			mesh->m_indexBufferSize = indices->size() * sizeof(uint32_t);
-			staticMeshComponent->GetMeshes()->push_back(mesh);
+			meshes->push_back(mesh);
 		}
 
-		return staticMeshComponent;
+		return meshes;
 	}
 }

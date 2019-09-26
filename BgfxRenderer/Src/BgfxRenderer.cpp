@@ -80,7 +80,7 @@ void Entropy::BgfxRenderer::Initialize() {
 
 	for (auto obj : StaticMeshComponent::AllStaticMeshComponents) {
 	
-		for (auto mesh : *(obj->GetMeshes())) {
+		for (auto mesh : obj->GetMeshes()) {
 			auto geo = std::make_shared<BgfxGeometry>();
 			geo->meshComponent = obj;
 			geo->vbh = bgfx::createVertexBuffer(
@@ -92,7 +92,7 @@ void Entropy::BgfxRenderer::Initialize() {
 				bgfx::makeRef(mesh->m_indexBuffer, mesh->m_indexBufferSize),
 				BGFX_BUFFER_INDEX32
 			);
-			auto bgfxMaterial = BgfxMaterial::buildFromMaterial((*obj->GetMaterials())[mesh->m_materialIndex]);
+			auto bgfxMaterial = BgfxMaterial::buildFromMaterial(obj->GetMaterials()[mesh->m_materialIndex]);
 			geo->material = std::shared_ptr<BgfxMaterial>(bgfxMaterial);
 			geometries.push_back(geo);
 		}
