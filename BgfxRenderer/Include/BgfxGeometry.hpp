@@ -42,7 +42,7 @@ namespace Entropy {
 				bgfx::setTexture(uniform.textureIndex, uniform.uniformHandle, uniform.textureHandle);
 			}
 	
-			bgfx::setUniform(u_cameraPos, scene->MainCamera->GetTransform()->Position().data());
+			bgfx::setUniform(u_cameraPos, scene->MainCamera->GetNode()->GetTransform()->Position().data());
 			static float* pointLightCount = new float[4]{ 1, 0, 0, 0 };
 			bgfx::setUniform(u_pointLightCount, pointLightCount);
 

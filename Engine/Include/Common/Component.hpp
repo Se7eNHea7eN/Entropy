@@ -1,11 +1,10 @@
 #pragma once
 #include <memory>
-#include "Interface/Interface.hpp"
 #include "Interface/IRuntimeModule.hpp"
 
 namespace Entropy {
 	class SceneNode;
-	class Component : public std::enable_shared_from_this<Component> , implements IRuntimeModule{
+	class Component : public std::enable_shared_from_this<Component> , public IRuntimeModule{
 public:
 		virtual ~Component() {};
 
@@ -23,7 +22,7 @@ public:
 			node = n;
 		}
 
-		std::shared_ptr<SceneNode> GetNode() {
+		std::shared_ptr<SceneNode> GetNode() const {
 			return node;
 		}
 

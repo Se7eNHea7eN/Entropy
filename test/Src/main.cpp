@@ -60,11 +60,13 @@ int main(int _argc, const char* const* _argv)
 
 	objNode->AppendComponent(rifleMeshComponent->SharedPtr());
 	
-	auto cameraNode = std::shared_ptr<Camera>(std::make_shared<Camera>());
+	auto camera = std::shared_ptr<Camera>(std::make_shared<Camera>());
+	auto cameraNode = std::shared_ptr<SceneNode>(std::make_shared<SceneNode>());
 	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0,2,-5));
 	cameraNode->GetTransform()->Rotate(0.3, Vector3f::UnitX());
+	cameraNode->AppendComponent(camera);
 	// cameraNode->SetTarget(objNode->GetTransform());
-	scene->MainCamera = cameraNode;
+	scene->MainCamera = camera;
 	// scene->Cameras.push_back(cameraNode);
 	scene->GetRootNode()->AppendChild(objNode->SharedPtr());
 	scene->GetRootNode()->AppendChild(cameraNode->SharedPtr());

@@ -1,7 +1,6 @@
 #pragma once
-#include "Interface.hpp"
 namespace Entropy {
-	Interface IRuntimeModule{
+	class IRuntimeModule{
 public:
 		virtual ~IRuntimeModule() {};
 

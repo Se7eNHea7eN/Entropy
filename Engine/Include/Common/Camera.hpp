@@ -1,11 +1,12 @@
 #pragma once
 #include <Eigen/Geometry>
-#include "SceneNode.hpp"
+#include "Component.hpp"
 typedef unsigned int uint;
 namespace Entropy {
 	using namespace Eigen;
-
-	class Camera : public SceneNode {
+	class Transform;
+	
+	class Camera : public Component {
 	public:
 		Matrix4f perspective(float fovy, float aspect, float zNear, float zFar);
 		Matrix4f ortho(float left, float right, float bottom, float top, float zNear, float zFar);
@@ -24,8 +25,8 @@ namespace Entropy {
 		inline float NearDistance(void)const { return mNearDist; };
 		inline float FarDistance(void)const { return mFarDist; };
 		
-		void SetTarget(const std::shared_ptr<Entropy::Transform>  target);
-		inline const const std::shared_ptr<Entropy::Transform> target(void) const { return mTarget; }
+		void SetTarget(const std::shared_ptr<Transform>  target);
+		inline const const std::shared_ptr<Transform> target(void) const { return mTarget; }
 
 		const Eigen::Affine3f& ViewMatrix(void) const;
 		const Eigen::Matrix4f& ProjectionMatrix(void) const;
@@ -53,7 +54,7 @@ namespace Entropy {
 		mutable bool mProjIsUptodate;
 
 		// used by rotateAroundTarget
-		std::shared_ptr<Entropy::Transform> mTarget;
+		std::shared_ptr<Transform> mTarget;
 
 		float mFovY = 1.0471975511965977461542144610932;
 		float mNearDist = 0.1;

@@ -1,6 +1,7 @@
 ﻿#include <Eigen/Geometry>
 #include "Common/Camera.hpp"
 #include "Common/Transform.hpp"
+#include "Common/SceneNode.hpp"
 using namespace Entropy;
 using namespace Eigen;
 
@@ -77,10 +78,10 @@ void Camera::SetFovY(float value) {
 
 void Camera::SetTarget(const std::shared_ptr<Entropy::Transform> target) {
 	mTarget = target;
-	if (!mTarget->Position().isApprox( m_Transform->Position()))
+	if (!mTarget->Position().isApprox( GetNode()->GetTransform() ->Position()))
 	{
-		Vector3f newDirection = m_Transform->Position() - mTarget->Position();
-		m_Transform->SetDirection(newDirection.normalized());
+		Vector3f newDirection = GetNode()->GetTransform()->Position() - mTarget->Position();
+		GetNode()->GetTransform()->SetDirection(newDirection.normalized());
 	}
 }
 
@@ -108,18 +109,18 @@ void Camera::RotateAroundTarget(const Quaternionf& q) {
 
 	Quaternionf qa(mViewMatrix.linear());
 	qa = qa.conjugate();
-	m_Transform ->SetOrientation(qa);
-	m_Transform->SetPosition(-(qa * mViewMatrix.translation()));
+	GetNode()->GetTransform()->SetOrientation(qa);
+	GetNode()->GetTransform()->SetPosition(-(qa * mViewMatrix.translation()));
 
 	mViewIsUptodate = true;
 }
 
 
 void Camera::Zoom(float d) {
-	float dist = (m_Transform->Position() - mTarget->Position()).norm();
+	float dist = (GetNode()->GetTransform()->Position() - mTarget->Position()).norm();
 	if (dist > d)
 	{
-		m_Transform->SetPosition(m_Transform->Position() + m_Transform->Direction() * d);
+		GetNode()->GetTransform()->SetPosition(GetNode()->GetTransform()->Position() + GetNode()->GetTransform()->Direction() * d);
 		mViewIsUptodate = false;
 	}
 }
@@ -127,9 +128,9 @@ void Camera::Zoom(float d) {
 void Camera::updateViewMatrix() const {
 	if (!mViewIsUptodate)
 	{
-		Quaternionf q = m_Transform->Orientation().conjugate();
+		Quaternionf q = GetNode()->GetTransform()->Orientation().conjugate();
 		mViewMatrix.linear() = q.toRotationMatrix();
-		mViewMatrix.translation() = -(mViewMatrix.linear() * m_Transform->Position());
+		mViewMatrix.translation() = -(mViewMatrix.linear() * GetNode()->GetTransform()->Position());
 
 		mViewIsUptodate = true;
 	}
