@@ -51,7 +51,7 @@ int main(int _argc, const char* const* _argv)
 	rifleMat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Roughness.jpg", bimg::TextureFormat::R8))));
 	rifleMat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_AO.jpg", bimg::TextureFormat::R8))));
 
-	objNode->GetTransform()->SetScale(Vector3f(0.02, 0.02,0.02));
+	objNode->GetTransform()->SetScale(Vector3f(0.015, 0.015,0.015));
 	// objNode->GetTransform()->SetScale(Vector3f(16, 16,16));
 	scene->SetOnTick([&objNode](float deltaTime)
 		{
