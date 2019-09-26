@@ -156,7 +156,7 @@ namespace Entropy {
 		
 		void SetMetallic(float value) {
 			
-			parameters["s_metallic"] = Parameter(&value, Sampler);
+			parameters["s_metallic"] = Parameter(new Texture(buildImageByFloat(value)), Sampler);
 		}
 
 		void SetMetallic(Texture* texture) {
@@ -164,18 +164,15 @@ namespace Entropy {
 		}
 
 		void SetRoughness(float value) {
-			auto texture = new Texture(buildImageByFloat(value));
-			parameters["s_roughness"] = Parameter(texture, Sampler);
+			parameters["s_roughness"] = Parameter(new Texture(buildImageByFloat(value)), Sampler);
 		}
 
 		void SetRoughness(Texture* texture) {
 			parameters["s_roughness"] = Parameter(texture, Sampler);
 		}
 
-
 		void SetAmbientOcclusion(float value) {
-			auto texture = new Texture(buildImageByFloat(value));
-			parameters["s_ao"] = Parameter(texture, Sampler);
+			parameters["s_ao"] = Parameter(new Texture(buildImageByFloat(value)), Sampler);
 		}
 
 		void SetAmbientOcclusion(Texture* texture) {
