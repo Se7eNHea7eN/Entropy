@@ -16,7 +16,7 @@ namespace Entropy {
 
 		virtual ~SceneNode();;
 
-		void AppendChild(std::shared_ptr<SceneNode>&& sub_node);
+		void AddChild(std::shared_ptr<SceneNode>&& sub_node);
 
 		void AddComponent(std::shared_ptr<Component>&& c);
 

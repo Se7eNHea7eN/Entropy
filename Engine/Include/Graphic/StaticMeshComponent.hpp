@@ -25,7 +25,16 @@ namespace Entropy {
 		};
 		std::vector<std::shared_ptr<Material>> m_Materials;
 		std::vector<std::shared_ptr<Mesh>> m_Mesh;
+		bool enableLighting = true;
 	public:
+		bool EnableLighting() const {
+			return enableLighting;
+		}
+
+		void SetEnableLighting(bool enable_lighting) {
+			enableLighting = enable_lighting;
+		}
+
 		std::vector<std::shared_ptr<Material>>& GetMaterials() {
 			return m_Materials;
 		}

@@ -23,7 +23,7 @@ namespace Entropy {
 		Matrix4f ModelMatrix() {
 			auto model = Affine3f(Translation3f(position) * orientation * Scaling(scale)).matrix();
 			if(GetNode()!= nullptr) {
-				model = GetNode()->GetTransform()->ModelMatrix() * model;
+				model *= GetNode()->GetTransform()->ModelMatrix();
 			}
 			return model;
 		}

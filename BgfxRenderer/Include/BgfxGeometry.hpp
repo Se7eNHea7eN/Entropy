@@ -4,6 +4,8 @@
 #include "Graphic/Material.hpp"
 #include "Graphic/StaticMeshComponent.hpp"
 #include <map>
+#include "Light/PointLight.hpp"
+
 namespace Entropy {
 
 	struct BgfxUniform {
@@ -38,7 +40,10 @@ namespace Entropy {
 			bgfx::destroy(m_program);
 		}
 
-		void Submit(Scene* scene) {
+		float lightCount[4];
+		float lightPosition[10][4];
+		float lightColor[10][4];
+		void Submit(Scene* scene,bool enableLighting = true) {
 			for (auto pair : uniformMap) {
 				auto name = pair.first;
 				auto uniform = pair.second;
@@ -54,14 +59,29 @@ namespace Entropy {
 			}
 	
 			bgfx::setUniform(u_cameraPos, scene->MainCamera->GetNode()->GetTransform()->Position().data());
-			static float* pointLightCount = new float[4]{ 1, 0, 0, 0 };
-			bgfx::setUniform(u_pointLightCount, pointLightCount);
 
-			static float* u_lightPosition0 = new float[4]{ 5, 5, 0, 0 };
-			bgfx::setUniform(u_lightPosition, u_lightPosition0);
 
-			static float* u_lightColor0 = new float[4]{ 20, 20, 20, 1 };
-			bgfx::setUniform(u_lightColor, u_lightColor0);
+			if(enableLighting) {
+				lightCount[0] = PointLight::AllPointLights.size();
+				bgfx::setUniform(u_pointLightCount, lightCount);
+
+				for (int i = 0; i < PointLight::AllPointLights.size(); ++i) {
+					auto light = PointLight::AllPointLights[i];
+					lightPosition[i][0] = light->GetNode()->GetTransform()->Position().x();
+					lightPosition[i][1] = light->GetNode()->GetTransform()->Position().y();
+					lightPosition[i][2] = light->GetNode()->GetTransform()->Position().z();
+					lightPosition[i][3] = 0;
+					bgfx::setUniform(u_lightPosition, lightPosition);
+
+					auto realColor = light->GetInstensive() * light->GetLightColor();
+					lightColor[i][0] = realColor.x();
+					lightColor[i][1] = realColor.y();
+					lightColor[i][2] = realColor.z();
+					lightColor[i][3] = 1;
+					bgfx::setUniform(u_lightPosition, lightPosition);
+					bgfx::setUniform(u_lightColor, lightColor);
+				}
+			}
 
 			bgfx::submit(0, m_program);
 		}
@@ -128,7 +148,7 @@ namespace Entropy {
 			bgfx::setTransform(transformMatrixArray);
 			bgfx::setVertexBuffer(0, vbh);
 			bgfx::setIndexBuffer(ibh);
-			material->Submit(scene);
+			material->Submit(scene,meshComponent->EnableLighting());
 		}
 	};
 }

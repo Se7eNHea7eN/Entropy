@@ -5,7 +5,7 @@ namespace Entropy {
 	using namespace Eigen;
 	class AbstractLight : public Component {
 	protected:
-		Vector3f lightColor = Vector3f::Identity();
+		Vector3f lightColor = Vector3f(1,1,1);
 		float lightIntensive = 1;
 	public :
 		Vector3f GetLightColor() {
@@ -14,6 +14,14 @@ namespace Entropy {
 
 		float GetInstensive() {
 			return lightIntensive;
+		}
+
+		void SetLightColor(Vector3f lightColor) {
+			this->lightColor = lightColor;
+		}
+
+		void SetIntensive(float intensive) {
+			this->lightIntensive = intensive;
 		}
 	};
 }

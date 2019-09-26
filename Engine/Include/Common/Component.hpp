@@ -6,7 +6,8 @@ namespace Entropy {
 	class SceneNode;
 	class Component : public std::enable_shared_from_this<Component> , public IRuntimeModule{
 public:
-		virtual ~Component() {};
+		Component();
+		virtual ~Component();;
 
 		virtual int Initialize() {
 			return 0;
