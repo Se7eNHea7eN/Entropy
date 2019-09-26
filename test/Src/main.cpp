@@ -44,19 +44,19 @@ int main(int _argc, const char* const* _argv)
 	// material->m_Albedo = ColorRGBA(51, 255, 0,255);
 	// material->m_Albedo = ColorRGBA(0, 0, 255,255);
 	
-	// material->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Albedo.jpg", bimg::TextureFormat::RGB8))));
-	material->SetAlbedo(ColorRGBA(51, 255, 0, 255));
+	material->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Albedo.jpg", bimg::TextureFormat::RGB8))));
+	// material->SetAlbedo(ColorRGBA(51, 255, 0, 255));
 	material->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Normal.jpg", bimg::TextureFormat::RGB8))));
 
-	// material->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Metallic.jpg", bimg::TextureFormat::R8))));
-	material->SetMetallic(0.9);
-	// material->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Roughness.jpg", bimg::TextureFormat::R8))));
-	material->SetRoughness(0.3);
-	// material->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_AO.jpg", bimg::TextureFormat::R8))));
-	material->SetAmbientOcclusion(1.0);
+	material->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Metallic.jpg", bimg::TextureFormat::R8))));
+	// material->SetMetallic(0.9);
+	material->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Roughness.jpg", bimg::TextureFormat::R8))));
+	// material->SetRoughness(0.3);
+	material->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_AO.jpg", bimg::TextureFormat::R8))));
+	// material->SetAmbientOcclusion(1.0);
 
 	// material->m_AmbientOcclusion = 1.0f;
-	objNode->GetTransform()->SetScale(Vector3f(0.01, 0.01,0.01));
+	objNode->GetTransform()->SetScale(Vector3f(0.02, 0.02,0.02));
 	// objNode->GetTransform()->SetScale(Vector3f(16, 16,16));
 	scene->SetOnTick([&objNode](float deltaTime)
 		{

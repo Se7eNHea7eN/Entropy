@@ -5,6 +5,14 @@
 #include "Graphic/StaticMeshComponent.hpp"
 #include <map>
 namespace Entropy {
+
+	struct BgfxUniform {
+		bgfx::UniformHandle uniformHandle;
+		bgfx::UniformType::Enum uniformType;
+		bgfx::TextureHandle textureHandle;
+		int textureIndex;
+	};
+	
 	struct BgfxMaterial {
 		std::shared_ptr<Material> mat;
 		bgfx::ProgramHandle m_program;
@@ -15,8 +23,7 @@ namespace Entropy {
 		bgfx::UniformHandle u_lightPosition;
 		bgfx::UniformHandle u_lightColor;
 
-		std::map<std::string, bgfx::UniformHandle> uniformMap;
-		std::map<std::string, bgfx::TextureHandle> textureMap;
+		std::map<std::string,BgfxUniform> uniformMap;
 		BgfxMaterial() {
 			u_cameraPos = bgfx::createUniform("u_cameraPos", bgfx::UniformType::Vec4);
 
@@ -29,11 +36,10 @@ namespace Entropy {
 		}
 
 		void Submit(Scene* scene) {
-			int index = 0;
 			for (auto pair : uniformMap) {
 				auto name = pair.first;
 				auto uniform = pair.second;
-				bgfx::setTexture(index++, uniform, textureMap[name]);
+				bgfx::setTexture(uniform.textureIndex, uniform.uniformHandle, uniform.textureHandle);
 			}
 			// bgfx::setTexture(0, iterator->get()->material->s_albedo, iterator->get()->material->t_albedo);
 			// bgfx::setTexture(1, iterator->get()->material->s_metallic, iterator->get()->material->t_metallic);
@@ -64,14 +70,15 @@ namespace Entropy {
 		for (auto pair : mat->GetParams()) {
 			auto name = pair.first;
 			auto mat = pair.second;
+			BgfxUniform bgfxUniform;
 			switch (mat.type) {
 			case Sampler:
-				auto uniform = bgfx::createUniform(name.c_str(), bgfx::UniformType::Sampler);
 				auto texture = static_cast<const Texture*>(mat.Value);
-				auto textureHandler = createTexture(texture->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
-
-				bgfxMat->uniformMap[name] = uniform;
-				bgfxMat->textureMap[name] = textureHandler;
+				bgfxUniform.textureHandle = createTexture(texture->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+				bgfxUniform.uniformHandle = bgfx::createUniform(name.c_str(), bgfx::UniformType::Sampler);
+				bgfxUniform.uniformType = bgfx::UniformType::Sampler;
+				bgfxUniform.textureIndex = mat.index;
+				bgfxMat->uniformMap[name] = bgfxUniform;
 				break;
 				// case Vector4:
 				// 	break;

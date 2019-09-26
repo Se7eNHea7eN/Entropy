@@ -52,10 +52,10 @@ namespace Entropy {
 	{
 		const void* Value;
 		ParameterType type;
-
+		int index;
 		Parameter() = default;
 
-		Parameter(const void* value, ParameterType type) : Value(value) , type(type) {};
+		Parameter(const void* value, ParameterType type,int index = 0) : Value(value) , type(type), index(index){};
 
 		Parameter(const Parameter& rhs) = default;
 
@@ -143,40 +143,40 @@ namespace Entropy {
 			);
 			auto image = std::shared_ptr<bimg::ImageContainer>(img);
 			auto texture = new Texture(image);
-			parameters["s_albedo"] = Parameter(texture,Sampler);
+			parameters["s_albedo"] = Parameter(texture,Sampler,0);
 		}
 
 		void SetAlbedo(Texture* texture) {
-			parameters["s_albedo"] = Parameter(texture, Sampler);
+			parameters["s_albedo"] = Parameter(texture, Sampler, 0);
 		}
 
 		void SetNormal(Texture* texture) {
-			parameters["s_normal"] = Parameter(texture, Sampler);
+			parameters["s_normal"] = Parameter(texture, Sampler, 1);
 		}
 		
 		void SetMetallic(float value) {
 			
-			parameters["s_metallic"] = Parameter(new Texture(buildImageByFloat(value)), Sampler);
+			parameters["s_metallic"] = Parameter(new Texture(buildImageByFloat(value)), Sampler, 2);
 		}
 
 		void SetMetallic(Texture* texture) {
-			parameters["s_metallic"] = Parameter(texture, Sampler);
+			parameters["s_metallic"] = Parameter(texture, Sampler, 2);
 		}
 
 		void SetRoughness(float value) {
-			parameters["s_roughness"] = Parameter(new Texture(buildImageByFloat(value)), Sampler);
+			parameters["s_roughness"] = Parameter(new Texture(buildImageByFloat(value)), Sampler, 3);
 		}
 
 		void SetRoughness(Texture* texture) {
-			parameters["s_roughness"] = Parameter(texture, Sampler);
+			parameters["s_roughness"] = Parameter(texture, Sampler, 3);
 		}
 
 		void SetAmbientOcclusion(float value) {
-			parameters["s_ao"] = Parameter(new Texture(buildImageByFloat(value)), Sampler);
+			parameters["s_ao"] = Parameter(new Texture(buildImageByFloat(value)), Sampler, 4);
 		}
 
 		void SetAmbientOcclusion(Texture* texture) {
-			parameters["s_ao"] = Parameter(texture, Sampler);
+			parameters["s_ao"] = Parameter(texture, Sampler, 4);
 		}
 	};
 }
