@@ -1,4 +1,4 @@
-$input v_pos, v_normal, v_texcoord0
+$input v_pos, v_normal, v_texcoord0 , v_tangent
 #include "light.sc"
 
 #include "../common/common.sh"
@@ -21,22 +21,6 @@ uniform vec3 u_cameraPos;
 
 const float PI = 3.14159265359;
 
-vec3 getNormalFromMap(vec3 position,vec2 texCoord , vec3 vnormal)
-{
-    vec3 tangentNormal = texture2D(s_normal, texCoord).xyz * 2.0 - 1.0;
-
-    vec3 Q1  = dFdx(position);
-    vec3 Q2  = dFdy(position);
-    vec2 st1 = dFdx(texCoord);
-    vec2 st2 = dFdy(texCoord);
-
-    vec3 N   = normalize(vnormal);
-    vec3 T  = normalize(Q1*st2.y - Q2*st1.y);
-    vec3 B  = -normalize(cross(N, T));
-    mat3 TBN = mat3(T, B, N);
-
-    return normalize(mul(TBN , tangentNormal));
-}
 
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
@@ -87,8 +71,17 @@ void main()
     float ao = texture2D(s_ao, v_texcoord0).x;
 
     vec3 N;
-    if(useNormalMap > 0)
-        N = getNormalFromMap(v_pos,v_texcoord0,v_normal);
+    if(useNormalMap > 0){
+        vec3 Normal = normalize(v_normal);
+        vec3 Tangent = normalize(v_tangent);
+        vec3 Bitangent = -normalize(cross(Normal,Tangent));
+
+        mat3 TBN = mat3(Tangent, Bitangent, Normal);
+
+        vec3 BumpMapNormal = 2.0 * texture2D(s_normal, v_texcoord0).xyz - vec3(1.0, 1.0, 1.0);
+
+        N = normalize(mul(TBN,BumpMapNormal));
+    }
     else
         N = normalize(v_normal);
 

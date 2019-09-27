@@ -4,6 +4,7 @@
 #include "Graphic/Vertex.hpp"
 #include "Graphic/StaticMeshComponent.hpp"
 #include <Graphic\Mesh.hpp>
+#include "../../../bgfx/include/bgfx/bgfx.h"
 
 
 namespace Entropy {
@@ -36,10 +37,9 @@ namespace Entropy {
 		for (size_t s = 0; s < shapes.size(); s++) {
 
 			auto mesh = std::make_shared<Mesh>();
-
-			std::vector<Vertex>* vertices = new std::vector<Vertex>(shapes[s].mesh.num_face_vertices.size()*3);
+			mesh->vertices.resize(shapes[s].mesh.num_face_vertices.size() * 3);
 			
-			std::vector<uint32_t>* indices = new std::vector<uint32_t>(shapes[s].mesh.num_face_vertices.size() * 3);
+			// std::vector<uint32_t>* indices = new std::vector<uint32_t>(shapes[s].mesh.num_face_vertices.size() * 3);
 
 			int index = 0;
 			// uint16_t index = 0;
@@ -56,24 +56,24 @@ namespace Entropy {
 					tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 
 					// indices->push_back(indices->size());
-					indices->at(index) = index;
+					// indices->at(index) = index;
 					Vertex vertex;
-					vertex.m_x = attrib.vertices[3 * idx.vertex_index + 0];
-					vertex.m_y = attrib.vertices[3 * idx.vertex_index + 1];
-					vertex.m_z = attrib.vertices[3 * idx.vertex_index + 2];
-					vertex.m_nx = attrib.normals[3 * idx.normal_index + 0];
-					vertex.m_ny = attrib.normals[3 * idx.normal_index + 1];
-					vertex.m_nz = attrib.normals[3 * idx.normal_index + 2];
+					vertex.x = attrib.vertices[3 * idx.vertex_index + 0];
+					vertex.y = attrib.vertices[3 * idx.vertex_index + 1];
+					vertex.z = attrib.vertices[3 * idx.vertex_index + 2];
+					vertex.normalX = attrib.normals[3 * idx.normal_index + 0];
+					vertex.normalY = attrib.normals[3 * idx.normal_index + 1];
+					vertex.normalZ = attrib.normals[3 * idx.normal_index + 2];
 					if (idx.texcoord_index >= 0) {
-						vertex.m_tx = attrib.texcoords[2 * idx.texcoord_index + 0];
-						vertex.m_ty = attrib.texcoords[2 * idx.texcoord_index + 1];
+						vertex.texCoordX = attrib.texcoords[2 * idx.texcoord_index + 0];
+						vertex.texCoordY = attrib.texcoords[2 * idx.texcoord_index + 1];
 					}
 					// Optional: vertex colors
 					// tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
 					// tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
 					// tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
 					//
-					vertices->at(index) = vertex;
+					mesh->vertices.at(index) = vertex;
 					// vertices->push_back(vertex);
 
 					index++;
@@ -83,15 +83,9 @@ namespace Entropy {
 				// per-face material
 				// shapes[s].mesh.material_ids[f];
 			}
+			
+			mesh->CalculateTangents();
 
-			mesh->m_vertexBuffer = &(*vertices)[0];
-			mesh->m_vertexCount = vertices->size();
-			mesh->m_vertexBufferSize = vertices->size() * sizeof(Vertex);
-
-			//
-			mesh->m_indexBuffer = &(*indices)[0];
-			mesh->m_indexCount = indices->size();
-			mesh->m_indexBufferSize = indices->size() * sizeof(uint32_t);
 			meshes->push_back(mesh);
 		}
 		return meshes;

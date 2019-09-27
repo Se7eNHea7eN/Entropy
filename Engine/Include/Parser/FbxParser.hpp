@@ -27,43 +27,28 @@ namespace Entropy{
 		for (int m = 0; m < g_scene->getMeshCount(); m++) {
 			auto mesh = std::make_shared<Mesh>();
 			auto geometry = g_scene->getMesh(m)->getGeometry();
-			std::vector<Vertex>* vertices = new std::vector<Vertex>(geometry->getVertexCount());
+			mesh->vertices.resize(geometry->getVertexCount());
 
 			for (int i = 0; i < geometry->getVertexCount(); i ++) {
 				Vertex vertex;
 
 				auto v = geometry->getVertices()[i];
-				vertex.m_x = v.x;
-				vertex.m_y = v.y;
-				vertex.m_z = v.z;
+				vertex.x = v.x;
+				vertex.y = v.y;
+				vertex.z = v.z;
 
-				auto t = geometry->getUVs()[i];
-				vertex.m_tx = t.x;
-				vertex.m_ty = 1- t.y;
+				auto uv= geometry->getUVs()[i];
+				vertex.texCoordX = uv.x;
+				vertex.texCoordY = 1- uv.y;
 
 				auto n = geometry->getNormals()[i];
-				vertex.m_nx = n.x;
-				vertex.m_ny = n.y;
-				vertex.m_nz = n.z;
+				vertex.normalX = n.x;
+				vertex.normalY = n.y;
+				vertex.normalZ = n.z;
 
-				vertices->at(i) = vertex;
+				mesh->vertices.at(i) = vertex;
 			}
-
-			std::vector<uint32_t>* indices = new std::vector<uint32_t>(geometry->getIndexCount());
-
-			for (int i = 0; i < geometry->getIndexCount(); i++) {
-				// indices->at(i) = (uint32_t)geometry->getFaceIndices()[i];
-				indices->at(i) = i;
-			}
-			
-			mesh->m_vertexBuffer = &(*vertices)[0];
-			mesh->m_vertexCount = vertices->size();
-			mesh->m_vertexBufferSize = vertices->size() * sizeof(Vertex);
-
-			//
-			mesh->m_indexBuffer = &(*indices)[0];
-			mesh->m_indexCount = indices->size();
-			mesh->m_indexBufferSize = indices->size() * sizeof(uint32_t);
+			mesh->CalculateTangents();
 			meshes->push_back(mesh);
 		}
 

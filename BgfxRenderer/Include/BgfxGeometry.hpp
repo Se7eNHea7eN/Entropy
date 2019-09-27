@@ -149,7 +149,8 @@ namespace Entropy {
 			Map<Matrix4f>(transformMatrixArray, transformMatrix.rows(), transformMatrix.cols()) = transformMatrix;
 			bgfx::setTransform(transformMatrixArray);
 			bgfx::setVertexBuffer(0, vbh);
-			bgfx::setIndexBuffer(ibh);
+			if(ibh.idx > 0)
+				bgfx::setIndexBuffer(ibh);
 			material->Submit(scene,meshComponent->EnableLighting());
 		}
 	};

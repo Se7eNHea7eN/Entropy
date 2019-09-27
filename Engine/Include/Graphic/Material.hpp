@@ -139,6 +139,10 @@ namespace Entropy {
 			return parameters;
 		}
 
+		void SetParam(std::string name, Parameter param) {
+			parameters[name] = param;
+		}
+		
 		friend std::ostream& operator<<(std::ostream& out, const Texture& obj);
 	};
 

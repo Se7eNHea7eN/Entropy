@@ -16,10 +16,10 @@
 using namespace Entropy;
 
 std::shared_ptr<SceneNode> createRifle() {
-	std::shared_ptr<SceneNode> rifleNode(new SceneNode());
+	std::shared_ptr<SceneNode> node(new SceneNode());
 
-	std::shared_ptr<StaticMeshComponent> rifleMeshComponent(new StaticMeshComponent());
-	rifleMeshComponent->Initialize();
+	std::shared_ptr<StaticMeshComponent> meshComponent(new StaticMeshComponent());
+	meshComponent->Initialize();
 	std::string inputfile = "Assets/Rifle2/Rifle_2.fbx";
 
 	std::vector<std::shared_ptr<Mesh>>* meshes;
@@ -35,29 +35,29 @@ std::shared_ptr<SceneNode> createRifle() {
 	}
 
 	for (auto m : *meshes) {
-		rifleMeshComponent->GetMeshes().push_back(m);
+		meshComponent->GetMeshes().push_back(m);
 	}
-	auto rifleMat = std::make_shared<StandardPBRMaterial>();
-	rifleMeshComponent->GetMaterials().push_back(rifleMat);
+	auto mat = std::make_shared<StandardPBRMaterial>();
+	meshComponent->GetMaterials().push_back(mat);
 
-	rifleMat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Albedo.jpg", bimg::TextureFormat::RGB8))));
-	rifleMat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Normal.jpg", bimg::TextureFormat::RGB8))));
-	rifleMat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Metallic.jpg", bimg::TextureFormat::R8))));
-	rifleMat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Roughness.jpg", bimg::TextureFormat::R8))));
-	rifleMat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_AO.jpg", bimg::TextureFormat::R8))));
+	mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Albedo.jpg", bimg::TextureFormat::RGB8))));
+	mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Normal.jpg", bimg::TextureFormat::RGB8))));
+	mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Metallic.jpg", bimg::TextureFormat::R8))));
+	mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Roughness.jpg", bimg::TextureFormat::R8))));
+	mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_AO.jpg", bimg::TextureFormat::R8))));
 
-	rifleNode->GetTransform()->SetScale(Vector3f(0.015, 0.015, 0.015));
-	rifleNode->AddComponent(rifleMeshComponent->SharedPtr());
-	return rifleNode;
+	node->GetTransform()->SetScale(Vector3f(0.015, 0.015, 0.015));
+	node->AddComponent(meshComponent->SharedPtr());
+	return node;
 }
 
 
 
 std::shared_ptr<SceneNode> createGun() {
-	std::shared_ptr<SceneNode> rifleNode(new SceneNode());
+	std::shared_ptr<SceneNode> node(new SceneNode());
 
-	std::shared_ptr<StaticMeshComponent> rifleMeshComponent(new StaticMeshComponent());
-	rifleMeshComponent->Initialize();
+	std::shared_ptr<StaticMeshComponent> meshComponent(new StaticMeshComponent());
+	meshComponent->Initialize();
 	std::string inputfile = "Assets/Gun/gun.obj";
 
 	std::vector<std::shared_ptr<Mesh>>* meshes;
@@ -73,44 +73,23 @@ std::shared_ptr<SceneNode> createGun() {
 	}
 
 	for (auto m : *meshes) {
-		rifleMeshComponent->GetMeshes().push_back(m);
+		meshComponent->GetMeshes().push_back(m);
 	}
-	auto rifleMat = std::make_shared<StandardPBRMaterial>();
-	rifleMeshComponent->GetMaterials().push_back(rifleMat);
-
-	rifleMat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_BC.png", bimg::TextureFormat::RGB8))));
-	rifleMat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::RGB8))));
-	rifleMat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_M.png", bimg::TextureFormat::R8))));
-	rifleMat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::R8))));
-	rifleMat->SetAmbientOcclusion(1.0);
-
-	rifleNode->GetTransform()->SetScale(Vector3f(20, 20, 20));
-	rifleNode->AddComponent(rifleMeshComponent->SharedPtr());
-
-	rifleNode->GetTransform()->SetPosition(-1, 0, 0);
-
-	return rifleNode;
-}
-
-
-
-std::shared_ptr<SceneNode> createSphere() {
-	std::shared_ptr<SceneNode> sphereNode(new SceneNode());
-
-	std::shared_ptr<StaticMeshComponent> sphereComponent(new StaticMeshComponent());
-	sphereComponent->Initialize();
-
-	// sphereComponent->GetMeshes().push_back((*ParseObj("Assets/bunny.obj"))[0]);
 	auto mat = std::make_shared<StandardPBRMaterial>();
-	sphereComponent->GetMaterials().push_back(mat);
+	meshComponent->GetMaterials().push_back(mat);
 
-	mat->SetAlbedo(ColorRGBA(128,128,128,255));
-	mat->SetMetallic(0.9);
-	mat->SetRoughness(0.4);
+	mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_BC.png", bimg::TextureFormat::RGB8))));
+	mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::RGB8))));
+	mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_M.png", bimg::TextureFormat::R8))));
+	mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::R8))));
 	mat->SetAmbientOcclusion(1.0);
 
-	sphereNode->AddComponent(sphereComponent->SharedPtr());
-	return sphereNode;
+	node->GetTransform()->SetScale(Vector3f(20, 20, 20));
+	node->AddComponent(meshComponent->SharedPtr());
+
+	node->GetTransform()->SetPosition(-1, 0, 0);
+
+	return node;
 }
 
 
@@ -120,9 +99,21 @@ int main(int _argc, const char* const* _argv)
 	// app.entropyCore->debugMode = true;
 	app.entropyCore->CreateScene("Test Scene");
 	auto scene = app.entropyCore->CurrentScene();
-
-	// auto rifleNode = createRifle();
+	//
+	std::shared_ptr<SceneNode> skyBoxNode(new SceneNode());
+	std::shared_ptr<StaticMeshComponent> skyBoxMeshComponent(new StaticMeshComponent());
+	skyBoxMeshComponent->Initialize();
+	skyBoxMeshComponent->AddMesh(GenerateBox());
+	auto skyBoxMat = std::make_shared<Material>();
+	skyBoxMat->SetVertexShader("vs_skybox");
+	skyBoxMat->SetFragmentShader("fs_skybox_hdr");
+	skyBoxMat->SetParam("s_skybox", Parameter(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/newport_loft.hdr", bimg::TextureFormat::RGB8))), Sampler, 0));
+	
+	skyBoxMeshComponent->AddMaterial(skyBoxMat);
+	skyBoxNode->AddComponent(skyBoxMeshComponent);
+	skyBoxNode->GetTransform()->SetScale(Vector3f(100, 100, 100));
 	auto rifleNode = createGun();
+	// auto rifleNode = createRifle();
 	scene->GetRootNode()->AddChild(rifleNode->SharedPtr());
 
 	
@@ -134,9 +125,7 @@ int main(int _argc, const char* const* _argv)
 	scene->MainCamera = camera;
 	scene->GetRootNode()->AddChild(cameraNode->SharedPtr());
 
-	auto sphereNode = createSphere();
 
-	scene->GetRootNode()->AddChild(sphereNode->SharedPtr());
 	scene->SetOnTick([&](float deltaTime)
 	{
 		rifleNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());

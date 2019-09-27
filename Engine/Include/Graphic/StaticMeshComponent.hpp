@@ -42,11 +42,17 @@ namespace Entropy {
 		std::vector<std::shared_ptr<Mesh>>& GetMeshes() {
 			return m_Mesh;
 		}
-		
+
+		void AddMesh(const std::shared_ptr<Mesh>& m) {
+			m_Mesh.push_back(m);
+		}
+
+		void AddMaterial(const std::shared_ptr<Material>& m) {
+			m_Materials.push_back(m);
+		}
 		// void SetVisibility(bool visible) { m_bVisible = visible; };
 		// const bool Visible() { return m_bVisible; };
 		// void SetIfCastShadow(bool shadow) { m_bShadow = shadow; };
 		// const bool CastShadow() { return m_bShadow; };
-		void AddMaterial(const std::shared_ptr<Material>& object) { m_Materials.push_back(object); };
 	};
 }

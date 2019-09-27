@@ -14,6 +14,7 @@
 
 #include "BgfxGeometry.hpp"
 #include "BgfxRenderer.hpp"
+#include "Graphic/Vertex.hpp"
 using namespace Eigen;
 struct SimpleVertexLayout {
 	static void init() {
@@ -22,6 +23,7 @@ struct SimpleVertexLayout {
 			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 			.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
 			.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::Tangent, 3, bgfx::AttribType::Float)
 			.end();
 	};
 
@@ -85,14 +87,14 @@ void Entropy::BgfxRenderer::Initialize() {
 			auto geo = std::make_shared<BgfxGeometry>();
 			geo->meshComponent = obj;
 			geo->vbh = bgfx::createVertexBuffer(
-				bgfx::makeRef(mesh->m_vertexBuffer, mesh->m_vertexBufferSize)
+				bgfx::makeRef(&mesh->vertices[0], mesh->vertices.size() * sizeof(Vertex))
 				, SimpleVertexLayout::ms_layout
 			);
-	
-			geo->ibh = bgfx::createIndexBuffer(
-				bgfx::makeRef(mesh->m_indexBuffer, mesh->m_indexBufferSize),
-				BGFX_BUFFER_INDEX32
-			);
+			if(!mesh->indices.empty())
+				geo->ibh = bgfx::createIndexBuffer(
+					bgfx::makeRef(&mesh->indices[0], mesh->indices.size() * sizeof(uint32_t)),
+					BGFX_BUFFER_INDEX32
+				);
 			auto bgfxMaterial = BgfxMaterial::buildFromMaterial(obj->GetMaterials()[mesh->m_materialIndex]);
 			geo->material = std::shared_ptr<BgfxMaterial>(bgfxMaterial);
 			geo->indiceType = mesh->m_indiceType;
