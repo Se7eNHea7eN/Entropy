@@ -5,6 +5,7 @@ $input v_pos, v_normal, v_texcoord0
 
 uniform vec4 u_params[1];
 #define useNormalMap int(u_params[0].x)
+#define isEmissive int(u_params[0].y)
 
 SAMPLER2D(s_albedo, 0);
 SAMPLER2D(s_normal, 1);
@@ -12,6 +13,9 @@ SAMPLER2D(s_normal, 1);
 SAMPLER2D(s_metallic, 2);
 SAMPLER2D(s_roughness, 3);
 SAMPLER2D(s_ao, 4);
+
+SAMPLER2D(s_emissive, 5);
+
 
 uniform vec3 u_cameraPos;
 
@@ -88,7 +92,6 @@ void main()
     else
         N = normalize(v_normal);
 
-
     vec3 V = normalize(u_cameraPos - v_pos);
 
     vec3 F0 = vec3(0.04,0.04,0.04); 
@@ -127,6 +130,10 @@ void main()
     }   
     
 
+    if(isEmissive > 0 ){
+        vec4 emissive = texture2D(s_emissive, v_texcoord0);
+        Lo = mix(Lo,emissive.xyz,emissive.w);
+    }
     vec3 ambient = vec3(0.03,0.03,0.03) * albedo * ao;
 
     vec3 color = ambient + Lo;

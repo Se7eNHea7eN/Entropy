@@ -84,8 +84,11 @@ std::shared_ptr<SceneNode> createGun() {
 	rifleMat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::R8))));
 	rifleMat->SetAmbientOcclusion(1.0);
 
-	rifleNode->GetTransform()->SetScale(Vector3f(16, 16, 16));
+	rifleNode->GetTransform()->SetScale(Vector3f(20, 20, 20));
 	rifleNode->AddComponent(rifleMeshComponent->SharedPtr());
+
+	rifleNode->GetTransform()->SetPosition(-1, 0, 0);
+
 	return rifleNode;
 }
 
@@ -125,8 +128,8 @@ int main(int _argc, const char* const* _argv)
 	
 	auto camera = std::shared_ptr<Camera>(std::make_shared<Camera>());
 	auto cameraNode = std::make_shared<SceneNode>();
-	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0,0,-5));
-	// cameraNode->GetTransform()->Rotate(0.3, Vector3f::UnitX());
+	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0,3,-5));
+	cameraNode->GetTransform()->Rotate(0.3, Vector3f::UnitX());
 	cameraNode->AddComponent(camera);
 	scene->MainCamera = camera;
 	scene->GetRootNode()->AddChild(cameraNode->SharedPtr());
@@ -141,10 +144,11 @@ int main(int _argc, const char* const* _argv)
 
 	auto pointLightNode = std::make_shared<SceneNode>();
 	auto pointLight = std::make_shared<PointLight>();
-	pointLight->SetIntensive(2);
+	pointLight->SetLightColor(Vector3f(1, 1, 1));
+	pointLight->SetIntensive(3);
 	pointLight->Initialize();
 	pointLightNode->AddComponent(pointLight);
-	pointLightNode->GetTransform()->SetPosition(2, 1, 0);
+	pointLightNode->GetTransform()->SetPosition(2, 2, 0);
 
 	std::shared_ptr<StaticMeshComponent> sphereComponent(new StaticMeshComponent());
 	sphereComponent->Initialize();
@@ -157,6 +161,8 @@ int main(int _argc, const char* const* _argv)
 	mat->SetMetallic(0.9);
 	mat->SetRoughness(0.4);
 	mat->SetAmbientOcclusion(1.0);
+	auto lightColor = pointLight->GetLightColor();
+	mat->SetEmissive(ColorRGBA(lightColor.x()*255, lightColor.y()*255, lightColor.z() * 255,  std::min(int( pointLight->GetInstensive() * 255),255)));
 	pointLightNode->AddComponent(sphereComponent);
 	
 

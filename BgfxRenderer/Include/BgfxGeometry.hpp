@@ -63,8 +63,6 @@ namespace Entropy {
 
 			if(enableLighting) {
 				lightCount[0] = PointLight::AllPointLights.size();
-				bgfx::setUniform(u_pointLightCount, lightCount);
-
 				for (int i = 0; i < PointLight::AllPointLights.size(); ++i) {
 					auto light = PointLight::AllPointLights[i];
 					lightPosition[i][0] = light->GetNode()->GetTransform()->Position().x();
@@ -81,7 +79,11 @@ namespace Entropy {
 					bgfx::setUniform(u_lightPosition, lightPosition);
 					bgfx::setUniform(u_lightColor, lightColor);
 				}
+			}else {
+				lightCount[0] = 0;
 			}
+
+			bgfx::setUniform(u_pointLightCount, lightCount);
 
 			bgfx::submit(0, m_program);
 		}

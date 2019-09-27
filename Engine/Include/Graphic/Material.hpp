@@ -112,6 +112,7 @@ namespace Entropy {
 		std::map<std::string, Parameter> parameters;
 
 		bimg::ImageContainer* buildImageByFloat(float value);
+		bimg::ImageContainer* buildImageByColor(ColorRGBA value);
 
 	public:
 
@@ -153,20 +154,7 @@ namespace Entropy {
 		}
 
 		void SetAlbedo(ColorRGBA color) {
-
-			auto img = bimg::imageAlloc(getAllocator()
-				, bimg::TextureFormat::RGBA8
-				, uint16_t(1)
-				, uint16_t(1)
-				, 0
-				, 1
-				, false
-				, false
-				, new ColorRGBA(color)
-			);
-			auto image = std::shared_ptr<bimg::ImageContainer>(img);
-			auto texture = new Texture(image);
-			parameters["s_albedo"] = Parameter(texture,Sampler,0);
+			parameters["s_albedo"] = Parameter(new Texture(buildImageByColor(color)),Sampler,0);
 		}
 
 		void SetAlbedo(Texture* texture) {
@@ -174,14 +162,14 @@ namespace Entropy {
 		}
 
 		void SetNormal(Texture* texture) {
-			u_params[0].x = 1;
 			parameters["s_normal"] = Parameter(texture, Sampler, 1);
+
+			u_params[0].x = 1;
 			parameters["u_params"] = Parameter(&u_params[0], 1,Vector4);
 		}
 		
 		void SetMetallic(float value) {
-			
-			parameters["s_metallic"] = Parameter(new Texture(buildImageByFloat(value)), Sampler, 2);
+			SetMetallic(new Texture(buildImageByFloat(value)));
 		}
 
 		void SetMetallic(Texture* texture) {
@@ -202,6 +190,17 @@ namespace Entropy {
 
 		void SetAmbientOcclusion(Texture* texture) {
 			parameters["s_ao"] = Parameter(texture, Sampler, 4);
+		}
+
+
+		void SetEmissive(ColorRGBA value) {
+			SetEmissive(new Texture(buildImageByColor(value)));
+		}
+
+		void SetEmissive(Texture* texture) {
+			parameters["s_emissive"] = Parameter(texture, Sampler, 5);
+			u_params[0].y = 1;
+			parameters["u_params"] = Parameter(&u_params[0], 1, Vector4);
 		}
 	};
 }
