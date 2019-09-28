@@ -76,9 +76,11 @@ void main()
         vec3 Tangent = normalize(v_tangent);
         vec3 Bitangent = -normalize(cross(Normal,Tangent));
 
-        mat3 TBN = mat3(Tangent, Bitangent, Normal);
-
-        vec3 BumpMapNormal = 2.0 * texture2D(s_normal, v_texcoord0).xyz - vec3(1.0, 1.0, 1.0);
+        mat3 TBN =  mat3(Tangent,Bitangent, Normal);
+        #if BGFX_SHADER_LANGUAGE_HLSL | BGFX_SHADER_LANGUAGE_SPRIV
+            TBN = transpose( TBN ); 
+        #endif
+        vec3 BumpMapNormal = normalize(2.0 * texture2D(s_normal, v_texcoord0).xyz - vec3(1.0, 1.0, 1.0));
 
         N = normalize(mul(TBN,BumpMapNormal));
     }

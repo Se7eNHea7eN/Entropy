@@ -112,9 +112,9 @@ int main(int _argc, const char* const* _argv)
 	skyBoxMeshComponent->AddMaterial(skyBoxMat);
 	skyBoxNode->AddComponent(skyBoxMeshComponent);
 	skyBoxNode->GetTransform()->SetScale(Vector3f(100, 100, 100));
-	auto rifleNode = createGun();
+	auto gunNode = createGun();
 	// auto rifleNode = createRifle();
-	scene->GetRootNode()->AddChild(rifleNode->SharedPtr());
+	scene->GetRootNode()->AddChild(gunNode->SharedPtr());
 
 	
 	auto camera = std::shared_ptr<Camera>(std::make_shared<Camera>());
@@ -128,13 +128,13 @@ int main(int _argc, const char* const* _argv)
 
 	scene->SetOnTick([&](float deltaTime)
 	{
-		rifleNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
+		gunNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
 	});
 
 	auto pointLightNode = std::make_shared<SceneNode>();
 	auto pointLight = std::make_shared<PointLight>();
 	pointLight->SetLightColor(Vector3f(1, 1, 1));
-	pointLight->SetIntensive(3);
+	pointLight->SetIntensive(10);
 	pointLight->Initialize();
 	pointLightNode->AddComponent(pointLight);
 	pointLightNode->GetTransform()->SetPosition(2, 2, 0);

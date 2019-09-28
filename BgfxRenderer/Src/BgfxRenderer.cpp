@@ -90,11 +90,17 @@ void Entropy::BgfxRenderer::Initialize() {
 				bgfx::makeRef(&mesh->vertices[0], mesh->vertices.size() * sizeof(Vertex))
 				, SimpleVertexLayout::ms_layout
 			);
-			if(!mesh->indices.empty())
-				geo->ibh = bgfx::createIndexBuffer(
-					bgfx::makeRef(&mesh->indices[0], mesh->indices.size() * sizeof(uint32_t)),
-					BGFX_BUFFER_INDEX32
-				);
+			if(mesh->indices.empty()) {
+				mesh->indices.resize(mesh->vertices.size());
+				for (int i = 0; i < mesh->vertices.size(); i++) {
+					mesh->indices.at(i) = i;
+				}
+			}
+
+			geo->ibh = bgfx::createIndexBuffer(
+				bgfx::makeRef(&mesh->indices[0], mesh->indices.size() * sizeof(uint32_t)),
+				BGFX_BUFFER_INDEX32
+			);
 			auto bgfxMaterial = BgfxMaterial::buildFromMaterial(obj->GetMaterials()[mesh->m_materialIndex]);
 			geo->material = std::shared_ptr<BgfxMaterial>(bgfxMaterial);
 			geo->indiceType = mesh->m_indiceType;

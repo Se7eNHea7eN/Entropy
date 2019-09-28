@@ -135,13 +135,7 @@ namespace Entropy {
 			-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
 		};
 
-
-		//	
-		// mesh->m_indexBuffer = &(*indices)[0];
-		// mesh->m_indexCount = indices->size();
-		// mesh->m_indexBufferSize = indices->size() * sizeof(uint32_t);
-		// mesh->m_indiceType = UINT64_C(0x0001000000000000);
-
+		mesh->CalculateTangents();
 
 		return mesh;
 	}

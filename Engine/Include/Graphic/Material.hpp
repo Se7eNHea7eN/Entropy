@@ -150,11 +150,16 @@ namespace Entropy {
 	class StandardPBRMaterial : public Material {
 	protected:
 		std::vector<Vec4> u_params;
+	protected:
+		void setParams() {
+			parameters["u_params"] = Parameter(&u_params[0], 1, Vector4);
+		}
 	public:
 		StandardPBRMaterial() {
 			m_VertexShader = "vs_common";
 			m_FragmentShader = "fs_pbr";
-			u_params.push_back(Vec4());
+			u_params.push_back(Vec4(-1,-1,0,0));
+			setParams();
 		}
 
 		void SetAlbedo(ColorRGBA color) {
@@ -169,7 +174,7 @@ namespace Entropy {
 			parameters["s_normal"] = Parameter(texture, Sampler, 1);
 
 			u_params[0].x = 1;
-			parameters["u_params"] = Parameter(&u_params[0], 1,Vector4);
+			setParams();
 		}
 		
 		void SetMetallic(float value) {
@@ -204,7 +209,7 @@ namespace Entropy {
 		void SetEmissive(Texture* texture) {
 			parameters["s_emissive"] = Parameter(texture, Sampler, 5);
 			u_params[0].y = 1;
-			parameters["u_params"] = Parameter(&u_params[0], 1, Vector4);
+			setParams();
 		}
 	};
 }
