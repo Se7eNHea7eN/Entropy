@@ -1,15 +1,23 @@
 #include "Common/SceneNode.hpp"
 #include "Common/Transform.hpp"
 
+
+
 Entropy::SceneNode::SceneNode() {
-	m_Transform = std::make_unique<Transform>();
+	
 }
 
-Entropy::SceneNode::SceneNode(const char* name) { m_strName = name; }
+Entropy::SceneNode::SceneNode(const char* name) {
+	m_strName = name;
+}
 
-Entropy::SceneNode::SceneNode(const std::string& name) { m_strName = name; }
+Entropy::SceneNode::SceneNode(const std::string& name) {
+	m_strName = name;
+}
 
-Entropy::SceneNode::SceneNode(const std::string&& name) { m_strName = std::move(name); }
+Entropy::SceneNode::SceneNode(const std::string&& name) {
+	m_strName = std::move(name);
+}
 
 Entropy::SceneNode::~SceneNode() {
 	for(auto c: m_Components) {
@@ -27,8 +35,17 @@ void Entropy::SceneNode::AddComponent(std::shared_ptr<Component>&& c) {
 	c->SetNode(SharedPtr());
 }
 
+int Entropy::SceneNode::Initialize() {
+	m_Transform = std::make_unique<Transform>();
+	AddComponent(std::shared_ptr<Transform>(m_Transform.get()));
+	return 0;
+}
+
+void Entropy::SceneNode::Finalize() {
+}
+
 void Entropy::SceneNode::Tick(float deltaTime) {
 	for (auto c : m_Components) {
-		c->Tick();
+		c->Tick(deltaTime);
 	}
 }

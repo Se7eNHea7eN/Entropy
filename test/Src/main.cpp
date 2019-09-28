@@ -15,8 +15,56 @@
 
 using namespace Entropy;
 
+
+std::shared_ptr<SceneNode> createCerberus() {
+
+	std::shared_ptr<SceneNode> objNode(new SceneNode("gunParent"));
+	objNode->Initialize();
+	std::shared_ptr<SceneNode> node(new SceneNode("gun"));
+	node->Initialize();
+	std::shared_ptr<StaticMeshComponent> meshComponent(new StaticMeshComponent());
+	meshComponent->Initialize();
+	std::string inputfile = "Assets/Cerberus_by_Andrew_Maximov/Cerberus_LP.fbx";
+
+	std::vector<std::shared_ptr<Mesh>>* meshes;
+
+	if (ends_with(inputfile, ".obj")) {
+		meshes = ParseObj(inputfile);
+	}
+	else if (ends_with(inputfile, ".fbx")) {
+		meshes = ParseFBX(inputfile);
+	}
+	else {
+		return nullptr;
+	}
+
+	for (auto m : *meshes) {
+		meshComponent->GetMeshes().push_back(m);
+	}
+	auto mat = std::make_shared<StandardPBRMaterial>();
+	meshComponent->GetMaterials().push_back(mat);
+
+	mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Cerberus_by_Andrew_Maximov/Textures/Cerberus_A.tga", bimg::TextureFormat::RGB8))));
+	mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Cerberus_by_Andrew_Maximov/Textures/Cerberus_N.tga", bimg::TextureFormat::RGB8))));
+	mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Cerberus_by_Andrew_Maximov/Textures/Cerberus_M.tga", bimg::TextureFormat::R8))));
+	mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Cerberus_by_Andrew_Maximov/Textures/Cerberus_R.tga", bimg::TextureFormat::R8))));
+	mat->SetAmbientOcclusion(1);
+
+	node->GetTransform()->SetScale(Vector3f(0.03, 0.03, 0.03));
+	node->GetTransform()->SetPosition(Vector3f(0,2,0));
+	node->GetTransform()->Rotate(3.14 /2, Vector3f::UnitZ());
+	node->GetTransform()->Rotate(3.14 /2, Vector3f::UnitY());
+
+	node->AddComponent(meshComponent->SharedPtr());
+
+	objNode->AddChild(std::move(node));
+	return objNode;
+}
+
+
 std::shared_ptr<SceneNode> createRifle() {
 	std::shared_ptr<SceneNode> node(new SceneNode());
+	node->Initialize();
 
 	std::shared_ptr<StaticMeshComponent> meshComponent(new StaticMeshComponent());
 	meshComponent->Initialize();
@@ -55,6 +103,7 @@ std::shared_ptr<SceneNode> createRifle() {
 
 std::shared_ptr<SceneNode> createGun() {
 	std::shared_ptr<SceneNode> node(new SceneNode());
+	node->Initialize();
 
 	std::shared_ptr<StaticMeshComponent> meshComponent(new StaticMeshComponent());
 	meshComponent->Initialize();
@@ -101,6 +150,7 @@ int main(int _argc, const char* const* _argv)
 	auto scene = app.entropyCore->CurrentScene();
 	//
 	std::shared_ptr<SceneNode> skyBoxNode(new SceneNode());
+	skyBoxNode->Initialize();
 	std::shared_ptr<StaticMeshComponent> skyBoxMeshComponent(new StaticMeshComponent());
 	skyBoxMeshComponent->Initialize();
 	skyBoxMeshComponent->AddMesh(GenerateBox());
@@ -111,14 +161,16 @@ int main(int _argc, const char* const* _argv)
 	
 	skyBoxMeshComponent->AddMaterial(skyBoxMat);
 	skyBoxNode->AddComponent(skyBoxMeshComponent);
-	skyBoxNode->GetTransform()->SetScale(Vector3f(100, 100, 100));
-	auto gunNode = createGun();
+	skyBoxNode->GetTransform()->SetScale(Vector3f(10, 10, 10));
+	auto gunNode = createCerberus();
 	// auto rifleNode = createRifle();
 	scene->GetRootNode()->AddChild(gunNode->SharedPtr());
 
 	
 	auto camera = std::shared_ptr<Camera>(std::make_shared<Camera>());
 	auto cameraNode = std::make_shared<SceneNode>();
+	cameraNode->Initialize();
+
 	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0,3,-5));
 	cameraNode->GetTransform()->Rotate(0.3, Vector3f::UnitX());
 	cameraNode->AddComponent(camera);
@@ -132,6 +184,7 @@ int main(int _argc, const char* const* _argv)
 	});
 
 	auto pointLightNode = std::make_shared<SceneNode>();
+	pointLightNode->Initialize();
 	auto pointLight = std::make_shared<PointLight>();
 	pointLight->SetLightColor(Vector3f(1, 1, 1));
 	pointLight->SetIntensive(10);

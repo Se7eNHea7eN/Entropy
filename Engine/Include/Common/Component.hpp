@@ -16,7 +16,7 @@ public:
 			// node.reset();
 		};
 
-		virtual void Tick(){};
+		virtual void Tick(float deltaTime){};
 
 
 		void SetNode(std::shared_ptr<SceneNode> n) {

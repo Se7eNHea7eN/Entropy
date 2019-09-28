@@ -2,12 +2,13 @@
 #include <list>
 #include <memory>
 #include <string>
+#include "Interface/IRuntimeModule.hpp"
 
 
 namespace Entropy {
 	class Component;
 	class Transform;
-	class SceneNode :public std::enable_shared_from_this<SceneNode> {
+	class SceneNode :public std::enable_shared_from_this<SceneNode> , public IRuntimeModule {
 	public:
 		SceneNode();;
 		SceneNode(const char* name);;
@@ -24,14 +25,23 @@ namespace Entropy {
 			return m_Transform.get();
 		}
 
-		virtual void Tick(float deltaTime);
-
 		std::shared_ptr<SceneNode> SharedPtr() {
 			return shared_from_this();
 		}
+
+		std::shared_ptr<SceneNode> GetParent() {
+			return m_Parent;
+		}
+
+
+		int Initialize() override;
+		void Finalize() override;
+
+
+		void Tick(float deltaTime) override;
 	protected:
 		std::string m_strName;
-		std::unique_ptr<Transform> m_Transform;
+		std::unique_ptr<Transform> m_Transform ;
 
 		std::shared_ptr<SceneNode> m_Parent;
 		std::list<std::shared_ptr<SceneNode>> m_Children;
