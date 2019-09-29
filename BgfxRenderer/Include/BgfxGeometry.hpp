@@ -1,9 +1,11 @@
 #pragma once
+#include <map>
+
 #include "bgfx/bgfx.h"
 #include "Common/Scene.hpp"
+#include "Common/Camera.hpp"
 #include "Graphic/Material.hpp"
 #include "Graphic/StaticMeshComponent.hpp"
-#include <map>
 #include "Light/PointLight.hpp"
 
 namespace Entropy {

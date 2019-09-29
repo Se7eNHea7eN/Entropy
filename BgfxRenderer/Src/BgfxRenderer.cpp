@@ -11,6 +11,7 @@
 
 #include "Graphic/StaticMeshComponent.hpp"
 #include "Graphic/Mesh.hpp"
+#include "Graphic/SkyBox.hpp"
 
 #include "BgfxGeometry.hpp"
 #include "BgfxRenderer.hpp"
@@ -32,6 +33,9 @@ struct SimpleVertexLayout {
 
 bgfx::VertexLayout SimpleVertexLayout::ms_layout;
 
+
+const int VIEWID_SCENE = 0;
+const int VIEWID_SKYMAP = 1;
 
 Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 	bgfx::PlatformData pd;
@@ -62,7 +66,7 @@ Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 	bgfx::init(init);
 
 	// Enable debug text.
-	bgfx::setViewClear(0
+	bgfx::setViewClear(VIEWID_SCENE
 	                   , BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
 	                   , 0x303030ff
 	                   , 1.0f
@@ -108,7 +112,46 @@ void Entropy::BgfxRenderer::Initialize() {
 		}
 	}
 
-	auto camera = engine->CurrentScene()->MainCamera;
+	bgfx::touch(VIEWID_SCENE);
+	
+	auto skybox = engine->CurrentScene()->GetSkybox();
+	if(skybox != nullptr) {
+		auto hdrTexture =  createTexture(skybox->HdrTexture()->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+
+		auto cubeTexture = bgfx::createTextureCube(512, true, 1, bgfx::TextureFormat::RGBA16F);
+		auto frameBuffer = bgfx::createFrameBuffer(1,&cubeTexture);
+		
+		float captureProjection[16];
+		bx::mtxProj(captureProjection, 90.0f, 1.0f, 0.1f, 10.0f, bgfx::getCaps()->homogeneousDepth);
+
+		float captureViews[6][16];
+		bx::mtxLookAt(captureViews[0], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(1.0f, 0.0f, 0.0f)	,bx::Vec3(0.0f, -1.0f, 0.0f));
+		bx::mtxLookAt(captureViews[1], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(-1.0f, 0.0f, 0.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
+		bx::mtxLookAt(captureViews[2], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 1.0f, 0.0f), bx::Vec3(0.0f, 0.0f, 1.0f));
+		bx::mtxLookAt(captureViews[3], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, -1.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f));
+		bx::mtxLookAt(captureViews[4], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, 1.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
+		bx::mtxLookAt(captureViews[5], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
+
+		bgfx::ProgramHandle equirectangularToCubemap = loadProgram("vs_cubemap","fs_equirectangular");
+		bgfx::UniformHandle uniformHandle = bgfx::createUniform("equirectangularMap", bgfx::UniformType::Sampler);;
+		bgfx::setTexture(0, uniformHandle, hdrTexture);
+
+		bgfx::setViewRect(VIEWID_SKYMAP, 0, 0, 512, 512);
+		bgfx::setViewFrameBuffer(VIEWID_SKYMAP, frameBuffer);
+
+		for (unsigned int i = 0; i < 6; ++i)
+		{
+			bgfx::setViewTransform(VIEWID_SKYMAP, captureViews[i], captureProjection);
+
+			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+
+			bgfx::submit(VIEWID_SKYMAP, equirectangularToCubemap);
+		}
+		bgfx::frame();
+
+	}
+
+
 }
 
 void Entropy::BgfxRenderer::Resize(int w, int h) {
@@ -140,7 +183,6 @@ void Entropy::BgfxRenderer::Draw() {
 
 	// This dummy draw call is here to make sure that view 0 is cleared
 	// if no other draw calls are submitted to view 0.
-	bgfx::touch(0);
 
 	uint64_t state = 0
 		| BGFX_STATE_WRITE_R

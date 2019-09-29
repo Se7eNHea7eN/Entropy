@@ -1,11 +1,11 @@
 #pragma once
-#include <unordered_map>
-#include "SceneNode.hpp"
 #include <functional>
-#include "Camera.hpp"
+#include <memory>
 
 namespace Entropy {
-
+	class SkyBox;
+	class Camera;
+	class SceneNode;
 	class Scene {
 	public:
 
@@ -22,11 +22,21 @@ namespace Entropy {
 			this->onTick = onTick;
 		}
 
-		SceneEmptyNode* GetRootNode() {
+		SceneNode* GetRootNode() {
 			return m_RootNode.get();
 		}
 	protected:
-		std::shared_ptr<SceneEmptyNode> m_RootNode;
+		std::shared_ptr<SceneNode> m_RootNode;
 		std::function<void(float)> onTick;
+
+		std::shared_ptr<SkyBox> m_skybox;
+	public:
+		void SetSkybox(const std::shared_ptr<SkyBox>& sky_box) {
+			m_skybox = sky_box;
+		}
+
+		std::shared_ptr<SkyBox> GetSkybox() const {
+			return m_skybox;
+		}
 	};
 }

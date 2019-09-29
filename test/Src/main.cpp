@@ -4,12 +4,14 @@
 #include "Common/Scene.hpp"
 #include "Common/SceneNode.hpp"
 #include "Common/Transform.hpp"
+#include "Common/Camera.hpp"
 #include "Eigen/Core"	
 #include "Utils/Debug.hpp"
 #include "Parser/ObjParser.hpp"
 #include "Parser/FbxParser.hpp"
 #include "Graphic/Material.hpp"
 #include "Graphic/Texture.hpp"
+#include "Graphic/SkyBox.hpp"
 #include "Geometry/Sphere.hpp"
 #include "Light/PointLight.hpp"
 
@@ -148,20 +150,11 @@ int main(int _argc, const char* const* _argv)
 	// app.entropyCore->debugMode = true;
 	app.entropyCore->CreateScene("Test Scene");
 	auto scene = app.entropyCore->CurrentScene();
-	//
-	std::shared_ptr<SceneNode> skyBoxNode(new SceneNode());
-	skyBoxNode->Initialize();
-	std::shared_ptr<StaticMeshComponent> skyBoxMeshComponent(new StaticMeshComponent());
-	skyBoxMeshComponent->Initialize();
-	skyBoxMeshComponent->AddMesh(GenerateBox());
-	auto skyBoxMat = std::make_shared<Material>();
-	skyBoxMat->SetVertexShader("vs_skybox");
-	skyBoxMat->SetFragmentShader("fs_skybox_hdr");
-	skyBoxMat->SetParam("s_skybox", Parameter(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/newport_loft.hdr", bimg::TextureFormat::RGB8))), Sampler, 0));
-	
-	skyBoxMeshComponent->AddMaterial(skyBoxMat);
-	skyBoxNode->AddComponent(skyBoxMeshComponent);
-	skyBoxNode->GetTransform()->SetScale(Vector3f(10, 10, 10));
+
+	auto skybox = std::make_shared<SkyBox>();
+	skybox->SetHdrTexture(std::shared_ptr<Texture>(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/newport_loft.hdr", bimg::TextureFormat::RGB8)))));
+	scene->SetSkybox(skybox);
+
 	auto gunNode = createCerberus();
 	// auto rifleNode = createRifle();
 	scene->GetRootNode()->AddChild(gunNode->SharedPtr());

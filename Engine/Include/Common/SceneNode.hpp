@@ -54,7 +54,5 @@ namespace Entropy {
 			m_Parent = p;
 		}
 	};
-	typedef SceneNode SceneEmptyNode;
-	
 
 }
