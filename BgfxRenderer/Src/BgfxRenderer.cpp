@@ -50,7 +50,7 @@ Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 
 	bgfx::Init init;
 	// 选择一个渲染后端，当设置为 RendererType::Enum::Count 的时候，系统将默认选择一个平台，可以设置Metal，OpenGL ES，Direct 等
-	init.type = bgfx::RendererType::Enum::Count;
+	init.type = bgfx::RendererType::Enum::OpenGL;
 	// 设置供应商接口Vendor PCI ID，默认设置为0将选择第一个设备来显示。
 	// #define BGFX_PCI_ID_NONE                UINT16_C(0x0000) //!< Autoselect adapter.
 	// #define BGFX_PCI_ID_SOFTWARE_RASTERIZER UINT16_C(0x0001) //!< Software rasterizer.
@@ -80,6 +80,11 @@ Entropy::BgfxRenderer::~BgfxRenderer() {
 	geometries.clear();
 	bgfx::shutdown();
 }
+
+
+bgfx::ProgramHandle skyProgram;
+bgfx::UniformHandle s_skybox;
+bgfx::TextureHandle cubeTexture;
 
 void Entropy::BgfxRenderer::Initialize() {
 
@@ -116,9 +121,11 @@ void Entropy::BgfxRenderer::Initialize() {
 	
 	auto skybox = engine->CurrentScene()->GetSkybox();
 	if(skybox != nullptr) {
+		skyProgram = loadProgram("vs_skybox", "fs_skybox_hdr");
+		 s_skybox = bgfx::createUniform("s_skybox", bgfx::UniformType::Sampler);
+		cubeTexture = bgfx::createTextureCube(512, true, 1, bgfx::TextureFormat::RGBA16F);
 		auto hdrTexture =  createTexture(skybox->HdrTexture()->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 
-		auto cubeTexture = bgfx::createTextureCube(512, true, 1, bgfx::TextureFormat::RGBA16F);
 		auto frameBuffer = bgfx::createFrameBuffer(1,&cubeTexture);
 		
 		float captureProjection[16];
@@ -131,19 +138,18 @@ void Entropy::BgfxRenderer::Initialize() {
 		bx::mtxLookAt(captureViews[3], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, -1.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f));
 		bx::mtxLookAt(captureViews[4], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, 1.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
 		bx::mtxLookAt(captureViews[5], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
-
-		bgfx::ProgramHandle equirectangularToCubemap = loadProgram("vs_cubemap","fs_equirectangular");
+		
+		bgfx::ProgramHandle equirectangularToCubemap = loadProgram("vs_cubemap", "fs_equirectangular");
 		bgfx::UniformHandle uniformHandle = bgfx::createUniform("equirectangularMap", bgfx::UniformType::Sampler);;
-		bgfx::setTexture(0, uniformHandle, hdrTexture);
-
-		bgfx::setViewRect(VIEWID_SKYMAP, 0, 0, 512, 512);
-		bgfx::setViewFrameBuffer(VIEWID_SKYMAP, frameBuffer);
 
 		for (unsigned int i = 0; i < 6; ++i)
 		{
-			bgfx::setViewTransform(VIEWID_SKYMAP, captureViews[i], captureProjection);
+	
+			bgfx::setTexture(0, uniformHandle, hdrTexture);
 
-			//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+			bgfx::setViewRect(VIEWID_SKYMAP, 0, 0, 512, 512);
+			bgfx::setViewFrameBuffer(VIEWID_SKYMAP, frameBuffer);
+			bgfx::setViewTransform(VIEWID_SKYMAP, captureViews[i], captureProjection);
 
 			bgfx::submit(VIEWID_SKYMAP, equirectangularToCubemap);
 		}
@@ -197,7 +203,9 @@ void Entropy::BgfxRenderer::Draw() {
 		// | BGFX_STATE_PT_TRISTRIP
 		// | BGFX_STATE_PT_LINESTRIP
 	;
-	
+
+	bgfx::setTexture(0,s_skybox, cubeTexture);
+	bgfx::submit(0,skyProgram);
 	for(auto g : geometries) {
 		bgfx::setState(state | g->indiceType);
 		g->Submit(engine->CurrentScene());
