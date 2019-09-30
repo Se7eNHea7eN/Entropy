@@ -19,12 +19,11 @@ SAMPLER2D(s_emissive, 5);
 
 uniform vec3 u_cameraPos;
 
-const float PI = 3.14159265359;
-
-
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
+    const float PI = 3.14159265359;
+
     float a = roughness*roughness;
     float a2 = a*a;
     float NdotH = max(dot(N, H), 0.0);
@@ -65,6 +64,8 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 
 void main()
 {		
+    const float PI = 3.14159265359;
+
     vec3 albedo = texture2D(s_albedo, v_texcoord0).xyz;
     float metallic = texture2D(s_metallic, v_texcoord0).x;
     float roughness = texture2D(s_roughness, v_texcoord0).x;
