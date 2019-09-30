@@ -17,7 +17,8 @@
 #include "BgfxRenderer.hpp"
 #include "Graphic/Vertex.hpp"
 using namespace Eigen;
-struct SimpleVertexLayout {
+
+struct StandardVertexLayout {
 	static void init() {
 		ms_layout
 			.begin()
@@ -31,11 +32,25 @@ struct SimpleVertexLayout {
 	static bgfx::VertexLayout ms_layout;
 };
 
-bgfx::VertexLayout SimpleVertexLayout::ms_layout;
+bgfx::VertexLayout StandardVertexLayout::ms_layout;
+
+
+struct SimpleVertexLayout {
+	static void init() {
+		simple_layout
+			.begin()
+			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+			.end();
+	};
+
+	static bgfx::VertexLayout simple_layout;
+};
+
+bgfx::VertexLayout SimpleVertexLayout::simple_layout;
 
 
 const int VIEWID_SCENE = 0;
-const int VIEWID_SKYMAP = 1;
+const int VIEWID_SKYMAP = 32;
 
 Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 	bgfx::PlatformData pd;
@@ -73,6 +88,7 @@ Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 	                   , 0
 	);
 
+	StandardVertexLayout::init();
 	SimpleVertexLayout::init();
 }
 
@@ -93,15 +109,15 @@ void Entropy::BgfxRenderer::Initialize() {
 	bgfx::setDebug(engine->debugMode);
 
 	for (auto obj : StaticMeshComponent::AllStaticMeshComponents) {
-	
+
 		for (auto mesh : obj->GetMeshes()) {
 			auto geo = std::make_shared<BgfxGeometry>();
 			geo->meshComponent = obj;
 			geo->vbh = bgfx::createVertexBuffer(
 				bgfx::makeRef(&mesh->vertices[0], mesh->vertices.size() * sizeof(Vertex))
-				, SimpleVertexLayout::ms_layout
+				, StandardVertexLayout::ms_layout
 			);
-			if(mesh->indices.empty()) {
+			if (mesh->indices.empty()) {
 				mesh->indices.resize(mesh->vertices.size());
 				for (int i = 0; i < mesh->vertices.size(); i++) {
 					mesh->indices.at(i) = i;
@@ -119,94 +135,112 @@ void Entropy::BgfxRenderer::Initialize() {
 		}
 	}
 
-	bgfx::touch(VIEWID_SCENE);
-	
-	auto skybox = engine->CurrentScene()->GetSkybox();
-	if(skybox != nullptr) {
-		skyProgram = loadProgram("vs_skybox", "fs_skybox_hdr");
-		 s_skybox = bgfx::createUniform("s_skybox", bgfx::UniformType::Sampler);
-		cubeTexture = bgfx::createTextureCube(512, true, 1, bgfx::TextureFormat::RGBA16F);
-		auto hdrTexture =  createTexture(skybox->HdrTexture()->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 
-		auto frameBuffer = bgfx::createFrameBuffer(1,&cubeTexture);
-		
+	auto skybox = engine->CurrentScene()->GetSkybox();
+	if (skybox != nullptr) {
+		skyProgram = loadProgram("vs_skybox", "fs_skybox_hdr");
+		s_skybox = bgfx::createUniform("s_skybox", bgfx::UniformType::Sampler);
+		cubeTexture = bgfx::createTextureCube(512, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
+		auto hdrTexture = createTexture(skybox->HdrTexture()->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
+
+
+		bgfx::Attachment at;
+		at.init(cubeTexture, bgfx::Access::Write, 1);
+
+		bgfx::FrameBufferHandle frameBuffer[6];
+
+		for (uint32_t ii = 0; ii < 6; ++ii)
+		{
+			bgfx::Attachment at;
+			at.init(cubeTexture, bgfx::Access::Write, uint16_t(ii));
+			frameBuffer[ii] = bgfx::createFrameBuffer(1, &at);
+		}
+
 		float captureProjection[16];
 		bx::mtxProj(captureProjection, 90.0f, 1.0f, 0.1f, 10.0f, bgfx::getCaps()->homogeneousDepth);
 
 		float captureViews[6][16];
-		bx::mtxLookAt(captureViews[0], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(1.0f, 0.0f, 0.0f)	,bx::Vec3(0.0f, -1.0f, 0.0f));
+		bx::mtxLookAt(captureViews[0], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(1.0f, 0.0f, 0.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
 		bx::mtxLookAt(captureViews[1], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(-1.0f, 0.0f, 0.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
 		bx::mtxLookAt(captureViews[2], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 1.0f, 0.0f), bx::Vec3(0.0f, 0.0f, 1.0f));
 		bx::mtxLookAt(captureViews[3], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, -1.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f));
 		bx::mtxLookAt(captureViews[4], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, 1.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
 		bx::mtxLookAt(captureViews[5], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
-		
+
 		bgfx::ProgramHandle equirectangularToCubemap = loadProgram("vs_cubemap", "fs_equirectangular");
 		bgfx::UniformHandle uniformHandle = bgfx::createUniform("equirectangularMap", bgfx::UniformType::Sampler);;
 
-		static float vertices[] = {
-			// back face
-			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left
-			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right
-			 1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-right         
-			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right
-			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left
-			-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-left
-			// front face										 0.0f, 0.0f, 0.0f,
-			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left
-			 1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-right
-			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right
-			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right
-			-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-left
-			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left
-			// left face										 0.0f, 0.0f, 0.0f,
-			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // top-right
-			-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-left
-			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // bottom-left
-			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // bottom-left
-			-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-right
-			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // top-right
-			// right face										 0.0f, 0.0f, 0.0f,
-			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // top-left
-			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // bottom-right
-			 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right         
-			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // bottom-right
-			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // top-left
-			 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left     
-			// bottom face										 0.0f, 0.0f, 0.0f,
-			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right
-			 1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-left
-			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left
-			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left
-			-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-right
-			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right
-			// top face											 0.0f, 0.0f, 0.0f,
-			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-left
-			 1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-right
-			 1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right     
-			 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-right
-			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-left
-			-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f  // bottom-left        
+
+		float skyboxVertices[] = {
+			// positions          
+			-1.0f, 1.0f, -1.0f,
+			-1.0f, -1.0f, -1.0f,
+			1.0f, -1.0f, -1.0f,
+			1.0f, -1.0f, -1.0f,
+			1.0f, 1.0f, -1.0f,
+			-1.0f, 1.0f, -1.0f,
+
+			-1.0f, -1.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f,
+			-1.0f, 1.0f, -1.0f,
+			-1.0f, 1.0f, -1.0f,
+			-1.0f, 1.0f, 1.0f,
+			-1.0f, -1.0f, 1.0f,
+
+			1.0f, -1.0f, -1.0f,
+			1.0f, -1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, -1.0f,
+			1.0f, -1.0f, -1.0f,
+
+			-1.0f, -1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f,
+			-1.0f, -1.0f, 1.0f,
+
+			-1.0f, 1.0f, -1.0f,
+			1.0f, 1.0f, -1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, -1.0f,
+
+			-1.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f, 1.0f,
+			1.0f, -1.0f, -1.0f,
+			1.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f
 		};
+
 		cubeVbh = createVertexBuffer(
-			bgfx::makeRef(vertices, sizeof(vertices))
-			, SimpleVertexLayout::ms_layout
+			bgfx::makeRef(skyboxVertices, sizeof(skyboxVertices))
+			, SimpleVertexLayout::simple_layout
 		);
-		// cubeIbh = = bgfx::createIndexBuffer(
-		// 	bgfx::makeRef(&mesh->indices[0], mesh->indices.size() * sizeof(uint32_t)),
-		// 	BGFX_BUFFER_INDEX32
-		// );
-		for (unsigned int i = 0; i < 6; ++i)
-		{
-	
+
+		for (unsigned int i = 0; i < 6; ++i) {
+			bgfx::ViewId viewId = bgfx::ViewId(VIEWID_SKYMAP +i);
+			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
+			bgfx::setViewClear(VIEWID_SCENE
+				, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
+				, 0xFF00FFff
+				, 1.0f
+				, 0
+			);
 			bgfx::setTexture(0, uniformHandle, hdrTexture);
 
-			bgfx::setViewRect(VIEWID_SKYMAP, 0, 0, 512, 512);
-			bgfx::setViewFrameBuffer(VIEWID_SKYMAP, frameBuffer);
-			bgfx::setViewTransform(VIEWID_SKYMAP, captureViews[i], captureProjection);
+			bgfx::setViewRect(viewId, 0, 0, 512, 512);
+			bgfx::setViewFrameBuffer(viewId, frameBuffer[i]);
+			bgfx::setViewTransform(viewId, captureViews[i], captureProjection);
 			bgfx::setVertexBuffer(0, cubeVbh);
+			
+			bgfx::submit(viewId, equirectangularToCubemap);
+			
+			bgfx::touch(viewId);
 
-			bgfx::submit(VIEWID_SKYMAP, equirectangularToCubemap);
 		}
 		bgfx::frame();
 
@@ -225,19 +259,21 @@ void Entropy::BgfxRenderer::Resize(int w, int h) {
 
 
 void Entropy::BgfxRenderer::Draw() {
+	bgfx::touch(VIEWID_SCENE);
+
 	{
 		auto camera = engine->CurrentScene()->MainCamera;
 		auto viewMatrix = camera->ViewMatrix().matrix();
-		
+
 		Map<Matrix4f>(viewMatrixArray, viewMatrix.rows(), viewMatrix.cols()) = viewMatrix;
-		
+
 
 		bx::mtxProj(projectionMatrixArray, bx::toDeg(camera->FovY()), float(width) / float(height), camera->NearDistance(), camera->FarDistance(), bgfx::getCaps()->homogeneousDepth);
-		
+
 
 		//bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
 		bgfx::setViewTransform(0, viewMatrixArray, projectionMatrixArray);
-		
+
 		// Set view 0 default viewport.
 		bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
 	}
@@ -246,22 +282,23 @@ void Entropy::BgfxRenderer::Draw() {
 	// if no other draw calls are submitted to view 0.
 
 	uint64_t state = 0
-		| BGFX_STATE_WRITE_R
-		| BGFX_STATE_WRITE_G
-		| BGFX_STATE_WRITE_B
-		| BGFX_STATE_WRITE_A
-		| BGFX_STATE_WRITE_Z
-		| BGFX_STATE_DEPTH_TEST_LESS
-		// | BGFX_STATE_CULL_CW
-		| BGFX_STATE_MSAA
+			| BGFX_STATE_WRITE_RGB
+			| BGFX_STATE_WRITE_A
+			| BGFX_STATE_WRITE_Z
+			| BGFX_STATE_DEPTH_TEST_LEQUAL
+			// | BGFX_STATE_DEPTH_TEST_LESS
+			// | BGFX_STATE_CULL_CW
+			| BGFX_STATE_MSAA
 		// | BGFX_STATE_LINEAA
 		// | BGFX_STATE_PT_TRISTRIP
 		// | BGFX_STATE_PT_LINESTRIP
-	;
+		;
 	bgfx::setVertexBuffer(0, cubeVbh);
-	bgfx::setTexture(0,s_skybox, cubeTexture);
-	bgfx::submit(0,skyProgram);
-	for(auto g : geometries) {
+	bgfx::setTexture(0, s_skybox, cubeTexture);
+	bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
+
+	bgfx::submit(0, skyProgram);
+	for (auto g : geometries) {
 		bgfx::setState(state | g->indiceType);
 		g->Submit(engine->CurrentScene());
 	}

@@ -56,8 +56,8 @@ namespace Entropy {
 		// used by rotateAroundTarget
 		std::shared_ptr<Transform> mTarget;
 
-		float mFovY = 1.0471975511965977461542144610932;
-		float mNearDist = 0.1;
-		float mFarDist = 1000;
+		float mFovY = 1.0471975511965977461542144610932f;
+		float mNearDist = 0.1f;
+		float mFarDist = 1000.f;
 	};
 }

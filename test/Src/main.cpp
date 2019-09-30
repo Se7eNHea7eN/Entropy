@@ -151,12 +151,13 @@ int main(int _argc, const char* const* _argv)
 	app.entropyCore->CreateScene("Test Scene");
 	auto scene = app.entropyCore->CurrentScene();
 
+
 	auto skybox = std::make_shared<SkyBox>();
 	skybox->SetHdrTexture(std::shared_ptr<Texture>(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/newport_loft.hdr", bimg::TextureFormat::RGB8)))));
 	scene->SetSkybox(skybox);
 
-	auto gunNode = createCerberus();
-	// auto rifleNode = createRifle();
+	// auto gunNode = createCerberus();
+	auto gunNode = createGun();
 	scene->GetRootNode()->AddChild(gunNode->SharedPtr());
 
 	
