@@ -3,10 +3,11 @@ $input v_pos
 
 SAMPLER2D(equirectangularMap, 0);
 
-const vec2 invAtan = vec2(0.1591, 0.3183);
+
 vec2 SampleSphericalMap(vec3 v)
 {
-    vec2 uv = vec2(atan(v.z / v.x), asin(v.y));
+    const vec2 invAtan = vec2(0.1591, 0.3183);
+    vec2 uv = vec2(atan2(v.z , v.x), asin(v.y));
     uv *= invAtan;
     uv += 0.5;
     return uv;
