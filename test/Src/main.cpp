@@ -175,6 +175,8 @@ int main(int _argc, const char* const* _argv)
 	scene->SetOnTick([&](float deltaTime)
 	{
 		gunNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
+		cameraNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
+		camera->updateViewMatrix(true);
 	});
 
 	auto pointLightNode = std::make_shared<SceneNode>();

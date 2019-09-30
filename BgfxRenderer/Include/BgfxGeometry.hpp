@@ -146,7 +146,7 @@ namespace Entropy {
 		void Submit(Scene* scene) {
 			auto transformMatrix = meshComponent->GetNode()->GetTransform()->ModelMatrix();
 			float* transformMatrixArray = new float[transformMatrix.size()];
-			Log("transformMatrix = \n %s", DebugString(transformMatrix));
+			// Log("transformMatrix = \n %s", DebugString(transformMatrix));
 
 			Map<Matrix4f>(transformMatrixArray, transformMatrix.rows(), transformMatrix.cols()) = transformMatrix;
 			bgfx::setTransform(transformMatrixArray);
