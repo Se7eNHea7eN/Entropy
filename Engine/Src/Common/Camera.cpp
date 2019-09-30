@@ -125,8 +125,11 @@ void Camera::Zoom(float d) {
 	}
 }
 
-void Camera::updateViewMatrix() const {
-	if (!mViewIsUptodate)
+void Camera::Tick(float deltaTime) {
+}
+
+void Camera::updateViewMatrix(bool force) const {
+	if (!mViewIsUptodate || force)
 	{
 		Quaternionf q = GetNode()->GetTransform()->Orientation().conjugate();
 		mViewMatrix.linear() = q.toRotationMatrix();

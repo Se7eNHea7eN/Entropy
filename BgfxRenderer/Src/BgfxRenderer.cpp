@@ -138,9 +138,11 @@ void Entropy::BgfxRenderer::Initialize() {
 
 	auto skybox = engine->CurrentScene()->GetSkybox();
 	if (skybox != nullptr) {
+		const uint16_t cubeTextureSize = 4096;
+		
 		skyProgram = loadProgram("vs_skybox", "fs_skybox_hdr");
 		s_skybox = bgfx::createUniform("s_skybox", bgfx::UniformType::Sampler);
-		cubeTexture = bgfx::createTextureCube(512, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
+		cubeTexture = bgfx::createTextureCube(cubeTextureSize, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
 		auto hdrTexture = createTexture(skybox->HdrTexture()->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 
 
@@ -232,7 +234,7 @@ void Entropy::BgfxRenderer::Initialize() {
 			);
 			bgfx::setTexture(0, uniformHandle, hdrTexture);
 
-			bgfx::setViewRect(viewId, 0, 0, 512, 512);
+			bgfx::setViewRect(viewId, 0, 0, cubeTextureSize, cubeTextureSize);
 			bgfx::setViewFrameBuffer(viewId, frameBuffer[i]);
 			bgfx::setViewTransform(viewId, captureViews[i], captureProjection);
 			bgfx::setVertexBuffer(0, cubeVbh);

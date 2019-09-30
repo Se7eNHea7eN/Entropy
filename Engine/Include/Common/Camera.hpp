@@ -38,9 +38,13 @@ namespace Entropy {
 		Eigen::Vector3f unProject(const Eigen::Vector2f& uv, float depth, const Eigen::Matrix4f& invModelview) const;
 		Eigen::Vector3f unProject(const Eigen::Vector2f& uv, float depth) const;
 
-	protected:
-		void updateViewMatrix(void) const;
+
+		void Tick(float deltaTime) override;
+
+		void updateViewMatrix(bool force = false) const;
 		void updateProjectionMatrix(void) const;
+	protected:
+	
 
 	protected:
 
