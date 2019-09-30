@@ -85,6 +85,8 @@ Entropy::BgfxRenderer::~BgfxRenderer() {
 bgfx::ProgramHandle skyProgram;
 bgfx::UniformHandle s_skybox;
 bgfx::TextureHandle cubeTexture;
+bgfx::VertexBufferHandle cubeVbh;
+bgfx::IndexBufferHandle cubeIbh;
 
 void Entropy::BgfxRenderer::Initialize() {
 
@@ -142,6 +144,58 @@ void Entropy::BgfxRenderer::Initialize() {
 		bgfx::ProgramHandle equirectangularToCubemap = loadProgram("vs_cubemap", "fs_equirectangular");
 		bgfx::UniformHandle uniformHandle = bgfx::createUniform("equirectangularMap", bgfx::UniformType::Sampler);;
 
+		static float vertices[] = {
+			// back face
+			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-right         
+			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right
+			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left
+			-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-left
+			// front face										 0.0f, 0.0f, 0.0f,
+			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right
+			-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-left
+			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left
+			// left face										 0.0f, 0.0f, 0.0f,
+			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // top-right
+			-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-left
+			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // bottom-left
+			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // bottom-left
+			-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // top-right
+			// right face										 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // top-left
+			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right         
+			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // top-left
+			 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left     
+			// bottom face										 0.0f, 0.0f, 0.0f,
+			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-left
+			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-left
+			-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right
+			// top face											 0.0f, 0.0f, 0.0f,
+			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-left
+			 1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-right     
+			 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,0.0f, 0.0f, 0.0f, // top-left
+			-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f  // bottom-left        
+		};
+		cubeVbh = createVertexBuffer(
+			bgfx::makeRef(vertices, sizeof(vertices))
+			, SimpleVertexLayout::ms_layout
+		);
+		// cubeIbh = = bgfx::createIndexBuffer(
+		// 	bgfx::makeRef(&mesh->indices[0], mesh->indices.size() * sizeof(uint32_t)),
+		// 	BGFX_BUFFER_INDEX32
+		// );
 		for (unsigned int i = 0; i < 6; ++i)
 		{
 	
@@ -150,6 +204,7 @@ void Entropy::BgfxRenderer::Initialize() {
 			bgfx::setViewRect(VIEWID_SKYMAP, 0, 0, 512, 512);
 			bgfx::setViewFrameBuffer(VIEWID_SKYMAP, frameBuffer);
 			bgfx::setViewTransform(VIEWID_SKYMAP, captureViews[i], captureProjection);
+			bgfx::setVertexBuffer(0, cubeVbh);
 
 			bgfx::submit(VIEWID_SKYMAP, equirectangularToCubemap);
 		}
@@ -203,7 +258,7 @@ void Entropy::BgfxRenderer::Draw() {
 		// | BGFX_STATE_PT_TRISTRIP
 		// | BGFX_STATE_PT_LINESTRIP
 	;
-
+	bgfx::setVertexBuffer(0, cubeVbh);
 	bgfx::setTexture(0,s_skybox, cubeTexture);
 	bgfx::submit(0,skyProgram);
 	for(auto g : geometries) {
