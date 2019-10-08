@@ -101,6 +101,8 @@ Entropy::BgfxRenderer::~BgfxRenderer() {
 bgfx::ProgramHandle skyProgram;
 bgfx::UniformHandle s_skybox;
 bgfx::TextureHandle cubeTexture;
+bgfx::TextureHandle irradianceTexture;
+
 bgfx::VertexBufferHandle cubeVbh;
 bgfx::IndexBufferHandle cubeIbh;
 
@@ -146,17 +148,7 @@ void Entropy::BgfxRenderer::Initialize() {
 		auto hdrTexture = createTexture(skybox->HdrTexture()->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 
 
-		bgfx::Attachment at;
-		at.init(cubeTexture, bgfx::Access::Write, 1);
-
-		bgfx::FrameBufferHandle frameBuffer[6];
-
-		for (uint32_t ii = 0; ii < 6; ++ii) {
-			bgfx::Attachment at;
-			at.init(cubeTexture, bgfx::Access::Write, uint16_t(ii));
-			frameBuffer[ii] = bgfx::createFrameBuffer(1, &at);
-		}
-
+		
 		float captureProjection[16];
 		bx::mtxProj(captureProjection, 90.0f, 1.0f, 0.1f, 10.0f, bgfx::getCaps()->homogeneousDepth);
 		Log("homogeneousDepth = %s", bgfx::getCaps()->homogeneousDepth ? "true" : "false");
@@ -191,9 +183,6 @@ void Entropy::BgfxRenderer::Initialize() {
 			//ǰ
 			bx::mtxLookAt(captureViews[5], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
 		}
-
-		bgfx::ProgramHandle equirectangularToCubemap = loadProgram("vs_cubemap", "fs_equirectangular");
-		bgfx::UniformHandle uniformHandle = bgfx::createUniform("equirectangularMap", bgfx::UniformType::Sampler);;
 
 
 		float skyboxVertices[] = {
@@ -246,16 +235,30 @@ void Entropy::BgfxRenderer::Initialize() {
 			, SimpleVertexLayout::simple_layout
 		);
 
+		bgfx::ProgramHandle equirectangularToCubemap = loadProgram("vs_cubemap", "fs_equirectangular");
+
+		bgfx::UniformHandle equirectangularMapHandle = bgfx::createUniform("equirectangularMap", bgfx::UniformType::Sampler);
+
+
+		bgfx::FrameBufferHandle frameBuffer[6];
+
+		for (uint32_t ii = 0; ii < 6; ++ii) {
+			bgfx::Attachment at;
+			at.init(cubeTexture, bgfx::Access::Write, uint16_t(ii));
+			frameBuffer[ii] = bgfx::createFrameBuffer(1, &at);
+		}
+
+		
 		for (unsigned int i = 0; i < 6; ++i) {
 			bgfx::ViewId viewId = bgfx::ViewId(VIEWID_SKYMAP + i);
 			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
-			bgfx::setViewClear(VIEWID_SCENE
+			bgfx::setViewClear(viewId
 			                   , BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
 			                   , 0xFF00FFff
 			                   , 1.0f
 			                   , 0
 			);
-			bgfx::setTexture(0, uniformHandle, hdrTexture);
+			bgfx::setTexture(0, equirectangularMapHandle, hdrTexture);
 
 			bgfx::setViewRect(viewId, 0, 0, cubeTextureSize, cubeTextureSize);
 			bgfx::setViewFrameBuffer(viewId, frameBuffer[i]);
@@ -266,6 +269,49 @@ void Entropy::BgfxRenderer::Initialize() {
 
 			bgfx::touch(viewId);
 
+		}
+
+		
+		// bgfx::frame();
+		
+		// bgfx::destroy(equirectangularToCubemap);
+		// bgfx::destroy(equirectangularMapHandle);
+		// for (uint32_t ii = 0; ii < 6; ++ii) {
+		// 	bgfx::destroy(frameBuffer[ii]);
+		// }
+		
+		bgfx::ProgramHandle irradianceConvolution = loadProgram("vs_cubemap", "fs_irradiance_convolution");
+		// bgfx::ProgramHandle irradianceConvolution = loadProgram("vs_skybox", "fs_skybox_hdr");
+
+		bgfx::UniformHandle environmentMapHandle = bgfx::createUniform("environmentMap", bgfx::UniformType::Sampler);
+		
+		bgfx::FrameBufferHandle irradianceFrameBuffer[6];
+		irradianceTexture = bgfx::createTextureCube(2048, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
+		
+		for (uint32_t ii = 0; ii < 6; ++ii) {
+			bgfx::Attachment at;
+			at.init(irradianceTexture, bgfx::Access::Write, uint16_t(ii));
+			irradianceFrameBuffer[ii] = bgfx::createFrameBuffer(1, &at);
+		}
+		for (unsigned int i = 0; i < 6; ++i) {
+			bgfx::ViewId viewId = bgfx::ViewId(VIEWID_SKYMAP + i +6 );
+			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
+			bgfx::setViewClear(viewId
+				, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
+				, 0xFF00FFff
+				, 1.0f
+				, 0
+			);
+			bgfx::setTexture(0, environmentMapHandle, cubeTexture);
+		
+			bgfx::setViewRect(viewId, 0, 0, cubeTextureSize, cubeTextureSize);
+			bgfx::setViewFrameBuffer(viewId, irradianceFrameBuffer[i]);
+			bgfx::setViewTransform(viewId, captureViews[i], captureProjection);
+			bgfx::setVertexBuffer(0, cubeVbh);
+		
+			bgfx::submit(viewId, irradianceConvolution);
+		
+			bgfx::touch(viewId);
 		}
 		bgfx::frame();
 
@@ -319,7 +365,7 @@ void Entropy::BgfxRenderer::Draw() {
 		// | BGFX_STATE_PT_LINESTRIP
 		;
 	bgfx::setVertexBuffer(0, cubeVbh);
-	bgfx::setTexture(0, s_skybox, cubeTexture);
+	bgfx::setTexture(0, s_skybox, irradianceTexture);
 	bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
 
 	bgfx::submit(0, skyProgram);
