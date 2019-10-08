@@ -65,7 +65,7 @@ Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
 
 	bgfx::Init init;
 	// 选择一个渲染后端，当设置为 RendererType::Enum::Count 的时候，系统将默认选择一个平台，可以设置Metal，OpenGL ES，Direct 等
-	init.type = bgfx::RendererType::Enum::Direct3D11;
+	init.type = bgfx::RendererType::Enum::OpenGL;
 	// 设置供应商接口Vendor PCI ID，默认设置为0将选择第一个设备来显示。
 	// #define BGFX_PCI_ID_NONE                UINT16_C(0x0000) //!< Autoselect adapter.
 	// #define BGFX_PCI_ID_SOFTWARE_RASTERIZER UINT16_C(0x0001) //!< Software rasterizer.
@@ -271,7 +271,8 @@ void Entropy::BgfxRenderer::Initialize() {
 
 		}
 
-		
+		bgfx::frame();
+
 		// bgfx::frame();
 		
 		// bgfx::destroy(equirectangularToCubemap);
@@ -279,14 +280,14 @@ void Entropy::BgfxRenderer::Initialize() {
 		// for (uint32_t ii = 0; ii < 6; ++ii) {
 		// 	bgfx::destroy(frameBuffer[ii]);
 		// }
-		
+		const uint16_t irradianceTextureSize = 512;
+
 		bgfx::ProgramHandle irradianceConvolution = loadProgram("vs_cubemap", "fs_irradiance_convolution");
-		// bgfx::ProgramHandle irradianceConvolution = loadProgram("vs_skybox", "fs_skybox_hdr");
 
 		bgfx::UniformHandle environmentMapHandle = bgfx::createUniform("environmentMap", bgfx::UniformType::Sampler);
 		
 		bgfx::FrameBufferHandle irradianceFrameBuffer[6];
-		irradianceTexture = bgfx::createTextureCube(2048, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
+		irradianceTexture = bgfx::createTextureCube(irradianceTextureSize, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
 		
 		for (uint32_t ii = 0; ii < 6; ++ii) {
 			bgfx::Attachment at;
@@ -294,7 +295,7 @@ void Entropy::BgfxRenderer::Initialize() {
 			irradianceFrameBuffer[ii] = bgfx::createFrameBuffer(1, &at);
 		}
 		for (unsigned int i = 0; i < 6; ++i) {
-			bgfx::ViewId viewId = bgfx::ViewId(VIEWID_SKYMAP + i +6 );
+			bgfx::ViewId viewId = bgfx::ViewId(VIEWID_SKYMAP + i  );
 			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
 			bgfx::setViewClear(viewId
 				, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
@@ -304,7 +305,7 @@ void Entropy::BgfxRenderer::Initialize() {
 			);
 			bgfx::setTexture(0, environmentMapHandle, cubeTexture);
 		
-			bgfx::setViewRect(viewId, 0, 0, cubeTextureSize, cubeTextureSize);
+			bgfx::setViewRect(viewId, 0, 0, irradianceTextureSize, irradianceTextureSize);
 			bgfx::setViewFrameBuffer(viewId, irradianceFrameBuffer[i]);
 			bgfx::setViewTransform(viewId, captureViews[i], captureProjection);
 			bgfx::setVertexBuffer(0, cubeVbh);
