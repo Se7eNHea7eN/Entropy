@@ -53,43 +53,7 @@ const int VIEWID_SCENE = 0;
 const int VIEWID_SKYMAP = 32;
 
 Entropy::BgfxRenderer::BgfxRenderer(HWND hwnd) : hwnd(hwnd) {
-	bgfx::PlatformData pd;
-	pd.ndt = NULL;
-	pd.nwh = hwnd;
-	pd.context = NULL;
-	pd.backBuffer = NULL;
-	pd.backBufferDS = NULL;
-	bgfx::setPlatformData(pd); // 设置平台信息，绑定上层 view
 
-	bgfx::renderFrame();
-
-	bgfx::Init init;
-	// 选择一个渲染后端，当设置为 RendererType::Enum::Count 的时候，系统将默认选择一个平台，可以设置Metal，OpenGL ES，Direct 等
-	init.type = bgfx::RendererType::Enum::OpenGL;
-	// 设置供应商接口Vendor PCI ID，默认设置为0将选择第一个设备来显示。
-	// #define BGFX_PCI_ID_NONE                UINT16_C(0x0000) //!< Autoselect adapter.
-	// #define BGFX_PCI_ID_SOFTWARE_RASTERIZER UINT16_C(0x0001) //!< Software rasterizer.
-	// #define BGFX_PCI_ID_AMD                 UINT16_C(0x1002) //!< AMD adapter.
-	// #define BGFX_PCI_ID_INTEL               UINT16_C(0x8086) //!< Intel adapter.
-	// #define BGFX_PCI_ID_NVIDIA              UINT16_C(0x10de) //!< nVidia adapter.
-	init.vendorId = 0;
-	// 设置分辨率大小
-	init.resolution.width = 2560;
-	init.resolution.height = 1440;
-	// BGFX_RESET_VSYNC 其作用主要是让显卡的运算和显示器刷新率一致以稳定输出的画面质量。
-	init.resolution.reset = BGFX_RESET_VSYNC;
-	bgfx::init(init);
-
-	// Enable debug text.
-	bgfx::setViewClear(VIEWID_SCENE
-	                   , BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
-	                   , 0x303030ff
-	                   , 1.0f
-	                   , 0
-	);
-
-	StandardVertexLayout::init();
-	SimpleVertexLayout::init();
 }
 
 Entropy::BgfxRenderer::~BgfxRenderer() {
@@ -106,8 +70,47 @@ bgfx::TextureHandle irradianceTexture;
 bgfx::VertexBufferHandle cubeVbh;
 bgfx::IndexBufferHandle cubeIbh;
 
+bool init = true;
 void Entropy::BgfxRenderer::Initialize() {
+	bgfx::PlatformData pd;
+	pd.ndt = NULL;
+	pd.nwh = hwnd;
+	pd.context = NULL;
+	pd.backBuffer = NULL;
+	pd.backBufferDS = NULL;
+	bgfx::setPlatformData(pd); // 设置平台信息，绑定上层 view
 
+	bgfx::renderFrame();
+
+	bgfx::Init init;
+	// 选择一个渲染后端，当设置为 RendererType::Enum::Count 的时候，系统将默认选择一个平台，可以设置Metal，OpenGL ES，Direct 等
+	init.type = bgfx::RendererType::Enum::Direct3D11;
+	// 设置供应商接口Vendor PCI ID，默认设置为0将选择第一个设备来显示。
+	// #define BGFX_PCI_ID_NONE                UINT16_C(0x0000) //!< Autoselect adapter.
+	// #define BGFX_PCI_ID_SOFTWARE_RASTERIZER UINT16_C(0x0001) //!< Software rasterizer.
+	// #define BGFX_PCI_ID_AMD                 UINT16_C(0x1002) //!< AMD adapter.
+	// #define BGFX_PCI_ID_INTEL               UINT16_C(0x8086) //!< Intel adapter.
+	// #define BGFX_PCI_ID_NVIDIA              UINT16_C(0x10de) //!< nVidia adapter.
+	init.vendorId = 0;
+	// 设置分辨率大小
+	init.resolution.width = 2560;
+	init.resolution.height = 1440;
+	// BGFX_RESET_VSYNC 其作用主要是让显卡的运算和显示器刷新率一致以稳定输出的画面质量。
+	init.resolution.reset = BGFX_RESET_VSYNC;
+	bgfx::init(init);
+
+	// Enable debug text.
+	bgfx::setViewClear(VIEWID_SCENE
+		, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
+		, 0x303030ff
+		, 1.0f
+		, 0
+	);
+
+	StandardVertexLayout::init();
+	SimpleVertexLayout::init();
+
+	
 	bgfx::setDebug(engine->debugMode);
 
 	for (auto obj : StaticMeshComponent::AllStaticMeshComponents) {
@@ -239,7 +242,6 @@ void Entropy::BgfxRenderer::Initialize() {
 
 		bgfx::UniformHandle equirectangularMapHandle = bgfx::createUniform("equirectangularMap", bgfx::UniformType::Sampler);
 
-
 		bgfx::FrameBufferHandle frameBuffer[6];
 
 		for (uint32_t ii = 0; ii < 6; ++ii) {
@@ -247,7 +249,6 @@ void Entropy::BgfxRenderer::Initialize() {
 			at.init(cubeTexture, bgfx::Access::Write, uint16_t(ii));
 			frameBuffer[ii] = bgfx::createFrameBuffer(1, &at);
 		}
-
 		
 		for (unsigned int i = 0; i < 6; ++i) {
 			bgfx::ViewId viewId = bgfx::ViewId(VIEWID_SKYMAP + i);
@@ -268,10 +269,8 @@ void Entropy::BgfxRenderer::Initialize() {
 			bgfx::submit(viewId, equirectangularToCubemap);
 
 			bgfx::touch(viewId);
-
 		}
 
-		bgfx::frame();
 
 		// bgfx::frame();
 		
@@ -279,58 +278,67 @@ void Entropy::BgfxRenderer::Initialize() {
 		// bgfx::destroy(equirectangularMapHandle);
 		// for (uint32_t ii = 0; ii < 6; ++ii) {
 		// 	bgfx::destroy(frameBuffer[ii]);
+		// // }
+		// const uint16_t irradianceTextureSize = 512;
+		//
+		// bgfx::ProgramHandle irradianceConvolution = loadProgram("vs_cubemap", "fs_irradiance_convolution");
+		//
+		// bgfx::UniformHandle environmentMapHandle = bgfx::createUniform("environmentMap", bgfx::UniformType::Sampler);
+		//
+		// bgfx::FrameBufferHandle irradianceFrameBuffer[6];
+		// irradianceTexture = bgfx::createTextureCube(irradianceTextureSize, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
+		//
+		// for (uint32_t ii = 0; ii < 6; ++ii) {
+		// 	bgfx::Attachment at;
+		// 	at.init(irradianceTexture, bgfx::Access::Write, uint16_t(ii));
+		// 	irradianceFrameBuffer[ii] = bgfx::createFrameBuffer(1, &at);
 		// }
-		const uint16_t irradianceTextureSize = 512;
-
-		bgfx::ProgramHandle irradianceConvolution = loadProgram("vs_cubemap", "fs_irradiance_convolution");
-
-		bgfx::UniformHandle environmentMapHandle = bgfx::createUniform("environmentMap", bgfx::UniformType::Sampler);
-		
-		bgfx::FrameBufferHandle irradianceFrameBuffer[6];
-		irradianceTexture = bgfx::createTextureCube(irradianceTextureSize, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
-		
-		for (uint32_t ii = 0; ii < 6; ++ii) {
-			bgfx::Attachment at;
-			at.init(irradianceTexture, bgfx::Access::Write, uint16_t(ii));
-			irradianceFrameBuffer[ii] = bgfx::createFrameBuffer(1, &at);
-		}
-		for (unsigned int i = 0; i < 6; ++i) {
-			bgfx::ViewId viewId = bgfx::ViewId(VIEWID_SKYMAP + i  );
-			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
-			bgfx::setViewClear(viewId
-				, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
-				, 0xFF00FFff
-				, 1.0f
-				, 0
-			);
-			bgfx::setTexture(0, environmentMapHandle, cubeTexture);
-		
-			bgfx::setViewRect(viewId, 0, 0, irradianceTextureSize, irradianceTextureSize);
-			bgfx::setViewFrameBuffer(viewId, irradianceFrameBuffer[i]);
-			bgfx::setViewTransform(viewId, captureViews[i], captureProjection);
-			bgfx::setVertexBuffer(0, cubeVbh);
-		
-			bgfx::submit(viewId, irradianceConvolution);
-		
-			bgfx::touch(viewId);
-		}
+		// for (unsigned int i = 0; i < 6; ++i) {
+		// 	bgfx::ViewId viewId = bgfx::ViewId(VIEWID_SKYMAP + i +6 );
+		// 	bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
+		// 	bgfx::setViewClear(viewId
+		// 		, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
+		// 		, 0xFF00FFff
+		// 		, 1.0f
+		// 		, 0
+		// 	);
+		// 	bgfx::setTexture(0, environmentMapHandle, cubeTexture);
+		//
+		// 	bgfx::setViewRect(viewId, 0, 0, irradianceTextureSize, irradianceTextureSize);
+		// 	bgfx::setViewFrameBuffer(viewId, irradianceFrameBuffer[i]);
+		// 	bgfx::setViewTransform(viewId, captureViews[i], captureProjection);
+		// 	bgfx::setVertexBuffer(0, cubeVbh);
+		//
+		// 	bgfx::submit(viewId, irradianceConvolution);
+		//
+		// 	bgfx::touch(viewId);
+		// }
 		bgfx::frame();
-
 	}
-
 
 }
 
 void Entropy::BgfxRenderer::Resize(int w, int h) {
 	width = w;
 	height = h;
-	bgfx::reset(w, h, BGFX_RESET_VSYNC);
-	auto camera = engine->CurrentScene()->MainCamera;
-	camera->SetViewport(w, h);
+
 }
 
-
+int lastResetWidth = 0;
+int lastResetHeight = 0;
 void Entropy::BgfxRenderer::Draw() {
+	if(init) {
+		init = false;
+
+	}
+
+	if(lastResetWidth != width || lastResetHeight != height) {
+		bgfx::reset(width, height, BGFX_RESET_VSYNC);
+		auto camera = engine->CurrentScene()->MainCamera;
+		camera->SetViewport(width, height);
+		lastResetWidth = width;
+		lastResetHeight = height;
+	}
 	bgfx::touch(VIEWID_SCENE);
 
 	{
@@ -366,7 +374,8 @@ void Entropy::BgfxRenderer::Draw() {
 		// | BGFX_STATE_PT_LINESTRIP
 		;
 	bgfx::setVertexBuffer(0, cubeVbh);
-	bgfx::setTexture(0, s_skybox, irradianceTexture);
+	bgfx::setTexture(0, s_skybox, cubeTexture);
+	bgfx::setViewFrameBuffer(VIEWID_SCENE, BGFX_INVALID_HANDLE);
 	bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
 
 	bgfx::submit(0, skyProgram);
@@ -376,4 +385,8 @@ void Entropy::BgfxRenderer::Draw() {
 	}
 	bgfx::frame();
 
+}
+
+void Entropy::BgfxRenderer::AwaitRenderFrame() {
+	bgfx::renderFrame();
 }

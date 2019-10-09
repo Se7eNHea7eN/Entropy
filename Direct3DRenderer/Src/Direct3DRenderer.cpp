@@ -235,3 +235,6 @@ void Direct3DRenderer::Draw() {
 	g_pSwapchain->Present(0, 0);
 
 }
+
+void Direct3DRenderer::AwaitRenderFrame() {
+}

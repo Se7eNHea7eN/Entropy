@@ -11,6 +11,8 @@ namespace Entropy {
 		void Initialize() override;
 		void Resize(int w, int h) override;
 		void Draw() override;
+		void AwaitRenderFrame() override;
+
 	private:
 		HDC hDC = NULL; // Private GDI Device Context
 		HGLRC hRC = NULL; // Permanent Rendering Context

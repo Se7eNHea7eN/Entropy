@@ -93,3 +93,6 @@ void GLRenderer::Draw() {
 	SwapBuffers(hDC);
 }
 
+void GLRenderer::AwaitRenderFrame() {
+}
+

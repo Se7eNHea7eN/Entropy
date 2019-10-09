@@ -32,3 +32,9 @@ include_directories(SYSTEM "Include/")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Include/")
 
 target_link_libraries(${PROJECT_NAME} Engine)
+
+
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx/include")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx/include/compat/msvc")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/bx")
+target_link_libraries(${PROJECT_NAME} bx)

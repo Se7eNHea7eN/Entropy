@@ -153,6 +153,7 @@ namespace Entropy {
 			bgfx::setVertexBuffer(0, vbh);
 			if(ibh.idx > 0)
 				bgfx::setIndexBuffer(ibh);
+			bgfx::setViewFrameBuffer(0, BGFX_INVALID_HANDLE);
 			material->Submit(scene,meshComponent->EnableLighting());
 		}
 	};

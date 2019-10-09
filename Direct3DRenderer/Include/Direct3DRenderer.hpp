@@ -17,6 +17,7 @@ namespace Entropy {
 		void Initialize() override;
 		void Resize(int w, int h) override;
 		void Draw() override;
+		void AwaitRenderFrame() override;
 
 	private:
 		void CreateRenderTarget();
