@@ -3,8 +3,17 @@
 #include <bimg/bimg.h>
 #include "GL/glew.h"
 #include <windows.h>
-#define GLEW_STATIC
 #pragma comment(lib,"opengl32.lib")
+
+
+// this is the main message handler for the program
+LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	return
+		DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+
+
 int main(int _argc, const char* const* _argv)
 {
 	HINSTANCE instance = (HINSTANCE)GetModuleHandle(NULL);
@@ -19,6 +28,8 @@ int main(int _argc, const char* const* _argv)
 	// fill in the struct with the needed information
 	wc.cbSize = sizeof(WNDCLASSEX);
 	wc.style = CS_HREDRAW | CS_VREDRAW;
+	wc.lpfnWndProc = WindowProc;
+
 	wc.hInstance = instance;
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
@@ -29,19 +40,19 @@ int main(int _argc, const char* const* _argv)
 
 	// create the window and use the result as the handle
 	hWnd = CreateWindowEx(WS_EX_ACCEPTFILES,
-		"", // name of the window class
-		"", // title of the window
+		"Title", // name of the window class
+		"Title", // title of the window
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE, // window style
 		0, // x-position of the window
 		0, // y-position of the window
-		4096, // width of the window
-		4096, // height of the window
+		500, // width of the window
+		500, // height of the window
 		nullptr, // we have no parent window, NULL
 		nullptr, // we aren't using menus, NULL
 		instance, // application handle
 		nullptr); // used with multiple windows, NULL
 
-
+	ShowWindow(hWnd, SW_SHOWNORMAL);
 
 	GLuint		PixelFormat;			// Holds The Results After Searching For A Match
 	PIXELFORMATDESCRIPTOR pfd =				// pfd Tells Windows How We Want Things To Be
@@ -67,8 +78,8 @@ int main(int _argc, const char* const* _argv)
 	};
 
 
-	HDC hDC = NULL; // Private GDI Device Context
-	HGLRC hRC = NULL; // Permanent Rendering Context
+	HDC hDC; // Private GDI Device Context
+	HGLRC hRC; // Permanent Rendering Context
 	if (!(hDC = GetDC(hWnd)))							// Did We Get A Device Context?
 	{
 		MessageBox(NULL, "Can't Create A GL Device Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);

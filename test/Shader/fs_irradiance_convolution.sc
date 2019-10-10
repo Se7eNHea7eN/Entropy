@@ -22,7 +22,7 @@ void main()
     up            = cross(N, right);
        
     float sampleDelta = 0.025;
-    float nrSamples = 0.0;
+    int nrSamples = 0;
     for(float phi = 0.0; phi < 2.0 * PI; phi += sampleDelta)
     {
         for(float theta = 0.0; theta < 0.5 * PI; theta += sampleDelta)
@@ -33,7 +33,7 @@ void main()
             vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N; 
 
             irradiance += textureCube(environmentMap, sampleVec).xyz * cos(theta) * sin(theta);
-            nrSamples += 1.0;
+            nrSamples++;
         }
     }
     irradiance = PI * irradiance * (1.0 / float(nrSamples));
