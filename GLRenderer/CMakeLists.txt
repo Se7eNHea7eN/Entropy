@@ -20,7 +20,7 @@ include_directories("Private/glew/include/")
 
 
  include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/glew")
- target_link_libraries(${PROJECT_NAME} glew)
+ #target_link_libraries(${PROJECT_NAME} glew)
  include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/glew/include")
 
 
@@ -29,4 +29,5 @@ include_directories("Private/glew/include/")
 
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Eigen")
 
-
+target_link_libraries(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/../glew/libs/glew32.lib)
+ target_link_libraries(${PROJECT_NAME} opengl32.lib )

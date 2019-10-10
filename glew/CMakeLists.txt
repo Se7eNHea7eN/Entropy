@@ -7,11 +7,6 @@ set(PROJECT_NAME glew)
 project(${PROJECT_NAME} C)
 
 add_compile_definitions("GLEW_BUILD")
-# Source Files
-set(SRC_FILES
-    src/glew.c
-)
-source_group("Sources" FILES ${SRC_FILES})
 
 # Header Files
 set(HEADERS_FILES
@@ -21,12 +16,13 @@ set(HEADERS_FILES
 source_group("Headers" FILES ${HEADERS_FILES})
 include_directories("include/")
 # Add library to build.
-add_library(${PROJECT_NAME} STATIC ${SRC_FILES} ${HEADERS_FILES})
+#add_library(${PROJECT_NAME} STATIC  ${HEADERS_FILES})
 
 ########### Link & Dependencies ############################
 # Add project dependencies and Link to project             #
 ############################################################
 
 #if(MSVC)
-  target_link_libraries(${PROJECT_NAME} opengl32.lib )
+ # target_link_libraries(${PROJECT_NAME} opengl32.lib )
 #endif(MSVC)
+ #target_link_libraries(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/libs/glew32.lib)
