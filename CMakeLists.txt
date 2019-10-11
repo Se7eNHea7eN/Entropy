@@ -38,4 +38,5 @@ add_subdirectory(test)
 
 add_subdirectory(IblPrecompute)
 
+add_subdirectory(glfw)
 

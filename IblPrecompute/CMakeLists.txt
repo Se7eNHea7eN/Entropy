@@ -39,7 +39,12 @@ endif()
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../RunDir/)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${EXECUTABLE_OUTPUT_PATH}Release")
+set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${EXECUTABLE_OUTPUT_PATH}Debug")
 
-target_link_libraries(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/../glew/libs/glew32.lib)
- target_link_libraries(${PROJECT_NAME} opengl32.lib )
+target_link_libraries(${PROJECT_NAME} debug   ${CMAKE_CURRENT_SOURCE_DIR}/../glew/libs/glew32d.lib)
+target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/../glew/libs/glew32.lib)
+target_link_libraries(${PROJECT_NAME} opengl32.lib )
+
+
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/glfw/include")
+target_link_libraries(${PROJECT_NAME} glfw)
