@@ -4,6 +4,7 @@
 #include "GL/glew.h"
 #include <windows.h>
 #include "GLFW/glfw3.h"
+#include "shader.h"
 #pragma comment(lib,"opengl32.lib")
 
 
@@ -84,7 +85,7 @@ int main(int _argc, const char* const* _argv) {
 	// glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	// glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glViewport(-textureSize, -textureSize, textureSize, textureSize);
+	glViewport(0, 0, textureSize, textureSize);
 
 	glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
