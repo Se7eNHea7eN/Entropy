@@ -7,5 +7,5 @@ $output v_pos
 void main()
 {
     v_pos = a_position;  
-    gl_Position = mul(u_modelViewProj, vec4(a_position, 1.0) );
+    gl_Position = mul(mul(u_proj,u_view), vec4(a_position, 1.0) );
 }
