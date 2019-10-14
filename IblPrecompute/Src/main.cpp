@@ -180,14 +180,14 @@ int main(int _argc, const char* const* _argv) {
 	bx::FileWriter writer;
 	bx::Error err;
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// glfw window creation
    // --------------------
-	GLFWwindow* window = glfwCreateWindow(1, 1, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(512, 512, "LearnOpenGL", NULL, NULL);
 	glfwMakeContextCurrent(window);
 	if (window == NULL)
 	{
@@ -196,16 +196,12 @@ int main(int _argc, const char* const* _argv) {
 	}
 	glewInit();
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
-
-
-	auto hdrImage = imageLoad("Textures/newport_loft.hdr", bimg::TextureFormat::RGB8);
+	auto hdrImage = imageLoad("Textures/newport_loft.hdr", bimg::TextureFormat::RGBA8);
 
 	unsigned int hdrTexture;
 	glGenTextures(1, &hdrTexture);
 	glBindTexture(GL_TEXTURE_2D, hdrTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, hdrImage->m_width, hdrImage->m_height, 0, GL_RGB, GL_BYTE, hdrImage->m_data); // note how we specify the texture's data value to be float
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, hdrImage->m_width, hdrImage->m_height, 0, GL_RGBA, GL_BYTE, hdrImage->m_data); // note how we specify the texture's data value to be float
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -269,25 +265,22 @@ int main(int _argc, const char* const* _argv) {
 	);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, hdrTexture);
 
-	glViewport(0, 0, textureSize, textureSize); // don't forget to configure the viewport to the capture dimensions.
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 
 	shader.use();
 	shader.setInt("equirectangularMap", 0);
 	shader.setMat4("projection", captureProjection);
-
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, hdrTexture);
 	unsigned char* pixels = (unsigned char*)malloc(textureSize * textureSize * 4);
+	glViewport(0, 0, textureSize, textureSize); // don't forget to configure the viewport to the capture dimensions.
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 
 	for (unsigned int i = 0; i < 6; ++i)
 	{
 		shader.setMat4("view", captureViews[i]);
 		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 		renderCube();
 		glReadPixels(0, 0, textureSize, textureSize, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
@@ -301,6 +294,6 @@ int main(int _argc, const char* const* _argv) {
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
+	glfwTerminate();
 	return 0;
 }
