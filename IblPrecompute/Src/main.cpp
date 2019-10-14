@@ -177,6 +177,7 @@ void renderCube()
 
 
 int main(int _argc, const char* const* _argv) {
+	const int environmentTextureSize = 512;
 
 	bx::FileWriter writer;
 	bx::Error err;
@@ -188,8 +189,9 @@ int main(int _argc, const char* const* _argv) {
 
 	// glfw window creation
    // --------------------
-	GLFWwindow* window = glfwCreateWindow(512, 512, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(1, 1, "LearnOpenGL", NULL, NULL);
 	glfwMakeContextCurrent(window);
+	glfwHideWindow(window);
 	if (window == NULL)
 	{
 		glfwTerminate();
@@ -209,7 +211,6 @@ int main(int _argc, const char* const* _argv) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	const int textureSize = 2048;
 	
 	float captureProjection[16];
 	bx::mtxProj(captureProjection, 90.0f, 1.0f, 0.1f, 10.0f,true);
@@ -228,19 +229,53 @@ int main(int _argc, const char* const* _argv) {
 	//前
 	bx::mtxLookAt(captureViews[5], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f), bx::Vec3(0.0f, 1.0f, 0.0f));
 
-	Shader shader("Shaders\\glsl\\src\\cubemap.vs", "Shaders\\glsl\\src\\equirectangular_to_cubemap.fs");
-	auto error = glGetError();
-
+	//HDR生成cubemap
+	Shader equirectangularToCubemapShader("Shaders\\glsl\\src\\cubemap.vs", "Shaders\\glsl\\src\\equirectangular_to_cubemap.fs");
 	unsigned int captureFBO = 0;
-	unsigned int captureFBOTexture = 0;
+	glGenFramebuffers(1, &captureFBO);
 
-	glGenFramebuffers(1, &captureFBO);
-	glGenTextures(1, &captureFBOTexture);
-	glGenFramebuffers(1, &captureFBO);
+	//创建环境Cubemap
+	unsigned int envCubemap;
+	glGenTextures(1, &envCubemap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, environmentTextureSize, environmentTextureSize, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	//Hdr渲染到Cubemap
+	equirectangularToCubemapShader.use();
+	equirectangularToCubemapShader.setInt("equirectangularMap", 0);
+	equirectangularToCubemapShader.setMat4("projection", captureProjection);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, hdrTexture);
+
+	glViewport(0, 0, environmentTextureSize, environmentTextureSize); // don't forget to configure the viewport to the capture dimensions.
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		equirectangularToCubemapShader.setMat4("view", captureViews[i]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		renderCube();
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	//环境光卷积
+	Shader convolutionShader("Shaders\\glsl\\src\\cubemap.vs", "Shaders\\glsl\\src\\irradiance_convolution.fs");
+	//Framebuffer纹理
+	unsigned int captureFBOTexture = 0;
 	glGenTextures(1, &captureFBOTexture);
 	glBindTexture(GL_TEXTURE_2D, captureFBOTexture);
 	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGB, textureSize, textureSize, 0,
+		GL_TEXTURE_2D, 0, GL_RGB, environmentTextureSize, environmentTextureSize, 0,
 		GL_RGB, GL_UNSIGNED_BYTE, NULL
 	);
 	glTexParameterf(
@@ -267,31 +302,31 @@ int main(int _argc, const char* const* _argv) {
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-
-	shader.use();
-	shader.setInt("equirectangularMap", 0);
-	shader.setMat4("projection", captureProjection);
+	//开始计算卷积
+	convolutionShader.use();
+	convolutionShader.setInt("environmentMap", 0);
+	convolutionShader.setMat4("projection", captureProjection);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, hdrTexture);
-	unsigned char* pixels = (unsigned char*)malloc(textureSize * textureSize * 3 * 6);
-	glViewport(0, 0, textureSize, textureSize); // don't forget to configure the viewport to the capture dimensions.
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	unsigned char* pixels = (unsigned char*)malloc(environmentTextureSize * environmentTextureSize * 3 * 6);
+	glViewport(0, 0, environmentTextureSize, environmentTextureSize); // don't forget to configure the viewport to the capture dimensions.
 	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		shader.setMat4("view", captureViews[i]);
+		convolutionShader.setMat4("view", captureViews[i]);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
 		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderCube();
-		glReadPixels(0, 0, textureSize, textureSize, GL_BGR, GL_UNSIGNED_BYTE, pixels + textureSize * textureSize * 3 * i);
+		glReadPixels(0, 0, environmentTextureSize, environmentTextureSize, GL_BGR, GL_UNSIGNED_BYTE, pixels + environmentTextureSize * environmentTextureSize * 3 * i);
 	}
 
 	if (bx::open(&writer, "output//cube.dds", false, &err)) {
 		// bimg::imageWritePng(&writer, textureSize, textureSize, textureSize * 4, pixels, bimg::TextureFormat::RGBA8, false, &err);
-		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, textureSize, textureSize, 1, 1, true, false, pixels);
-		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, textureSize * textureSize * 3 * 6, nullptr);
+		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, environmentTextureSize, environmentTextureSize, 1, 1, true, false, pixels);
+		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, environmentTextureSize * environmentTextureSize * 3 * 6, nullptr);
 		bx::close(&writer);
 	}
 
