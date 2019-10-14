@@ -6,6 +6,7 @@
 #include "GLFW/glfw3.h"
 #include "shader.h"
 #include <bimg/decode.h>
+#include "tinystl/buffer.h"
 #pragma comment(lib,"opengl32.lib")
 
 
@@ -272,7 +273,7 @@ int main(int _argc, const char* const* _argv) {
 	shader.setMat4("projection", captureProjection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, hdrTexture);
-	unsigned char* pixels = (unsigned char*)malloc(textureSize * textureSize * 4);
+	unsigned char* pixels = (unsigned char*)malloc(textureSize * textureSize * 3 * 6);
 	glViewport(0, 0, textureSize, textureSize); // don't forget to configure the viewport to the capture dimensions.
 	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 
@@ -284,16 +285,16 @@ int main(int _argc, const char* const* _argv) {
 		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderCube();
-		glReadPixels(0, 0, textureSize, textureSize, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-		char buffer[128]{};
-		sprintf_s(buffer,128,"output//cube_%d.png", i);
-
-		if (bx::open(&writer, buffer, false, &err)) {
-			bimg::imageWritePng(&writer, textureSize, textureSize, textureSize * 4, pixels, bimg::TextureFormat::RGBA8, false, &err);
-			bx::close(&writer);
-		}
+		glReadPixels(0, 0, textureSize, textureSize, GL_BGR, GL_UNSIGNED_BYTE, pixels + textureSize * textureSize * 3 * i);
 	}
+
+	if (bx::open(&writer, "output//cube.dds", false, &err)) {
+		// bimg::imageWritePng(&writer, textureSize, textureSize, textureSize * 4, pixels, bimg::TextureFormat::RGBA8, false, &err);
+		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, textureSize, textureSize, 1, 1, true, false, pixels);
+		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, textureSize * textureSize * 3 * 6, nullptr);
+		bx::close(&writer);
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	glfwTerminate();
