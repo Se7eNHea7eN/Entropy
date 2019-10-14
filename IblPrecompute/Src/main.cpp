@@ -196,12 +196,12 @@ int main(int _argc, const char* const* _argv) {
 	}
 	glewInit();
 
-	auto hdrImage = imageLoad("Textures/newport_loft.hdr", bimg::TextureFormat::RGBA8);
+	auto hdrImage = imageLoad("Textures/newport_loft.hdr", bimg::TextureFormat::RGB8);
 
 	unsigned int hdrTexture;
 	glGenTextures(1, &hdrTexture);
 	glBindTexture(GL_TEXTURE_2D, hdrTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, hdrImage->m_width, hdrImage->m_height, 0, GL_RGBA, GL_BYTE, hdrImage->m_data); // note how we specify the texture's data value to be float
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, hdrImage->m_width, hdrImage->m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, hdrImage->m_data); // note how we specify the texture's data value to be float
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -227,7 +227,7 @@ int main(int _argc, const char* const* _argv) {
 	//ǰ
 	bx::mtxLookAt(captureViews[5], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f), bx::Vec3(0.0f, 1.0f, 0.0f));
 
-	Shader shader("Shaders\glsl\src\cubemap.vs", "Shaders\glsl\src\equirectangular_to_cubemap.fs");
+	Shader shader("Shaders\\glsl\\src\\cubemap.vs", "Shaders\\glsl\\src\\equirectangular_to_cubemap.fs");
 	auto error = glGetError();
 
 	unsigned int captureFBO = 0;
@@ -239,8 +239,8 @@ int main(int _argc, const char* const* _argv) {
 	glGenTextures(1, &captureFBOTexture);
 	glBindTexture(GL_TEXTURE_2D, captureFBOTexture);
 	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGBA, textureSize, textureSize, 0,
-		GL_RGBA, GL_UNSIGNED_BYTE, NULL
+		GL_TEXTURE_2D, 0, GL_RGB, textureSize, textureSize, 0,
+		GL_RGB, GL_UNSIGNED_BYTE, NULL
 	);
 	glTexParameterf(
 		GL_TEXTURE_2D,
@@ -279,13 +279,15 @@ int main(int _argc, const char* const* _argv) {
 	for (unsigned int i = 0; i < 6; ++i)
 	{
 		shader.setMat4("view", captureViews[i]);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
 		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderCube();
 		glReadPixels(0, 0, textureSize, textureSize, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 		char buffer[128]{};
-		sprintf_s(buffer,128,"cube_%d.png", i);
+		sprintf_s(buffer,128,"output//cube_%d.png", i);
 
 		if (bx::open(&writer, buffer, false, &err)) {
 			bimg::imageWritePng(&writer, textureSize, textureSize, textureSize * 4, pixels, bimg::TextureFormat::RGBA8, false, &err);
