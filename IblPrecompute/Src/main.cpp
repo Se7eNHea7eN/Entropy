@@ -282,7 +282,7 @@ int main(int argc, char* argv[]) {
 
 	if (bx::open(&writer, "cubemap.dds", false, &err)) {
 		// bimg::imageWritePng(&writer, textureSize, textureSize, textureSize * 4, pixels, bimg::TextureFormat::RGBA8, false, &err);
-		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, environmentTextureSize, environmentTextureSize, 1, 1, true, false, cubePixels);
+		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGBA8, environmentTextureSize, environmentTextureSize, 1, 1, true, false, cubePixels);
 		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, environmentTextureSize* environmentTextureSize * 3 * 6, nullptr);
 		bx::close(&writer);
 	}
