@@ -276,13 +276,13 @@ int main(int argc, char* argv[]) {
 
 		renderCube();
 
-		glReadPixels(0, 0, environmentTextureSize, environmentTextureSize, GL_BGR, GL_UNSIGNED_BYTE, cubePixels + environmentTextureSize * environmentTextureSize * 3 * i);
+		glReadPixels(0, 0, environmentTextureSize, environmentTextureSize, GL_RGB, GL_UNSIGNED_BYTE, cubePixels + environmentTextureSize * environmentTextureSize * 3 * i);
 
 	}
 
 	if (bx::open(&writer, "cubemap.dds", false, &err)) {
 		// bimg::imageWritePng(&writer, textureSize, textureSize, textureSize * 4, pixels, bimg::TextureFormat::RGBA8, false, &err);
-		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGBA8, environmentTextureSize, environmentTextureSize, 1, 1, true, false, cubePixels);
+		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, environmentTextureSize, environmentTextureSize, 1, 1, true, false, cubePixels);
 		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, environmentTextureSize* environmentTextureSize * 3 * 6, nullptr);
 		bx::close(&writer);
 	}
@@ -342,7 +342,7 @@ int main(int argc, char* argv[]) {
 		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderCube();
-		glReadPixels(0, 0, irraianceTextureSize, irraianceTextureSize, GL_BGR, GL_UNSIGNED_BYTE, pixels + irraianceTextureSize * irraianceTextureSize * 3 * i);
+		glReadPixels(0, 0, irraianceTextureSize, irraianceTextureSize, GL_RGB, GL_UNSIGNED_BYTE, pixels + irraianceTextureSize * irraianceTextureSize * 3 * i);
 	}
 
 	if (bx::open(&writer, "irradiance.dds", false, &err)) {

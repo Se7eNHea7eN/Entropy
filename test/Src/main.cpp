@@ -153,7 +153,8 @@ int main(int _argc, const char* const* _argv)
 
 
 	auto skybox = std::make_shared<SkyBox>();
-	skybox->SetHdrTexture(std::shared_ptr<Texture>(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/bolonga_lod.dds", bimg::TextureFormat::RGB8)))));
+	skybox->SetHdrTexture(std::shared_ptr<Texture>(
+		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/newport_loft_cubemap.dds", bimg::TextureFormat::RGB8)))));
 	scene->SetSkybox(skybox);
 
 	// auto gunNode = createCerberus();

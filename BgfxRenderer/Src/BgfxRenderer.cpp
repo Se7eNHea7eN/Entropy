@@ -93,8 +93,8 @@ void Entropy::BgfxRenderer::Initialize() {
 	// #define BGFX_PCI_ID_NVIDIA              UINT16_C(0x10de) //!< nVidia adapter.
 	init.vendorId = 0;
 	// 设置分辨率大小
-	init.resolution.width = 2560;
-	init.resolution.height = 1440;
+	init.resolution.width = 1920;
+	init.resolution.height = 1080;
 	// BGFX_RESET_VSYNC 其作用主要是让显卡的运算和显示器刷新率一致以稳定输出的画面质量。
 	init.resolution.reset = BGFX_RESET_VSYNC;
 	bgfx::init(init);
@@ -203,6 +203,7 @@ void Entropy::BgfxRenderer::Initialize() {
 	if (skybox != nullptr) {
 		cubeTexture = createTexture(skybox->HdrTexture()->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 	}
+	bgfx::frame();
 }
 
 void Entropy::BgfxRenderer::Resize(int w, int h) {
