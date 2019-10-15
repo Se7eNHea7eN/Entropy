@@ -7,6 +7,7 @@ uniform vec4 u_params[1];
 #define useNormalMap int(u_params[0].x)
 #define isEmissive int(u_params[0].y)
 
+
 SAMPLER2D(s_albedo, 0);
 SAMPLER2D(s_normal, 1);
 
@@ -16,6 +17,7 @@ SAMPLER2D(s_ao, 4);
 
 SAMPLER2D(s_emissive, 5);
 
+SAMPLERCUBE(s_irradianceMap, 6);
 
 uniform vec3 u_cameraPos;
 
@@ -109,11 +111,11 @@ void main()
 
         float NDF = DistributionGGX(N, H, roughness);
         float G   = GeometrySmith(N, V, L, roughness);      
-        vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+        vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);     
            
         vec3 nominator    = NDF * G * F; 
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-        vec3 specular = nominator / max(denominator, 0.001); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
+        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0)+ 0.001;
+        vec3 specular =  nominator / denominator; // prevent divide by zero for NdotV=0.0 or NdotL=0.0
         
         vec3 kS = F;
 
@@ -131,12 +133,20 @@ void main()
         vec4 emissive = texture2D(s_emissive, v_texcoord0);
         Lo = mix(Lo,emissive.xyz,emissive.w);
     }
-    vec3 ambient = vec3(0.03,0.03,0.03) * albedo * ao;
+    vec3 kS = fresnelSchlick(max(dot(N, V), 0.0), F0);
+    vec3 kD = 1.0 - kS;
+    kD *= 1.0 - metallic;	
+
+    //vec3 ambient = vec3(0.03,0.03,0.03) * albedo * ao;
+
+    vec3 irradiance = textureCube(s_irradianceMap, N).xyz;
+    vec3 diffuse      = irradiance * albedo;
+    vec3 ambient = (kD * diffuse) * ao;
 
     vec3 color = ambient + Lo;
 
     color = color / (color + vec3(1.0,1.0,1.0));
-    color = pow(color, vec3(1.0/2.2,1.0/2.2,1.0/2.2));
+    color = pow(abs(color), vec3(1.0/2.2,1.0/2.2,1.0/2.2));
 
     gl_FragColor = vec4(color, 1.0);
 }

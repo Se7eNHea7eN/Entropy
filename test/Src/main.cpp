@@ -133,6 +133,7 @@ std::shared_ptr<SceneNode> createGun() {
 	mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::RGB8))));
 	mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_M.png", bimg::TextureFormat::R8))));
 	mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::R8))));
+	mat->SetIrradianceMap(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/newport_loft_irradiance.dds", bimg::TextureFormat::RGB8))));
 	mat->SetAmbientOcclusion(1.0);
 
 	node->GetTransform()->SetScale(Vector3f(20, 20, 20));
