@@ -214,6 +214,7 @@ namespace Entropy {
 
 		void SetIrradianceMap(Texture* texture) {
 			parameters["s_irradianceMap"] = Parameter(texture, Sampler, 6);
+			u_params[0].z = 1;
 			setParams();
 		}
 	};

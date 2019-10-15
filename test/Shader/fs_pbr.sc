@@ -6,7 +6,7 @@ $input v_pos, v_normal, v_texcoord0 , v_tangent
 uniform vec4 u_params[1];
 #define useNormalMap int(u_params[0].x)
 #define isEmissive int(u_params[0].y)
-
+#define useIrradianceMap int(u_params[0].z)
 
 SAMPLER2D(s_albedo, 0);
 SAMPLER2D(s_normal, 1);
@@ -137,11 +137,14 @@ void main()
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - metallic;	
 
-    //vec3 ambient = vec3(0.03,0.03,0.03) * albedo * ao;
-
-    vec3 irradiance = textureCube(s_irradianceMap, N).xyz;
-    vec3 diffuse      = irradiance * albedo;
-    vec3 ambient = (kD * diffuse) * ao;
+    vec3 ambient ;
+    if(useIrradianceMap > 0){
+        vec3 irradiance = textureCube(s_irradianceMap, N).xyz;
+        vec3 diffuse      = irradiance * albedo;
+        ambient = (kD * diffuse) * ao;
+    }else
+        ambient = vec3(0.03,0.03,0.03) * albedo * ao;
+  
 
     vec3 color = ambient + Lo;
 
