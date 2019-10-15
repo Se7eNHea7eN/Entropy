@@ -143,7 +143,7 @@ void Entropy::BgfxRenderer::Initialize() {
 
 	auto skybox = engine->CurrentScene()->GetSkybox();
 	if (skybox != nullptr) {
-		const uint16_t cubeTextureSize = 4096;
+		const uint16_t cubeTextureSize = 2048;
 
 		skyProgram = loadProgram("vs_skybox", "fs_skybox_hdr");
 		s_skybox = bgfx::createUniform("s_skybox", bgfx::UniformType::Sampler);
@@ -276,10 +276,9 @@ void Entropy::BgfxRenderer::Initialize() {
 
 			bgfx::touch(viewId);
 		}
-
+		bgfx::frame();
 
 		// bgfx::frame();
-		
 		// bgfx::destroy(equirectangularToCubemap);
 		// bgfx::destroy(equirectangularMapHandle);
 		// for (uint32_t ii = 0; ii < 6; ++ii) {
@@ -381,7 +380,7 @@ void Entropy::BgfxRenderer::Draw() {
 		;
 	bgfx::setVertexBuffer(0, cubeVbh);
 	bgfx::setIndexBuffer(cubeIbh);
-	bgfx::setTexture(0, s_skybox, cubeTexture);
+	bgfx::setTexture(0, s_skybox, irradianceTexture);
 	bgfx::setViewFrameBuffer(VIEWID_SCENE, BGFX_INVALID_HANDLE);
 	bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
 

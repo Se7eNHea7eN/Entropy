@@ -176,8 +176,17 @@ void renderCube()
 }
 
 
-int main(int _argc, const char* const* _argv) {
-	const int environmentTextureSize = 512;
+int main(int argc, char* argv[]) {
+	char* sourceImagePath = "..\\Textures\\newport_loft.hdr";
+#ifdef RELEASE
+	if(argc < 2) {
+		return 0;
+	}
+	sourceImagePath = argc[1];
+#endif
+
+	const int environmentTextureSize = 1024;
+	const int irraianceTextureSize = 512;
 
 	bx::FileWriter writer;
 	bx::Error err;
@@ -199,7 +208,7 @@ int main(int _argc, const char* const* _argv) {
 	}
 	glewInit();
 
-	auto hdrImage = imageLoad("Textures/newport_loft.hdr", bimg::TextureFormat::RGB8);
+	auto hdrImage = imageLoad(sourceImagePath, bimg::TextureFormat::RGB8);
 
 	unsigned int hdrTexture;
 	glGenTextures(1, &hdrTexture);
@@ -230,7 +239,7 @@ int main(int _argc, const char* const* _argv) {
 	bx::mtxLookAt(captureViews[5], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f), bx::Vec3(0.0f, 1.0f, 0.0f));
 
 	//HDR生成cubemap
-	Shader equirectangularToCubemapShader("Shaders\\glsl\\src\\cubemap.vs", "Shaders\\glsl\\src\\equirectangular_to_cubemap.fs");
+	Shader equirectangularToCubemapShader("cubemap.vs", "equirectangular_to_cubemap.fs");
 	unsigned int captureFBO = 0;
 	glGenFramebuffers(1, &captureFBO);
 
@@ -257,6 +266,8 @@ int main(int _argc, const char* const* _argv) {
 
 	glViewport(0, 0, environmentTextureSize, environmentTextureSize); // don't forget to configure the viewport to the capture dimensions.
 	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	unsigned char* cubePixels = new unsigned char[environmentTextureSize * environmentTextureSize * 3 * 6];
+
 	for (unsigned int i = 0; i < 6; ++i)
 	{
 		equirectangularToCubemapShader.setMat4("view", captureViews[i]);
@@ -264,18 +275,29 @@ int main(int _argc, const char* const* _argv) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		renderCube();
+
+		glReadPixels(0, 0, environmentTextureSize, environmentTextureSize, GL_BGR, GL_UNSIGNED_BYTE, cubePixels + environmentTextureSize * environmentTextureSize * 3 * i);
+
 	}
+
+	if (bx::open(&writer, "cubemap.dds", false, &err)) {
+		// bimg::imageWritePng(&writer, textureSize, textureSize, textureSize * 4, pixels, bimg::TextureFormat::RGBA8, false, &err);
+		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, environmentTextureSize, environmentTextureSize, 1, 1, true, false, cubePixels);
+		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, environmentTextureSize* environmentTextureSize * 3 * 6, nullptr);
+		bx::close(&writer);
+	}
+	delete cubePixels;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
 	//环境光卷积
-	Shader convolutionShader("Shaders\\glsl\\src\\cubemap.vs", "Shaders\\glsl\\src\\irradiance_convolution.fs");
+	Shader convolutionShader("cubemap.vs", "irradiance_convolution.fs");
 	//Framebuffer纹理
 	unsigned int captureFBOTexture = 0;
 	glGenTextures(1, &captureFBOTexture);
 	glBindTexture(GL_TEXTURE_2D, captureFBOTexture);
 	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGB, environmentTextureSize, environmentTextureSize, 0,
+		GL_TEXTURE_2D, 0, GL_RGB, irraianceTextureSize, irraianceTextureSize, 0,
 		GL_RGB, GL_UNSIGNED_BYTE, NULL
 	);
 	glTexParameterf(
@@ -308,8 +330,8 @@ int main(int _argc, const char* const* _argv) {
 	convolutionShader.setMat4("projection", captureProjection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	unsigned char* pixels = (unsigned char*)malloc(environmentTextureSize * environmentTextureSize * 3 * 6);
-	glViewport(0, 0, environmentTextureSize, environmentTextureSize); // don't forget to configure the viewport to the capture dimensions.
+	unsigned char* pixels = (unsigned char*)malloc(irraianceTextureSize * irraianceTextureSize * 3 * 6);
+	glViewport(0, 0, irraianceTextureSize, irraianceTextureSize); // don't forget to configure the viewport to the capture dimensions.
 	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 
 	for (unsigned int i = 0; i < 6; ++i)
@@ -320,13 +342,13 @@ int main(int _argc, const char* const* _argv) {
 		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderCube();
-		glReadPixels(0, 0, environmentTextureSize, environmentTextureSize, GL_BGR, GL_UNSIGNED_BYTE, pixels + environmentTextureSize * environmentTextureSize * 3 * i);
+		glReadPixels(0, 0, irraianceTextureSize, irraianceTextureSize, GL_BGR, GL_UNSIGNED_BYTE, pixels + irraianceTextureSize * irraianceTextureSize * 3 * i);
 	}
 
-	if (bx::open(&writer, "output//cube.dds", false, &err)) {
+	if (bx::open(&writer, "irradiance.dds", false, &err)) {
 		// bimg::imageWritePng(&writer, textureSize, textureSize, textureSize * 4, pixels, bimg::TextureFormat::RGBA8, false, &err);
-		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, environmentTextureSize, environmentTextureSize, 1, 1, true, false, pixels);
-		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, environmentTextureSize * environmentTextureSize * 3 * 6, nullptr);
+		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, irraianceTextureSize, irraianceTextureSize, 1, 1, true, false, pixels);
+		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, irraianceTextureSize * irraianceTextureSize * 3 * 6, nullptr);
 		bx::close(&writer);
 	}
 
