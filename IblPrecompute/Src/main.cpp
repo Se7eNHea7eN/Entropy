@@ -389,25 +389,29 @@ int main(int argc, char* argv[]) {
 		+ prefilterSize / 2 * prefilterSize / 2 * 3 * 6
 		+ prefilterSize / 4 * prefilterSize / 4 * 3 * 6
 		+ prefilterSize / 8 * prefilterSize / 8 * 3 * 6
-		+ prefilterSize / 16 * prefilterSize / 16 * 3 * 6;
+		+ prefilterSize / 16 * prefilterSize / 16 * 3 * 6
+		+ prefilterSize / 32 * prefilterSize / 32 * 3 * 6
+		+ prefilterSize / 64 * prefilterSize / 64 * 3 * 6
+		+ prefilterSize / 128 * prefilterSize / 128 * 3 * 6;
 	
 	unsigned char* prefilterPixels = new unsigned char[prefilterDataSize];
 
 	
-	unsigned int maxMipLevels = 5;
+	unsigned int maxMipLevels = 8;
 	int offset = 0;
-	for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
-	{
-		// reisze framebuffer according to mip-level size.
-		unsigned int mipSize = prefilterSize * std::pow(0.5, mip);
-		// glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-		// glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
-		glViewport(0, 0, mipSize, mipSize);
 
-		float roughness = (float)mip / (float)(maxMipLevels - 1);
-		prefilterShader.setFloat("roughness", roughness);
-		for (unsigned int i = 0; i < 6; ++i)
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
 		{
+			// reisze framebuffer according to mip-level size.
+			unsigned int mipSize = prefilterSize * std::pow(0.5, mip);
+			// glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+			// glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+			glViewport(0, 0, mipSize, mipSize);
+
+			float roughness = (float)mip / (float)(maxMipLevels - 1);
+			prefilterShader.setFloat("roughness", roughness);
 			prefilterShader.setMat4("view", captureViews[i]);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
 
