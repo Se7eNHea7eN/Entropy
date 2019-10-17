@@ -261,13 +261,16 @@ void Entropy::BgfxRenderer::Draw() {
 		// | BGFX_STATE_PT_TRISTRIP
 		// | BGFX_STATE_PT_LINESTRIP
 		;
-	// bgfx::setVertexBuffer(0, cubeVbh);
-	// bgfx::setIndexBuffer(cubeIbh);
-	// bgfx::setTexture(0, s_skybox, cubeTexture);
-	// // bgfx::setViewFrameBuffer(VIEWID_SCENE, BGFX_INVALID_HANDLE);
-	// bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
-	//
-	// bgfx::submit(0, skyProgram);
+	if(bgfx::isValid(cubeTexture)) {
+		bgfx::setVertexBuffer(0, cubeVbh);
+		bgfx::setIndexBuffer(cubeIbh);
+		bgfx::setTexture(0, s_skybox, cubeTexture);
+		bgfx::setViewFrameBuffer(VIEWID_SCENE, BGFX_INVALID_HANDLE);
+		bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
+
+		bgfx::submit(0, skyProgram);
+	}
+
 	for (auto g : geometries) {
 		bgfx::setState(state | g->indiceType);
 		g->Submit(engine->CurrentScene());

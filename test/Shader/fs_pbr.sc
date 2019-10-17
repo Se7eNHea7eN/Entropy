@@ -6,7 +6,7 @@ $input v_pos, v_normal, v_texcoord0 , v_tangent
 uniform vec4 u_params[1];
 #define useNormalMap int(u_params[0].x)
 #define isEmissive int(u_params[0].y)
-#define useIrradianceMap int(u_params[0].z)
+#define useIBL int(u_params[0].z)
 
 SAMPLER2D(s_albedo, 0);
 SAMPLER2D(s_normal, 1);
@@ -18,6 +18,8 @@ SAMPLER2D(s_ao, 4);
 SAMPLER2D(s_emissive, 5);
 
 SAMPLERCUBE(s_irradianceMap, 6);
+SAMPLERCUBE(s_prefilterMap, 7);
+SAMPLER2D(s_brdfLUT, 8);
 
 uniform vec3 u_cameraPos;
 
@@ -97,6 +99,7 @@ void main()
         N = normalize(v_normal);
 
     vec3 V = normalize(u_cameraPos - v_pos);
+    vec3 R = reflect(-V, N); 
 
     vec3 F0 = vec3(0.04,0.04,0.04); 
     F0 = mix(F0, albedo, metallic);
@@ -138,16 +141,22 @@ void main()
         vec4 emissive = texture2D(s_emissive, v_texcoord0);
         Lo = mix(Lo,emissive.xyz,emissive.w);
     }
+    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
 
-    vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+    vec3 kS = F;
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - metallic;	  
 
     vec3 ambient ;
-    if(useIrradianceMap > 0){
+    if(useIBL > 0){
+        const float MAX_REFLECTION_LOD = 4.0;
+        vec3 prefilteredColor = textureCubeLod(s_prefilterMap, R,  roughness * MAX_REFLECTION_LOD).xyz;    
+        vec2 brdf  = texture2D(s_brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).xy;
+        vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+
         vec3 irradiance = textureCube(s_irradianceMap, N).xyz;
         vec3 diffuse      = irradiance * albedo;
-        ambient = (kD * diffuse) * ao;
+        ambient = (kD * diffuse + specular) * ao;
     }else
         ambient = vec3(0.03,0.03,0.03) * albedo * ao;
   

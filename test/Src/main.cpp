@@ -133,7 +133,11 @@ std::shared_ptr<SceneNode> createGun() {
 	mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::RGB8))));
 	mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_M.png", bimg::TextureFormat::R8))));
 	mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::R8))));
-	mat->SetIrradianceMap(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/newport_loft_irradiance.dds", bimg::TextureFormat::RGB8))));
+	mat->SetIBL(
+		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/newport_loft_irradiance.dds", bimg::TextureFormat::RGB8))),
+		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/newport_loft_prefilter.dds", bimg::TextureFormat::RGB8))),
+		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/brdf.png", bimg::TextureFormat::RGBA8)))
+	);
 	mat->SetAmbientOcclusion(1.0);
 
 	node->GetTransform()->SetScale(Vector3f(20, 20, 20));
@@ -152,11 +156,11 @@ int main(int _argc, const char* const* _argv)
 	app.entropyCore->CreateScene("Test Scene");
 	auto scene = app.entropyCore->CurrentScene();
 
-
-	auto skybox = std::make_shared<SkyBox>();
-	skybox->SetHdrTexture(std::shared_ptr<Texture>(
-		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/newport_loft_cubemap.dds", bimg::TextureFormat::RGB8)))));
-	scene->SetSkybox(skybox);
+	//
+	// auto skybox = std::make_shared<SkyBox>();
+	// skybox->SetHdrTexture(std::shared_ptr<Texture>(
+	// 	new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/newport_loft_prefilter.dds", bimg::TextureFormat::RGB8)))));
+	// scene->SetSkybox(skybox);
 
 	// auto gunNode = createCerberus();
 	auto gunNode = createGun();
