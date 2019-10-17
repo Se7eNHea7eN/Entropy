@@ -8,7 +8,11 @@
 #include <bimg/decode.h>
 #include "tinystl/buffer.h"
 #pragma comment(lib,"opengl32.lib")
-
+unsigned int captureFBO = 0;
+bx::FileWriter writer;
+bx::Error err;
+float captureProjection[16];
+float captureViews[6][16];
 
 // this is the main message handler for the program
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -208,9 +212,180 @@ void renderQuad()
 	glBindVertexArray(0);
 }
 
+void generateBrdfLut() {
+	// pbr: generate a 2D LUT from the BRDF equations used.
+// ----------------------------------------------------
+//
+	Shader brdfShader("brdf.vs", "brdf.fs");
+	// 
+	unsigned int brdfLUTTexture;
+	glGenTextures(1, &brdfLUTTexture);
 
+	// pre-allocate enough memory for the LUT texture.
+	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, 512, 512, 0, GL_RG, GL_UNSIGNED_BYTE, 0);
+	// be sure to set wrapping mode to GL_CLAMP_TO_EDGE
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// then re-configure capture framebuffer object and render screen-space quad with BRDF shader.
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+
+	glViewport(0, 0, 512, 512);
+	brdfShader.use();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	renderQuad();
+	unsigned char* brdfPixels = new unsigned char[512 * 512 * 4];
+	glReadPixels(0, 0, 512, 512, GL_RGBA, GL_UNSIGNED_BYTE, brdfPixels);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	if (bx::open(&writer, "brdf.png", false, &err)) {
+		bimg::imageWritePng(&writer, 512, 512, 512 * 4, brdfPixels, bimg::TextureFormat::RGBA8, false);
+		// auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, 512, 512, 1, 1, false, false, brdfPixels);
+		// bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, imageContainer->m_size, nullptr);
+		bx::close(&writer);
+	}
+}
+
+void convolution(unsigned int envCubemap) {
+	const int irraianceTextureSize = 512;
+
+	//环境光卷积
+	Shader convolutionShader("cubemap.vs", "irradiance_convolution.fs");
+
+
+	//开始计算卷积
+	convolutionShader.use();
+	convolutionShader.setInt("environmentMap", 0);
+	convolutionShader.setMat4("projection", captureProjection);
+
+	unsigned char* pixels = new unsigned char[irraianceTextureSize * irraianceTextureSize * 3 * 6];
+	glViewport(0, 0, irraianceTextureSize, irraianceTextureSize); // don't forget to configure the viewport to the capture dimensions.
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+
+	// pbr: create an irradiance cubemap, and re-scale capture FBO to irradiance scale.
+  // --------------------------------------------------------------------------------
+	unsigned int irradianceMap;
+	glGenTextures(1, &irradianceMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, irraianceTextureSize, irraianceTextureSize, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	glViewport(0, 0, irraianceTextureSize, irraianceTextureSize);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		convolutionShader.setMat4("view", captureViews[i]);
+		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
+		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+		renderCube();
+		glReadPixels(0, 0, irraianceTextureSize, irraianceTextureSize, GL_RGB, GL_UNSIGNED_BYTE, pixels + irraianceTextureSize * irraianceTextureSize * 3 * i);
+	}
+
+	if (bx::open(&writer, "irradiance.dds", false, &err)) {
+		// bimg::imageWritePng(&writer, textureSize, textureSize, textureSize * 4, pixels, bimg::TextureFormat::RGBA8, false, &err);
+		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, irraianceTextureSize, irraianceTextureSize, 1, 1, true, false, pixels);
+		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, irraianceTextureSize * irraianceTextureSize * 3 * 6, nullptr);
+		bx::close(&writer);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	delete pixels;
+}
+void prefilter(unsigned int envCubemap) {
+
+	Shader prefilterShader("cubemap.vs", "prefilter.fs");
+	unsigned int prefilterMap;
+	glGenTextures(1, &prefilterMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB8, 128, 128, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // be sure to set minifcation filter to mip_linear 
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// generate mipmaps for the cubemap so OpenGL automatically allocates the required memory.
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+	// pbr: run a quasi monte-carlo simulation on the environment lighting to create a prefilter (cube)map.
+  // ----------------------------------------------------------------------------------------------------
+	prefilterShader.use();
+	prefilterShader.setInt("environmentMap", 0);
+	prefilterShader.setMat4("projection", captureProjection);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+
+	const int prefilterSize = 128;
+	const int prefilterDataSize =
+		prefilterSize * prefilterSize * 3 * 6
+		+ prefilterSize / 2 * prefilterSize / 2 * 3 * 6
+		+ prefilterSize / 4 * prefilterSize / 4 * 3 * 6
+		+ prefilterSize / 8 * prefilterSize / 8 * 3 * 6
+		+ prefilterSize / 16 * prefilterSize / 16 * 3 * 6
+		+ prefilterSize / 32 * prefilterSize / 32 * 3 * 6
+		+ prefilterSize / 64 * prefilterSize / 64 * 3 * 6
+		+ prefilterSize / 128 * prefilterSize / 128 * 3 * 6;
+
+	unsigned char* prefilterPixels = new unsigned char[prefilterDataSize];
+
+	unsigned int maxMipLevels = 8;
+	int offset = 0;
+
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
+		{
+			// reisze framebuffer according to mip-level size.
+			unsigned int mipSize = prefilterSize * std::pow(0.5, mip);
+			
+			glViewport(0, 0, mipSize, mipSize);
+
+			float roughness = (float)mip / (float)(maxMipLevels - 1);
+			prefilterShader.setFloat("roughness", roughness);
+			prefilterShader.setMat4("view", captureViews[i]);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
+
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			renderCube();
+			glReadPixels(0, 0, mipSize, mipSize, GL_RGB, GL_UNSIGNED_BYTE, prefilterPixels + offset);
+			offset += mipSize * mipSize * 3;
+		}
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	if (bx::open(&writer, "prefilter.dds", false, &err)) {
+		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, prefilterSize, prefilterSize, 1, 1, true, true, prefilterPixels);
+		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, prefilterDataSize, nullptr);
+		bx::close(&writer);
+	}
+
+	delete prefilterPixels;
+}
 int main(int argc, char* argv[]) {
-	char* sourceImagePath = "..\\Textures\\newport_loft.hdr";
+	char* sourceImagePath = "..\\Textures\\Malibu_Overlook_3k.hdr";
 #ifdef RELEASE
 	if(argc < 2) {
 		return 0;
@@ -219,10 +394,8 @@ int main(int argc, char* argv[]) {
 #endif
 
 	const int environmentTextureSize = 1024;
-	const int irraianceTextureSize = 512;
 
-	bx::FileWriter writer;
-	bx::Error err;
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -254,9 +427,7 @@ int main(int argc, char* argv[]) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	
-	float captureProjection[16];
 	bx::mtxProj(captureProjection, 90.0f, 1.0f, 0.1f, 10.0f,true);
-	float captureViews[6][16];
 	//右
 	bx::mtxLookAt(captureViews[0], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(1.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 1.0f, 0.0f));
 	//左
@@ -273,7 +444,6 @@ int main(int argc, char* argv[]) {
 
 	//HDR生成cubemap
 	Shader equirectangularToCubemapShader("cubemap.vs", "equirectangular_to_cubemap.fs");
-	unsigned int captureFBO = 0;
 	glGenFramebuffers(1, &captureFBO);
 
 	//创建环境Cubemap
@@ -321,155 +491,14 @@ int main(int argc, char* argv[]) {
 	}
 	delete cubePixels;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-	//环境光卷积
-	Shader convolutionShader("cubemap.vs", "irradiance_convolution.fs");
 	
-
-	//开始计算卷积
-	convolutionShader.use();
-	convolutionShader.setInt("environmentMap", 0);
-	convolutionShader.setMat4("projection", captureProjection);
-	glActiveTexture(GL_TEXTURE0);
+	// then let OpenGL generate mipmaps from first mip face (combatting visible dots artifact)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	unsigned char* pixels = new unsigned char[irraianceTextureSize * irraianceTextureSize * 3 * 6];
-	glViewport(0, 0, irraianceTextureSize, irraianceTextureSize); // don't forget to configure the viewport to the capture dimensions.
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		convolutionShader.setMat4("view", captureViews[i]);
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
-		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		renderCube();
-		glReadPixels(0, 0, irraianceTextureSize, irraianceTextureSize, GL_RGB, GL_UNSIGNED_BYTE, pixels + irraianceTextureSize * irraianceTextureSize * 3 * i);
-	}
-
-	if (bx::open(&writer, "irradiance.dds", false, &err)) {
-		// bimg::imageWritePng(&writer, textureSize, textureSize, textureSize * 4, pixels, bimg::TextureFormat::RGBA8, false, &err);
-		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, irraianceTextureSize, irraianceTextureSize, 1, 1, true, false, pixels);
-		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, irraianceTextureSize * irraianceTextureSize * 3 * 6, nullptr);
-		bx::close(&writer);
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	delete pixels;
-	
-	
-	Shader prefilterShader("cubemap.vs", "prefilter.fs");
-	unsigned int prefilterMap;
-	glGenTextures(1, &prefilterMap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0, GL_RGB, GL_FLOAT, nullptr);
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // be sure to set minifcation filter to mip_linear 
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// generate mipmaps for the cubemap so OpenGL automatically allocates the required memory.
 	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
-	// pbr: run a quasi monte-carlo simulation on the environment lighting to create a prefilter (cube)map.
-  // ----------------------------------------------------------------------------------------------------
-	prefilterShader.use();
-	prefilterShader.setInt("environmentMap", 0);
-	prefilterShader.setMat4("projection", captureProjection);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-
-	
-	const int prefilterSize = 128;
-	const int prefilterDataSize =
-		prefilterSize * prefilterSize * 3 * 6
-		+ prefilterSize / 2 * prefilterSize / 2 * 3 * 6
-		+ prefilterSize / 4 * prefilterSize / 4 * 3 * 6
-		+ prefilterSize / 8 * prefilterSize / 8 * 3 * 6
-		+ prefilterSize / 16 * prefilterSize / 16 * 3 * 6
-		+ prefilterSize / 32 * prefilterSize / 32 * 3 * 6
-		+ prefilterSize / 64 * prefilterSize / 64 * 3 * 6
-		+ prefilterSize / 128 * prefilterSize / 128 * 3 * 6;
-	
-	unsigned char* prefilterPixels = new unsigned char[prefilterDataSize];
-
-	
-	unsigned int maxMipLevels = 8;
-	int offset = 0;
-
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
-		{
-			// reisze framebuffer according to mip-level size.
-			unsigned int mipSize = prefilterSize * std::pow(0.5, mip);
-			// glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-			// glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
-			glViewport(0, 0, mipSize, mipSize);
-
-			float roughness = (float)mip / (float)(maxMipLevels - 1);
-			prefilterShader.setFloat("roughness", roughness);
-			prefilterShader.setMat4("view", captureViews[i]);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
-
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			renderCube();
-			glReadPixels(0, 0, mipSize, mipSize, GL_RGB, GL_UNSIGNED_BYTE, prefilterPixels + offset);
-			offset += mipSize * mipSize * 3;
-		}
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	
-	if (bx::open(&writer, "prefilter.dds", false, &err)) { 
-		auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, prefilterSize, prefilterSize, 1, 1, true, true, prefilterPixels);
-		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, prefilterDataSize, nullptr);
-		bx::close(&writer);
-	}
-
-	delete prefilterPixels;
-	// pbr: generate a 2D LUT from the BRDF equations used.
-// ----------------------------------------------------
-//
-	Shader brdfShader("brdf.vs", "brdf.fs");
-	// 
-	unsigned int brdfLUTTexture;
-	glGenTextures(1, &brdfLUTTexture);
-
-	// pre-allocate enough memory for the LUT texture.
-	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, 512, 512, 0, GL_RG, GL_UNSIGNED_BYTE, 0);
-	// be sure to set wrapping mode to GL_CLAMP_TO_EDGE
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// then re-configure capture framebuffer object and render screen-space quad with BRDF shader.
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
-
-	glViewport(0, 0, 512, 512);
-	brdfShader.use();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderQuad();
-	unsigned char* brdfPixels = new unsigned char[512 * 512 * 4];
-	glReadPixels(0, 0, 512, 512, GL_RGBA, GL_UNSIGNED_BYTE, brdfPixels);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	if (bx::open(&writer, "brdf.png", false, &err)) {
-		bimg::imageWritePng(&writer, 512, 512, 512 *4, brdfPixels, bimg::TextureFormat::RGBA8, false);
-		// auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, 512, 512, 1, 1, false, false, brdfPixels);
-		// bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, imageContainer->m_size, nullptr);
-		bx::close(&writer);
-	}
+	convolution(envCubemap);
+	prefilter(envCubemap);
+	generateBrdfLut();
 	glfwTerminate();
 	return 0;
 }
