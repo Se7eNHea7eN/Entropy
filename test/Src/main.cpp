@@ -57,13 +57,15 @@ std::shared_ptr<SceneNode> createCerberus() {
 		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/brdf.png", bimg::TextureFormat::RGBA8)))
 	);
 	node->GetTransform()->SetScale(Vector3f(0.03, 0.03, 0.03));
-	node->GetTransform()->SetPosition(Vector3f(-4,2,0));
 	node->GetTransform()->Rotate(3.14 /2, Vector3f::UnitZ());
 	node->GetTransform()->Rotate(3.14 /2, Vector3f::UnitY());
 
 	node->AddComponent(meshComponent->SharedPtr());
 
 	objNode->AddChild(std::move(node));
+
+	objNode->GetTransform()->SetPosition(Vector3f(-1, 2, 0));
+
 	return objNode;
 }
 
@@ -196,7 +198,7 @@ int main(int _argc, const char* const* _argv)
 	pointLight->SetIntensive(10);
 	pointLight->Initialize();
 	pointLightNode->AddComponent(pointLight);
-	pointLightNode->GetTransform()->SetPosition(2, 2, 0);
+	pointLightNode->GetTransform()->SetPosition(4, 2, 0);
 	
 	std::shared_ptr<StaticMeshComponent> sphereComponent(new StaticMeshComponent());
 	sphereComponent->Initialize();
