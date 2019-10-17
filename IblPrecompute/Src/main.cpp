@@ -385,7 +385,7 @@ void prefilter(unsigned int envCubemap) {
 	delete prefilterPixels;
 }
 int main(int argc, char* argv[]) {
-	char* sourceImagePath = "..\\Textures\\Malibu_Overlook_3k.hdr";
+	char* sourceImagePath = "..\\Textures\\hdrvfx_zanla_1_n1_v01_Ref.hdr";
 #ifdef RELEASE
 	if(argc < 2) {
 		return 0;
