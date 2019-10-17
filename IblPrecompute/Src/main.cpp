@@ -176,6 +176,39 @@ void renderCube()
 }
 
 
+
+// renderQuad() renders a 1x1 XY quad in NDC
+// -----------------------------------------
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+void renderQuad()
+{
+	if (quadVAO == 0)
+	{
+		float quadVertices[] = {
+			// positions        // texture Coords
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+		// setup plane VAO
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	}
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+}
+
+
 int main(int argc, char* argv[]) {
 	char* sourceImagePath = "..\\Textures\\newport_loft.hdr";
 #ifdef RELEASE
@@ -292,37 +325,7 @@ int main(int argc, char* argv[]) {
 
 	//环境光卷积
 	Shader convolutionShader("cubemap.vs", "irradiance_convolution.fs");
-	//Framebuffer纹理
-	unsigned int captureFBOTexture = 0;
-	glGenTextures(1, &captureFBOTexture);
-	glBindTexture(GL_TEXTURE_2D, captureFBOTexture);
-	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGB, irraianceTextureSize, irraianceTextureSize, 0,
-		GL_RGB, GL_UNSIGNED_BYTE, NULL
-	);
-	glTexParameterf(
-		GL_TEXTURE_2D,
-		GL_TEXTURE_MAG_FILTER, GL_LINEAR
-	);
-	glTexParameterf(
-		GL_TEXTURE_2D,
-		GL_TEXTURE_MIN_FILTER, GL_LINEAR
-	);
-	glTexParameterf(
-		GL_TEXTURE_2D,
-		GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE
-	);
-	glTexParameterf(
-		GL_TEXTURE_2D,
-		GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE
-	);
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	glFramebufferTexture2D(
-		GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-		GL_TEXTURE_2D, captureFBOTexture, 0
-	);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
+	
 
 	//开始计算卷积
 	convolutionShader.use();
@@ -429,7 +432,44 @@ int main(int argc, char* argv[]) {
 		bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, prefilterDataSize, nullptr);
 		bx::close(&writer);
 	}
-	
+
+	delete prefilterPixels;
+	// pbr: generate a 2D LUT from the BRDF equations used.
+// ----------------------------------------------------
+//
+	Shader brdfShader("brdf.vs", "brdf.fs");
+	// 
+	unsigned int brdfLUTTexture;
+	glGenTextures(1, &brdfLUTTexture);
+
+	// pre-allocate enough memory for the LUT texture.
+	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, 512, 512, 0, GL_RG, GL_UNSIGNED_BYTE, 0);
+	// be sure to set wrapping mode to GL_CLAMP_TO_EDGE
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// then re-configure capture framebuffer object and render screen-space quad with BRDF shader.
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+
+	glViewport(0, 0, 512, 512);
+	brdfShader.use();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	renderQuad();
+	unsigned char* brdfPixels = new unsigned char[512 * 512 * 4];
+	glReadPixels(0, 0, 512, 512, GL_RGBA, GL_UNSIGNED_BYTE, brdfPixels);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	if (bx::open(&writer, "brdf.png", false, &err)) {
+		bimg::imageWritePng(&writer, 512, 512, 512 *4, brdfPixels, bimg::TextureFormat::RGBA8, false);
+		// auto imageContainer = bimg::imageAlloc(getAllocator(), bimg::TextureFormat::RGB8, 512, 512, 1, 1, false, false, brdfPixels);
+		// bimg::imageWriteDds(&writer, *imageContainer, imageContainer->m_data, imageContainer->m_size, nullptr);
+		bx::close(&writer);
+	}
 	glfwTerminate();
 	return 0;
 }
