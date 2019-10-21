@@ -211,5 +211,13 @@ namespace Entropy {
 			u_params[0].y = 1;
 			setParams();
 		}
+
+		void SetIBL(Texture* irradiance, Texture* prefilter, Texture* brdfLUT) {
+			parameters["s_irradianceMap"] = Parameter(irradiance, Sampler, 6);
+			parameters["s_prefilterMap"] = Parameter(prefilter, Sampler, 7);
+			parameters["s_brdfLUT"] = Parameter(brdfLUT, Sampler, 8);
+			u_params[0].z = 1;
+			setParams();
+		}
 	};
 }

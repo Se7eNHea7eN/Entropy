@@ -6,6 +6,7 @@ $input v_pos, v_normal, v_texcoord0 , v_tangent
 uniform vec4 u_params[1];
 #define useNormalMap int(u_params[0].x)
 #define isEmissive int(u_params[0].y)
+#define useIBL int(u_params[0].z)
 
 SAMPLER2D(s_albedo, 0);
 SAMPLER2D(s_normal, 1);
@@ -16,6 +17,9 @@ SAMPLER2D(s_ao, 4);
 
 SAMPLER2D(s_emissive, 5);
 
+SAMPLERCUBE(s_irradianceMap, 6);
+SAMPLERCUBE(s_prefilterMap, 7);
+SAMPLER2D(s_brdfLUT, 8);
 
 uniform vec3 u_cameraPos;
 
@@ -63,6 +67,11 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(2,(-5.55473*cosTheta - 6.98316) * cosTheta);
 }
 
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness,1.0 - roughness,1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}   
+
 void main()
 {		
     const float PI = 3.14159265359;
@@ -90,6 +99,7 @@ void main()
         N = normalize(v_normal);
 
     vec3 V = normalize(u_cameraPos - v_pos);
+    vec3 R = reflect(-V, N); 
 
     vec3 F0 = vec3(0.04,0.04,0.04); 
     F0 = mix(F0, albedo, metallic);
@@ -109,11 +119,11 @@ void main()
 
         float NDF = DistributionGGX(N, H, roughness);
         float G   = GeometrySmith(N, V, L, roughness);      
-        vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+        vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);     
            
         vec3 nominator    = NDF * G * F; 
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-        vec3 specular = nominator / max(denominator, 0.001); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
+        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0)+ 0.001;
+        vec3 specular =  nominator / denominator; // prevent divide by zero for NdotV=0.0 or NdotL=0.0
         
         vec3 kS = F;
 
@@ -131,12 +141,30 @@ void main()
         vec4 emissive = texture2D(s_emissive, v_texcoord0);
         Lo = mix(Lo,emissive.xyz,emissive.w);
     }
-    vec3 ambient = vec3(0.03,0.03,0.03) * albedo * ao;
+    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+
+    vec3 kS = F;
+    vec3 kD = 1.0 - kS;
+    kD *= 1.0 - metallic;	  
+
+    vec3 ambient ;
+    if(useIBL > 0){
+        const float MAX_REFLECTION_LOD = 4.0;
+        vec3 prefilteredColor = textureCubeLod(s_prefilterMap, R,  roughness * MAX_REFLECTION_LOD).xyz;    
+        vec2 brdf  = texture2D(s_brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).xy;
+        vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+
+        vec3 irradiance = textureCube(s_irradianceMap, N).xyz;
+        vec3 diffuse      = irradiance * albedo;
+        ambient = (kD * diffuse + specular) * ao;
+    }else
+        ambient = vec3(0.03,0.03,0.03) * albedo * ao;
+  
 
     vec3 color = ambient + Lo;
 
     color = color / (color + vec3(1.0,1.0,1.0));
-    color = pow(color, vec3(1.0/2.2,1.0/2.2,1.0/2.2));
+    color = pow(abs(color), vec3(1.0/2.2,1.0/2.2,1.0/2.2));
 
     gl_FragColor = vec4(color, 1.0);
 }

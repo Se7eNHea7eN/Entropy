@@ -84,7 +84,7 @@ void Entropy::BgfxRenderer::Initialize() {
 
 	bgfx::Init init;
 	// 选择一个渲染后端，当设置为 RendererType::Enum::Count 的时候，系统将默认选择一个平台，可以设置Metal，OpenGL ES，Direct 等
-	init.type = bgfx::RendererType::Enum::OpenGL;
+	init.type = bgfx::RendererType::Enum::Count;
 	// 设置供应商接口Vendor PCI ID，默认设置为0将选择第一个设备来显示。
 	// #define BGFX_PCI_ID_NONE                UINT16_C(0x0000) //!< Autoselect adapter.
 	// #define BGFX_PCI_ID_SOFTWARE_RASTERIZER UINT16_C(0x0001) //!< Software rasterizer.
@@ -93,8 +93,8 @@ void Entropy::BgfxRenderer::Initialize() {
 	// #define BGFX_PCI_ID_NVIDIA              UINT16_C(0x10de) //!< nVidia adapter.
 	init.vendorId = 0;
 	// 设置分辨率大小
-	init.resolution.width = 2560;
-	init.resolution.height = 1440;
+	init.resolution.width = 1920 *2 ;
+	init.resolution.height = 1080 * 2;
 	// BGFX_RESET_VSYNC 其作用主要是让显卡的运算和显示器刷新率一致以稳定输出的画面质量。
 	init.resolution.reset = BGFX_RESET_VSYNC;
 	bgfx::init(init);
@@ -110,7 +110,6 @@ void Entropy::BgfxRenderer::Initialize() {
 	StandardVertexLayout::init();
 	SimpleVertexLayout::init();
 
-	
 	bgfx::setDebug(engine->debugMode);
 
 	for (auto obj : StaticMeshComponent::AllStaticMeshComponents) {
@@ -141,187 +140,70 @@ void Entropy::BgfxRenderer::Initialize() {
 	}
 
 
+
+	float skyboxVertices[] = {
+		// positions          
+		-1.0f, 1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f,
+
+		-1.0f, -1.0f, 1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, -1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f,
+
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, -1.0f, 1.0f,
+		-1.0f, -1.0f, 1.0f,
+
+		-1.0f, 1.0f, -1.0f,
+		1.0f, 1.0f, -1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f, 1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f, 1.0f,
+		1.0f, -1.0f, 1.0f
+	};
+	uint32_t skyboxIndices[36];
+	for (int i = 0; i < 36; i++) {
+		skyboxIndices[i] = i;
+	}
+	cubeVbh = createVertexBuffer(
+		bgfx::makeRef(skyboxVertices, sizeof(skyboxVertices))
+		, SimpleVertexLayout::simple_layout
+	);
+	cubeIbh = bgfx::createIndexBuffer(
+		bgfx::makeRef(skyboxIndices, 36 * sizeof(uint32_t)),
+		BGFX_BUFFER_INDEX32
+	);
+	skyProgram = loadProgram("vs_skybox", "fs_skybox_hdr");
+	s_skybox = bgfx::createUniform("s_skybox", bgfx::UniformType::Sampler);
 	auto skybox = engine->CurrentScene()->GetSkybox();
 	if (skybox != nullptr) {
-		const uint16_t cubeTextureSize = 4096;
-
-		skyProgram = loadProgram("vs_skybox", "fs_skybox_hdr");
-		s_skybox = bgfx::createUniform("s_skybox", bgfx::UniformType::Sampler);
-		cubeTexture = bgfx::createTextureCube(cubeTextureSize, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
-		auto hdrTexture = createTexture(skybox->HdrTexture()->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
-
-
-		
-		float captureProjection[16];
-		bx::mtxProj(captureProjection, 90.0f, 1.0f, 0.1f, 10.0f, bgfx::getCaps()->homogeneousDepth);
-		Log("homogeneousDepth = %s", bgfx::getCaps()->homogeneousDepth ? "true" : "false");
-		float captureViews[6][16];
-		if (bgfx::getCaps()->homogeneousDepth) {
-			//右
-			bx::mtxLookAt(captureViews[0], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(1.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 1.0f, 0.0f));
-			//左
-			bx::mtxLookAt(captureViews[1], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(-1.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 1.0f, 0.0f));
-			//下
-			bx::mtxLookAt(captureViews[2], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, -1.0f, 0.0f), bx::Vec3(0.0f, 0.0f, 1.0f));
-			//上
-			bx::mtxLookAt(captureViews[3], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 1.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f));
-
-			//后
-			bx::mtxLookAt(captureViews[4], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, 1.0f), bx::Vec3(0.0f, 1.0f, 0.0f));
-			//前
-			bx::mtxLookAt(captureViews[5], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f), bx::Vec3(0.0f, 1.0f, 0.0f));
-		}
-		else {
-			//右
-			bx::mtxLookAt(captureViews[1], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(1.0f, 0.0f, 0.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
-			//左
-			bx::mtxLookAt(captureViews[0], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(-1.0f, 0.0f, 0.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
-			//下
-			bx::mtxLookAt(captureViews[2], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, -1.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f));
-			//上
-			bx::mtxLookAt(captureViews[3], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 1.0f, 0.0f), bx::Vec3(0.0f, 0.0f, 1.0f));
-
-			//后
-			bx::mtxLookAt(captureViews[4], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, 1.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
-			//前
-			bx::mtxLookAt(captureViews[5], bx::Vec3(0.0f, 0.0f, 0.0f), bx::Vec3(0.0f, 0.0f, -1.0f), bx::Vec3(0.0f, -1.0f, 0.0f));
-		}
-
-
-		float skyboxVertices[] = {
-			// positions          
-			-1.0f, 1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
-			1.0f, 1.0f, -1.0f,
-			-1.0f, 1.0f, -1.0f,
-
-			-1.0f, -1.0f, 1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, 1.0f, -1.0f,
-			-1.0f, 1.0f, -1.0f,
-			-1.0f, 1.0f, 1.0f,
-			-1.0f, -1.0f, 1.0f,
-
-			1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
-
-			-1.0f, -1.0f, 1.0f,
-			-1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f,
-			-1.0f, -1.0f, 1.0f,
-
-			-1.0f, 1.0f, -1.0f,
-			1.0f, 1.0f, -1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, -1.0f,
-
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f, 1.0f,
-			1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f
-		};
-		uint32_t skyboxIndices[36];
-		for(int i = 0 ;i< 36 ;i++) {
-			skyboxIndices[i] = i;
-		}
-		cubeVbh = createVertexBuffer(
-			bgfx::makeRef(skyboxVertices, sizeof(skyboxVertices))
-			, SimpleVertexLayout::simple_layout
-		);
-		cubeIbh = bgfx::createIndexBuffer(
-			bgfx::makeRef(skyboxIndices, 36 * sizeof(uint32_t)),
-			BGFX_BUFFER_INDEX32
-		);
-		bgfx::ProgramHandle equirectangularToCubemap = loadProgram("vs_cubemap", "fs_equirectangular");
-
-		bgfx::UniformHandle equirectangularMapHandle = bgfx::createUniform("equirectangularMap", bgfx::UniformType::Sampler);
-
-		bgfx::FrameBufferHandle frameBuffer[6];
-
-		for (uint32_t ii = 0; ii < 6; ++ii) {
-			bgfx::Attachment at;
-			at.init(cubeTexture, bgfx::Access::Write, uint16_t(ii));
-			frameBuffer[ii] = bgfx::createFrameBuffer(1, &at);
-		}
-		
-		for (unsigned int i = 0; i < 6; ++i) {
-			bgfx::ViewId viewId = bgfx::ViewId(VIEWID_SKYMAP + i);
-			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
-			bgfx::setViewClear(viewId
-			                   , BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
-			                   , 0xFF00FFff
-			                   , 1.0f
-			                   , 0
-			);
-			bgfx::setTexture(0, equirectangularMapHandle, hdrTexture);
-
-			bgfx::setViewRect(viewId, 0, 0, cubeTextureSize, cubeTextureSize);
-			bgfx::setViewFrameBuffer(viewId, frameBuffer[i]);
-			bgfx::setViewTransform(viewId, captureViews[i], captureProjection);
-			bgfx::setVertexBuffer(0, cubeVbh);
-			bgfx::setIndexBuffer(cubeIbh);
-			bgfx::submit(viewId, equirectangularToCubemap);
-
-			bgfx::touch(viewId);
-		}
-
-
-		// bgfx::frame();
-		
-		// bgfx::destroy(equirectangularToCubemap);
-		// bgfx::destroy(equirectangularMapHandle);
-		// for (uint32_t ii = 0; ii < 6; ++ii) {
-		// 	bgfx::destroy(frameBuffer[ii]);
-		//  }
-		const uint16_t irradianceTextureSize = 512;
-		
-		bgfx::ProgramHandle irradianceConvolution = loadProgram("vs_cubemap", "fs_irradiance_convolution");
-		
-		bgfx::UniformHandle environmentMapHandle = bgfx::createUniform("environmentMap", bgfx::UniformType::Sampler);
-		
-		bgfx::FrameBufferHandle irradianceFrameBuffer[6];
-		irradianceTexture = bgfx::createTextureCube(irradianceTextureSize, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT);
-		
-		for (uint32_t ii = 0; ii < 6; ++ii) {
-			bgfx::Attachment at;
-			at.init(irradianceTexture, bgfx::Access::Write, uint16_t(ii));
-			irradianceFrameBuffer[ii] = bgfx::createFrameBuffer(1, &at);
-		}
-		for (unsigned int i = 0; i < 6; ++i) {
-			bgfx::ViewId viewId = bgfx::ViewId(VIEWID_SKYMAP + i +6 );
-			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
-			bgfx::setViewClear(viewId
-				, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
-				, 0xFF00FFff
-				, 1.0f
-				, 0
-			);
-			bgfx::setTexture(0, environmentMapHandle, cubeTexture);
-		
-			bgfx::setViewRect(viewId, 0, 0, irradianceTextureSize, irradianceTextureSize);
-			bgfx::setViewFrameBuffer(viewId, irradianceFrameBuffer[i]);
-			bgfx::setViewTransform(viewId, captureViews[i], captureProjection);
-			bgfx::setVertexBuffer(0, cubeVbh);
-		
-			bgfx::submit(viewId, irradianceConvolution);
-		
-			bgfx::touch(viewId);
-		}
-		bgfx::frame();
+		cubeTexture = createTexture(skybox->HdrTexture()->m_pImage.get(), BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP);
 	}
-
+	bgfx::frame();
 }
 
 void Entropy::BgfxRenderer::Resize(int w, int h) {
@@ -379,13 +261,16 @@ void Entropy::BgfxRenderer::Draw() {
 		// | BGFX_STATE_PT_TRISTRIP
 		// | BGFX_STATE_PT_LINESTRIP
 		;
-	bgfx::setVertexBuffer(0, cubeVbh);
-	bgfx::setIndexBuffer(cubeIbh);
-	bgfx::setTexture(0, s_skybox, cubeTexture);
-	bgfx::setViewFrameBuffer(VIEWID_SCENE, BGFX_INVALID_HANDLE);
-	bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
+	if(engine->CurrentScene()->GetSkybox() != nullptr) {
+		bgfx::setVertexBuffer(0, cubeVbh);
+		bgfx::setIndexBuffer(cubeIbh);
+		bgfx::setTexture(0, s_skybox, cubeTexture);
+		bgfx::setViewFrameBuffer(VIEWID_SCENE, BGFX_INVALID_HANDLE);
+		bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
 
-	bgfx::submit(0, skyProgram);
+		bgfx::submit(0, skyProgram);
+	}
+
 	for (auto g : geometries) {
 		bgfx::setState(state | g->indiceType);
 		g->Submit(engine->CurrentScene());

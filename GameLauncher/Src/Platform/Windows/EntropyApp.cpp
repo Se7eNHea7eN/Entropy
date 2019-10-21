@@ -91,14 +91,21 @@ int EntropyApp::run(int _argc, const char* const* _argv) {
 	MainThreadEntry mte;
 	mte.m_argc = _argc;
 	mte.m_argv = _argv;
-
-	bx::Thread thread;
-	thread.init(mte.threadFunc, &mte);
+	//
+	// bx::Thread thread;
+	// thread.init(mte.threadFunc, &mte);
 	
 	MSG msg;
+	auto lastTime = GetTickCount64();
+
 	while (!isExit) {
-		renderer->AwaitRenderFrame();
+		// renderer->AwaitRenderFrame();
 		// WaitForInputIdle(GetCurrentProcess(), 16);
+		auto thisTime = GetTickCount64();
+		entropyCore->Tick((thisTime - lastTime) / 1000.0);
+		lastTime = thisTime;
+		if (renderer != nullptr)
+			renderer->Draw();
 		while (0 != PeekMessageW(&msg, nullptr, 0U, 0U, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
@@ -115,7 +122,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	switch (message) {
 	case WM_CREATE: {
 		renderer =instance->entropyCore->CreateRenderer(hWnd);
-		renderer->AwaitRenderFrame();
+		// renderer->AwaitRenderFrame();
+		renderer->Initialize();
+
 	}
 	break;
 	case WM_SIZE: {

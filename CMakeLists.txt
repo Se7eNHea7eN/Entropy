@@ -35,6 +35,7 @@ add_subdirectory(bx)
 add_subdirectory(bimg)
 add_subdirectory(BgfxRenderer)
 add_subdirectory(test)
+add_subdirectory(testScene)
 
 add_subdirectory(IblPrecompute)
 
