@@ -4,15 +4,17 @@
 #include "../GeneratedFiles/ui_EntropyMainWindow.h"
 #include "Common/EntropyCore.hpp"
 
-using namespace Entropy;
-class EntropyMainWindow : public QMainWindow
-{
-	Q_OBJECT
+namespace Entropy {
 
-public:
-	EntropyMainWindow(QWidget *parent = Q_NULLPTR);
+	class EntropyMainWindow : public QMainWindow
+	{
+		Q_OBJECT
 
-private:
-	EntropyCore* engineCore = new EntropyCore();
-	Ui::EntropyMainWindowClass ui;
-};
+	public:
+		EntropyMainWindow(QWidget* parent = Q_NULLPTR);
+
+	private:
+		EntropyCore* engineCore = new EntropyCore();
+		Ui::EntropyMainWindowClass ui;
+	};
+}

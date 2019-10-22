@@ -48,3 +48,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/testScene/include")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/testScene")
 target_link_libraries(${PROJECT_NAME} testScene)
+
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Editor")

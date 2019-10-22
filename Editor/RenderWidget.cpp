@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "RenderWidget.h"
-
+using namespace Entropy;
 RenderWidget::RenderWidget(QWidget* parent): QWidget{parent} {
 	setAttribute(Qt::WA_NativeWindow);
 	setAttribute(Qt::WA_PaintOnScreen);

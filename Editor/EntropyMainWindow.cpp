@@ -2,6 +2,7 @@
 #include "EntropyMainWindow.h"
 #include "RenderWidget.h"
 #include "GenerateScene.hpp"
+using namespace Entropy;
 
 EntropyMainWindow::EntropyMainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -13,8 +14,5 @@ EntropyMainWindow::EntropyMainWindow(QWidget *parent)
 	GenerateScene01(scene);
 	renderWidget->renderer = engineCore->CreateRenderer((HWND)renderWidget->winId());
 
-	QApplication::postEvent(
-		this,
-		new QEvent{ QEvent::UpdateRequest });
 	ui.sceneRendererContainer->addWidget(renderWidget);
 }

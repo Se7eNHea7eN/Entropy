@@ -477,7 +477,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
-       <widget class="QTreeWidget" name="treeWidget">
+       <widget class="Entropy::EntropyHierarchyWidget" name="treeWidget">
         <property name="minimumSize">
          <size>
           <width>100</width>
