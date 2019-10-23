@@ -39,6 +39,12 @@ namespace Entropy {
 
 
 		void Tick(float deltaTime) override;
+		std::string GetName() {
+			return m_strName;
+		}
+		std::list<std::shared_ptr<SceneNode>> GetChildren() {
+			return m_Children;
+		}
 	protected:
 		std::string m_strName;
 		std::unique_ptr<Transform> m_Transform ;

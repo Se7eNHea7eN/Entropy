@@ -1,22 +1,29 @@
 #include "Common/SceneNode.hpp"
 #include "Common/Transform.hpp"
 
-
-
 Entropy::SceneNode::SceneNode() {
-	
+	m_strName = "new node";
 }
 
 Entropy::SceneNode::SceneNode(const char* name) {
 	m_strName = name;
+	if (m_strName.empty()) {
+		m_strName = "new node";
+	}
 }
 
 Entropy::SceneNode::SceneNode(const std::string& name) {
 	m_strName = name;
+	if (m_strName.empty()) {
+		m_strName = "new node";
+	}
 }
 
 Entropy::SceneNode::SceneNode(const std::string&& name) {
 	m_strName = std::move(name);
+	if (m_strName.empty()) {
+		m_strName = "new node";
+	}
 }
 
 Entropy::SceneNode::~SceneNode() {
