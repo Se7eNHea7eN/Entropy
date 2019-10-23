@@ -18,9 +18,9 @@ using namespace Entropy;
 
 std::shared_ptr<SceneNode> createCerberus() {
 
-	std::shared_ptr<SceneNode> objNode(new SceneNode("gunParent"));
+	std::shared_ptr<SceneNode> objNode(new SceneNode("Gun"));
 	objNode->Initialize();
-	std::shared_ptr<SceneNode> node(new SceneNode("gun"));
+	std::shared_ptr<SceneNode> node(new SceneNode("mesh"));
 	node->Initialize();
 	std::shared_ptr<StaticMeshComponent> meshComponent(new StaticMeshComponent());
 	meshComponent->Initialize();
@@ -163,9 +163,8 @@ void GenerateScene01(Entropy::Scene* scene) {
 	// auto gunNode = createGun();
 	scene->GetRootNode()->AddChild(gunNode->SharedPtr());
 
-
 	auto camera = std::shared_ptr<Camera>(std::make_shared<Camera>());
-	auto cameraNode = std::make_shared<SceneNode>();
+	auto cameraNode = std::make_shared<SceneNode>("Camera");
 	cameraNode->Initialize();
 
 	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0, 3, -5));
@@ -182,7 +181,8 @@ void GenerateScene01(Entropy::Scene* scene) {
 			// camera->updateViewMatrix(true);
 		});
 
-	auto pointLightNode = std::make_shared<SceneNode>();
+	auto pointLightNode = std::make_shared<SceneNode>("PointLight");
+	scene->GetRootNode()->AddChild(pointLightNode->SharedPtr());
 	pointLightNode->Initialize();
 	auto pointLight = std::make_shared<PointLight>();
 	pointLight->SetLightColor(Vector3f(1, 1, 1));
