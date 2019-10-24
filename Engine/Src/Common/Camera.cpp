@@ -142,18 +142,31 @@ void Camera::updateViewMatrix(bool force) const {
 void Camera::updateProjectionMatrix() const {
 	if (!mProjIsUptodate)
 	{
-		mProjectionMatrix.setIdentity();
-		float aspect = float(mVpWidth) / float(mVpHeight);
-		float theta = mFovY * 0.5;
-		float range = mFarDist - mNearDist;
-		float invtan = 1. / tan(theta);
+		switch(projectionType) {
+		case Perspective: {
+			mProjectionMatrix.setIdentity();
+			float aspect = float(mVpWidth) / float(mVpHeight);
+			float theta = mFovY * 0.5;
+			float range = mFarDist - mNearDist;
+			float invtan = 1. / tan(theta);
 
-		mProjectionMatrix(0, 0) = invtan / aspect;
-		mProjectionMatrix(1, 1) = invtan;
-		mProjectionMatrix(2, 2) = (mNearDist + mFarDist) / range;
-		mProjectionMatrix(3, 2) = 1;
-		mProjectionMatrix(2, 3) = -2 * mNearDist * mFarDist / range;
-		mProjectionMatrix(3, 3) = 0;
+			mProjectionMatrix(0, 0) = invtan / aspect;
+			mProjectionMatrix(1, 1) = invtan;
+			mProjectionMatrix(2, 2) = (mNearDist + mFarDist) / range;
+			mProjectionMatrix(3, 2) = 1;
+			mProjectionMatrix(2, 3) = -2 * mNearDist * mFarDist / range;
+			mProjectionMatrix(3, 3) = 0;
+			break;
+		}
+			case Ortho:
+				mProjectionMatrix(0, 0) = 2 / (orthoRight - orthoLeft);
+				mProjectionMatrix(1, 1) = 2 / (orthoTop - orthoBottom);
+				mProjectionMatrix(2, 2) = 2 / (mFarDist - mNearDist);
+				mProjectionMatrix(0, 3) = (orthoRight + orthoLeft) / (orthoLeft - orthoRight);
+				mProjectionMatrix(1, 3) = (orthoTop + orthoBottom) / (orthoBottom - orthoTop);
+				mProjectionMatrix(2, 3) = (mFarDist + mNearDist) / (mNearDist - mFarDist);
+				break;
+		}
 
 		mProjIsUptodate = true;
 	}

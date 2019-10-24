@@ -5,7 +5,10 @@ typedef unsigned int uint;
 namespace Entropy {
 	using namespace Eigen;
 	class Transform;
-	
+	enum ProjectionType {
+		Perspective,
+		Ortho
+	};
 	class Camera : public Component {
 	public:
 		Matrix4f perspective(float fovy, float aspect, float zNear, float zFar);
@@ -43,11 +46,15 @@ namespace Entropy {
 
 		void updateViewMatrix(bool force = false) const;
 		void updateProjectionMatrix(void) const;
+
+		void SetProjectionType(ProjectionType type) {
+			projectionType = type;
+		}
 	protected:
 	
 
 	protected:
-
+		ProjectionType projectionType = ProjectionType::Perspective;
 		uint mVpX, mVpY;
 		uint mVpWidth, mVpHeight;
 
@@ -63,5 +70,10 @@ namespace Entropy {
 		float mFovY = 1.0471975511965977461542144610932f;
 		float mNearDist = 0.1f;
 		float mFarDist = 1000.f;
+
+		float orthoLeft = -9.6;
+		float orthoRight = 9.6;
+		float orthoTop = -5.4;
+		float orthoBottom = 5.4;
 	};
 }

@@ -18,8 +18,6 @@
 
 using namespace Entropy;
 
-
-
 void GenerateScene03(Entropy::Scene* scene) {
 	auto skybox = std::make_shared<SkyBox>();
 	skybox->SetHdrTexture(std::shared_ptr<Texture>(
@@ -27,6 +25,7 @@ void GenerateScene03(Entropy::Scene* scene) {
 	scene->SetSkybox(skybox);
 
 	auto camera = std::shared_ptr<Camera>(std::make_shared<Camera>());
+	// camera->SetProjectionType(Ortho);
 	auto cameraNode = std::make_shared<SceneNode>("Camera");
 	cameraNode->Initialize();
 
