@@ -150,8 +150,8 @@ void Camera::updateProjectionMatrix() const {
 
 		mProjectionMatrix(0, 0) = invtan / aspect;
 		mProjectionMatrix(1, 1) = invtan;
-		mProjectionMatrix(2, 2) = -(mNearDist + mFarDist) / range;
-		mProjectionMatrix(3, 2) = -1;
+		mProjectionMatrix(2, 2) = (mNearDist + mFarDist) / range;
+		mProjectionMatrix(3, 2) = 1;
 		mProjectionMatrix(2, 3) = -2 * mNearDist * mFarDist / range;
 		mProjectionMatrix(3, 3) = 0;
 

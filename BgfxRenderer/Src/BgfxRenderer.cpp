@@ -16,6 +16,9 @@
 #include "BgfxGeometry.hpp"
 #include "BgfxRenderer.hpp"
 #include "Graphic/Vertex.hpp"
+
+#include "Utils/Debug.hpp"
+
 using namespace Eigen;
 
 struct StandardVertexLayout {
@@ -234,12 +237,11 @@ void Entropy::BgfxRenderer::Draw() {
 		auto viewMatrix = camera->ViewMatrix().matrix();
 
 		Map<Matrix4f>(viewMatrixArray, viewMatrix.rows(), viewMatrix.cols()) = viewMatrix;
+		
+		auto projectionMatrix = camera->ProjectionMatrix();
 
-
-		bx::mtxProj(projectionMatrixArray, bx::toDeg(camera->FovY()), float(width) / float(height), camera->NearDistance(), camera->FarDistance(), bgfx::getCaps()->homogeneousDepth);
-
-
-		//bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+		Map<Matrix4f>(projectionMatrixArray, projectionMatrix.rows(), projectionMatrix.cols()) = projectionMatrix;
+		
 		bgfx::setViewTransform(0, viewMatrixArray, projectionMatrixArray);
 
 		// Set view 0 default viewport.
