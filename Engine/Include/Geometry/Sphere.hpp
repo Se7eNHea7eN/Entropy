@@ -1,3 +1,4 @@
+#pragma once
 #include "Graphic/Mesh.hpp"
 #include "Graphic/Vertex.hpp"
 #include <memory>

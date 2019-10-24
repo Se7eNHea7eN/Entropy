@@ -11,7 +11,7 @@ EntropyMainWindow::EntropyMainWindow(QWidget *parent)
 	auto renderWidget = new RenderWidget(this);
 	engineCore->CreateScene("Test Scene");
 	auto scene = engineCore->CurrentScene();
-	GenerateScene01(scene);
+	GenerateScene02(scene);
 	renderWidget->renderer = engineCore->CreateRenderer((HWND)renderWidget->winId());
 
 	ui.sceneRendererContainer->addWidget(renderWidget);

@@ -206,3 +206,4 @@ void GenerateScene01(Entropy::Scene* scene) {
 	mat->SetEmissive(ColorRGBA(lightColor.x() * 255, lightColor.y() * 255, lightColor.z() * 255, std::min(int(pointLight->GetInstensive() * 255), 255)));
 	pointLightNode->AddComponent(sphereComponent);
 }
+

@@ -5,6 +5,7 @@
 using namespace Entropy;
 
 EntropyHierarchyWidget::EntropyHierarchyWidget(QWidget* parent) {
+	// setHeaderHidden(true);
 }
 
 void Entropy::EntropyHierarchyWidget::SetScene(Scene* scene)
