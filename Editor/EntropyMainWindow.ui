@@ -477,7 +477,31 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <layout class="QGridLayout" name="sceneRendererContainer"/>
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="Preview">
+         <attribute name="title">
+          <string>Preview</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="Entropy::RenderWidget" name="previewRenderView" native="true"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="RayTracing">
+         <attribute name="title">
+          <string>RayTracing</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="Entropy::RenderWidget" name="rayTracingRenderView" native="true"/>
+          </item>
+         </layout>
+        </widget>
+       </widget>
       </item>
      </layout>
     </item>
@@ -597,6 +621,11 @@
    <class>Entropy::EntropyHierarchyWidget</class>
    <extends>QWidget</extends>
    <header>entropy::entropyhierarchywidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Entropy::RenderWidget</class>
+   <extends>QWidget</extends>
+   <header>entropy::renderwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

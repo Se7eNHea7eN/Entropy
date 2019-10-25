@@ -28,6 +28,7 @@ add_subdirectory(GameLauncher)
 
 if(WIN32)
     add_subdirectory(Direct3DRenderer)
+    add_subdirectory(RayTracingRenderer)
 endif()
 
 add_subdirectory(bgfx)
@@ -40,4 +41,6 @@ add_subdirectory(testScene)
 add_subdirectory(IblPrecompute)
 
 add_subdirectory(glfw)
+
+
 

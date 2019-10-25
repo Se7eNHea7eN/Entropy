@@ -26,13 +26,16 @@ add_executable(${PROJECT_NAME}
 find_package(Qt5 COMPONENTS Core Widgets Gui REQUIRED)
 
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/RayTracingRenderer")
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/RayTracingRenderer/Include")
 
 target_link_libraries(
   ${PROJECT_NAME} 
-	Engine
-	Qt5::Core
+  Engine
+  Qt5::Core
   Qt5::Widgets
   Qt5::Gui
+  RayTracingRenderer
 )
 include_directories(SYSTEM "Include")
 

@@ -19,7 +19,7 @@ public:
 	Renderer* renderer;
 
 public:
-	bool continuousRender = true;
+	bool continuousRender = false;
 
 protected:
 	virtual void paintEvent(QPaintEvent* paintEvent) override;

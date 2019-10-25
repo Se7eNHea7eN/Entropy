@@ -243,7 +243,7 @@ void Entropy::BgfxRenderer::Draw() {
 		Map<Matrix4f>(projectionMatrixArray, projectionMatrix.rows(), projectionMatrix.cols()) = projectionMatrix;
 		Log("projectionMatrixArray1 = \n%s", DebugString(projectionMatrixArray));
 		// bx::mtxProj(projectionMatrixArray, bx::toDeg(camera->FovY()), float(width) / float(height), camera->NearDistance(), camera->FarDistance(), bgfx::getCaps()->homogeneousDepth);
-		bx::mtxOrtho(projectionMatrixArray, 0, 1920 * 2, 1080 *2 , 0, 0.0, 1000, 0, bgfx::getCaps()->homogeneousDepth);
+		// bx::mtxOrtho(projectionMatrixArray, 0, 1920 * 2, 1080 *2 , 0, 0.0, 1000, 0, bgfx::getCaps()->homogeneousDepth);
 		// bx::mtxOrtho(projectionMatrixArray, -4, 4, -2, 2, 0.1f, 1000.0f, 0.0, bgfx::getCaps()->homogeneousDepth,bx::Handness::Right);
 
 		Log("projectionMatrixArray2 =\n%s", DebugString(projectionMatrixArray));
