@@ -105,7 +105,7 @@ void Entropy::BgfxRenderer::Initialize() {
 	// Enable debug text.
 	bgfx::setViewClear(VIEWID_SCENE
 		, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH
-		, 0x303030ff
+		, 0x000000ff
 		, 1.0f
 		, 0
 	);

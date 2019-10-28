@@ -197,13 +197,14 @@ void GenerateScene01(Entropy::Scene* scene) {
 	sphereComponent->SetEnableLighting(false);
 	auto mat = std::make_shared<StandardPBRMaterial>();
 	sphereComponent->GetMaterials().push_back(mat);
+	pointLightNode->AddComponent(sphereComponent);
 
+	
 	mat->SetAlbedo(ColorRGBA(128, 128, 128, 255));
 	mat->SetMetallic(0.9);
 	mat->SetRoughness(0.4);
 	mat->SetAmbientOcclusion(1.0);
 	auto lightColor = pointLight->GetLightColor();
 	mat->SetEmissive(ColorRGBA(lightColor.x() * 255, lightColor.y() * 255, lightColor.z() * 255, std::min(int(pointLight->GetInstensive() * 255), 255)));
-	pointLightNode->AddComponent(sphereComponent);
 }
 

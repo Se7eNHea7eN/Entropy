@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Eigen/Geometry>
 #include "Component.hpp"
 typedef unsigned int uint;
@@ -66,8 +66,7 @@ namespace Entropy {
 
 		// used by rotateAroundTarget
 		std::shared_ptr<Transform> mTarget;
-
-		float mFovY = 1.0471975511965977461542144610932f;
+		float mFovY = 3.14159265359/4;
 		float mNearDist = 0.1f;
 		float mFarDist = 1000.f;
 

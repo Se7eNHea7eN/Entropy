@@ -18,6 +18,7 @@
 
 using namespace Entropy;
 
+#define PI 3.14159265359
 void GenerateScene03(Entropy::Scene* scene) {
 	auto skybox = std::make_shared<SkyBox>();
 	skybox->SetHdrTexture(std::shared_ptr<Texture>(
@@ -25,11 +26,11 @@ void GenerateScene03(Entropy::Scene* scene) {
 	scene->SetSkybox(skybox);
 
 	auto camera = std::shared_ptr<Camera>(std::make_shared<Camera>());
-	// camera->SetProjectionType(Ortho);
+	camera->SetFovY(PI /8);
 	auto cameraNode = std::make_shared<SceneNode>("Camera");
 	cameraNode->Initialize();
 
-	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0, 0, -2));
+	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0, 0, -8));
 	// cameraNode->GetTransform()->Rotate(0.6, Vector3f::UnitX());
 	cameraNode->AddComponent(camera);
 	scene->MainCamera = camera;
@@ -134,7 +135,7 @@ void GenerateScene03(Entropy::Scene* scene) {
 	}
 
 	{
-		std::shared_ptr<SceneNode> node(new SceneNode("Wall"));
+		std::shared_ptr<SceneNode> node(new SceneNode("stone"));
 		node->Initialize();
 		std::shared_ptr<StaticMeshComponent> meshComponent(new StaticMeshComponent());
 		meshComponent->Initialize();
@@ -156,6 +157,37 @@ void GenerateScene03(Entropy::Scene* scene) {
 
 		scene->GetRootNode()->AddChild(node->SharedPtr());
 	}
+
+	auto pointLightNode = std::make_shared<SceneNode>("PointLight");
+	scene->GetRootNode()->AddChild(pointLightNode->SharedPtr());
+	pointLightNode->Initialize();
+	auto pointLight = std::make_shared<PointLight>();
+	pointLight->SetLightColor(Vector3f(1, 1, 1));
+	pointLight->SetIntensive(10);
+	pointLight->Initialize();
+	pointLightNode->AddComponent(pointLight);
+	pointLightNode->GetTransform()->SetPosition(2, 1, 0);
+
+	std::shared_ptr<StaticMeshComponent> sphereComponent(new StaticMeshComponent());
+	sphereComponent->Initialize();
+	sphereComponent->GetMeshes().push_back(GenerateSphere(0.1));
+	sphereComponent->SetEnableLighting(false);
+	auto mat = std::make_shared<StandardPBRMaterial>();
+	sphereComponent->GetMaterials().push_back(mat);
+	pointLightNode->AddComponent(sphereComponent);
+
+	mat->SetAlbedo(ColorRGBA(128, 128, 128, 255));
+	mat->SetMetallic(0.9);
+	mat->SetRoughness(0.4);
+	mat->SetAmbientOcclusion(1.0);
+	auto lightColor = pointLight->GetLightColor();
+	mat->SetEmissive(ColorRGBA(lightColor.x() * 255, lightColor.y() * 255, lightColor.z() * 255, std::min(int(pointLight->GetInstensive() * 255), 255)));
+
+	scene->SetOnTick([=](float deltaTime)
+		{
+			auto rotation = Quaternionf(AngleAxisf(deltaTime * 3.14 * 0.3, Vector3f::UnitY()));
+			pointLightNode->GetTransform()->SetPosition(rotation * pointLightNode->GetTransform()->Position());
+		});
 }
 
 

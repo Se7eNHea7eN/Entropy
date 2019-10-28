@@ -6,7 +6,9 @@ project(${PROJECT_NAME})
 
 file(GLOB_RECURSE project_headers *.hpp *.h)
 file(GLOB_RECURSE project_cpps *.cpp *.c *.cc)
-set(all_files ${project_headers} ${project_cpps})
+file(GLOB_RECURSE shaders *.sc *.fs *.vs)
+
+set(all_files ${project_headers} ${project_cpps} ${shaders})
 
 source_group_by_dir(all_files)
 
