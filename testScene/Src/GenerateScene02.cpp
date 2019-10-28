@@ -38,6 +38,8 @@ void GenerateScene02(Entropy::Scene* scene) {
 
 
 	auto sphereMesh = GenerateSphere(0.3f,128, 128);
+	sphereMesh->CalculateTangents();
+
 	for (int i = 0; i < 8; i++) {
 		std::shared_ptr<SceneNode> node(new SceneNode("Sphere"));
 		node->Initialize();

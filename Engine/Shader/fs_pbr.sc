@@ -1,7 +1,7 @@
 $input v_pos, v_normal, v_texcoord0 , v_tangent
 #include "light.sc"
 
-#include "../common/common.sh"
+#include "common/common.sh"
 
 uniform vec4 u_params[1];
 #define useNormalMap int(u_params[0].x)

@@ -20,10 +20,10 @@ using namespace Entropy;
 
 #define PI 3.14159265359
 void GenerateScene03(Entropy::Scene* scene) {
-	auto skybox = std::make_shared<SkyBox>();
-	skybox->SetHdrTexture(std::shared_ptr<Texture>(
-		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/cubemap.dds", bimg::TextureFormat::RGB8)))));
-	scene->SetSkybox(skybox);
+	// auto skybox = std::make_shared<SkyBox>();
+	// skybox->SetHdrTexture(std::shared_ptr<Texture>(
+	// 	new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/cubemap.dds", bimg::TextureFormat::RGB8)))));
+	// scene->SetSkybox(skybox);
 
 	auto camera = std::shared_ptr<Camera>(std::make_shared<Camera>());
 	camera->SetFovY(PI /8);
@@ -41,6 +41,7 @@ void GenerateScene03(Entropy::Scene* scene) {
 	auto ibl_brdf = "Textures/brdf.png";
 
 	auto sphereMesh = GenerateSphere(0.3f,128, 128);
+	sphereMesh->CalculateTangents();
 	{
 		std::shared_ptr<SceneNode> node(new SceneNode("Gold"));
 		node->Initialize();
@@ -53,6 +54,7 @@ void GenerateScene03(Entropy::Scene* scene) {
 		mat->SetMetallic(1);
 		mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/gold/roughness.png", bimg::TextureFormat::RGB8))));
 		mat->SetAmbientOcclusion(1);
+		mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/gold/normal.png", bimg::TextureFormat::RGB8))));
 		mat->SetIBL(
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_irradiance, bimg::TextureFormat::RGB8))),
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_prefilter, bimg::TextureFormat::RGB8))),
@@ -98,7 +100,7 @@ void GenerateScene03(Entropy::Scene* scene) {
 		mat->SetMetallic(0.);
 		mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/plastic/roughness.png", bimg::TextureFormat::RGB8))));
 		mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/plastic/ao.png", bimg::TextureFormat::RGB8))));
-		// mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/plastic/normal.png", bimg::TextureFormat::RGB8))));
+		mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/plastic/normal.png", bimg::TextureFormat::RGB8))));
 		mat->SetIBL(
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_irradiance, bimg::TextureFormat::RGB8))),
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_prefilter, bimg::TextureFormat::RGB8))),
@@ -122,7 +124,7 @@ void GenerateScene03(Entropy::Scene* scene) {
 		mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/rusted_iron/metallic.png", bimg::TextureFormat::RGB8))));
 		mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/rusted_iron/roughness.png", bimg::TextureFormat::RGB8))));
 		mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/rusted_iron/ao.png", bimg::TextureFormat::RGB8))));
-		// mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/plastic/normal.png", bimg::TextureFormat::RGB8))));
+		mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/rusted_iron/normal.png", bimg::TextureFormat::RGB8))));
 		mat->SetIBL(
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_irradiance, bimg::TextureFormat::RGB8))),
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_prefilter, bimg::TextureFormat::RGB8))),
@@ -135,23 +137,24 @@ void GenerateScene03(Entropy::Scene* scene) {
 	}
 
 	{
-		std::shared_ptr<SceneNode> node(new SceneNode("stone"));
+		std::shared_ptr<SceneNode> node(new SceneNode("wall"));
 		node->Initialize();
 		std::shared_ptr<StaticMeshComponent> meshComponent(new StaticMeshComponent());
 		meshComponent->Initialize();
 		meshComponent->GetMeshes().push_back(sphereMesh);
 		auto mat = std::make_shared<StandardPBRMaterial>();
 		meshComponent->GetMaterials().push_back(mat);
-		mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/wall/albedo.png", bimg::TextureFormat::RGB8))));
-		mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/wall/metallic.png", bimg::TextureFormat::RGB8))));
-		mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/wall/roughness.png", bimg::TextureFormat::RGB8))));
-		mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/wall/ao.png", bimg::TextureFormat::RGB8))));
-		mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/wall/normal.png", bimg::TextureFormat::RGB8))));
+		mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/stone/albedo.png", bimg::TextureFormat::RGB8))));
+		mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/stone/metallic.png", bimg::TextureFormat::RGB8))));
+		mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/stone/roughness.png", bimg::TextureFormat::RGB8))));
+		mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/stone/ao.png", bimg::TextureFormat::RGB8))));
+		mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/stone/normal.png", bimg::TextureFormat::RGB8))));
 		mat->SetIBL(
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_irradiance, bimg::TextureFormat::RGB8))),
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_prefilter, bimg::TextureFormat::RGB8))),
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_brdf, bimg::TextureFormat::RGBA8)))
 		);
+
 		node->GetTransform()->SetPosition(Vector3f(2, 0, 0));
 		node->AddComponent(meshComponent->SharedPtr());
 
