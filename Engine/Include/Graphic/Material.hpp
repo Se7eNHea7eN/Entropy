@@ -152,13 +152,14 @@ namespace Entropy {
 		std::vector<Vec4> u_params;
 	protected:
 		void setParams() {
-			parameters["u_params"] = Parameter(&u_params[0], 1, Vector4);
+			parameters["u_params"] = Parameter(&u_params[0], 2, Vector4);
 		}
 	public:
 		StandardPBRMaterial() {
 			m_VertexShader = "vs_common";
 			m_FragmentShader = "fs_pbr";
 			u_params.push_back(Vec4(-1,-1,0,0));
+			u_params.push_back(Vec4(-1,0,0,0));
 			setParams();
 		}
 
@@ -219,5 +220,14 @@ namespace Entropy {
 			u_params[0].z = 1;
 			setParams();
 		}
+
+		void SetDepthMap(Texture* texture,float heightScale = 0.1f) {
+			parameters["s_depthMap"] = Parameter(texture, Sampler, 9);
+
+			u_params[1].x = 1;
+			u_params[1].y = heightScale;
+			setParams();
+		}
+
 	};
 }

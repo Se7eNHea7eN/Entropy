@@ -1,5 +1,5 @@
 $input a_position, a_normal,a_texcoord0 ,a_tangent
-$output v_pos, v_normal, v_texcoord0 ,v_tangent
+$output v_pos, v_normal, v_texcoord0 ,v_tangent 
 
 #include "../common/common.sh"
 

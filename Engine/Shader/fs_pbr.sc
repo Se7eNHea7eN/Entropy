@@ -3,10 +3,12 @@ $input v_pos, v_normal, v_texcoord0 , v_tangent
 
 #include "common/common.sh"
 
-uniform vec4 u_params[1];
+uniform vec4 u_params[2];
 #define useNormalMap int(u_params[0].x)
 #define isEmissive int(u_params[0].y)
 #define useIBL int(u_params[0].z)
+#define useDepthMap int(u_params[1].x)
+#define heightScale u_params[1].y
 
 SAMPLER2D(s_albedo, 0);
 SAMPLER2D(s_normal, 1);
@@ -21,7 +23,54 @@ SAMPLERCUBE(s_irradianceMap, 6);
 SAMPLERCUBE(s_prefilterMap, 7);
 SAMPLER2D(s_brdfLUT, 8);
 
+SAMPLER2D(s_depthMap, 9);
+
 uniform vec3 u_cameraPos;
+
+vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
+{ 
+    // number of depth layers
+    const float minLayers = 8.;
+    const float maxLayers = 32.;
+    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));  
+    // calculate the size of each layer
+    float layerDepth = 1.0 / numLayers;
+    // depth of current layer
+    float currentLayerDepth = 0.0;
+    // the amount to shift the texture coordinates per layer (from vector P)
+
+    vec2 P = heightScale * viewDir.xy  / viewDir.z ; 
+    vec2 deltaTexCoords = P / numLayers;
+  
+    // get initial values
+    vec2  currentTexCoords     = texCoords;
+    float currentDepthMapValue = texture2D(s_depthMap, currentTexCoords).x;
+     
+	int loopTime = 0;
+    while(currentLayerDepth < currentDepthMapValue && loopTime < 128)
+    {
+        // shift texture coordinates along direction of P
+        currentTexCoords -= deltaTexCoords;
+        // get depthmap value at current texture coordinates
+        currentDepthMapValue = texture2D(s_depthMap, currentTexCoords).x;  
+        // get depth of next layer
+        currentLayerDepth += layerDepth;
+		loopTime++;
+    }
+    
+    // get texture coordinates before collision (reverse operations)
+    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+
+    // get depth after and before collision for linear interpolation
+    float afterDepth  = currentDepthMapValue - currentLayerDepth;
+    float beforeDepth = texture2D(s_depthMap, prevTexCoords).x - currentLayerDepth + layerDepth;
+ 
+    // interpolation of texture coordinates
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+
+    return finalTexCoords;
+}
 
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
@@ -76,29 +125,36 @@ void main()
 {		
     const float PI = 3.14159265359;
 
-    vec3 albedo = texture2D(s_albedo, v_texcoord0).xyz;
-    float metallic = texture2D(s_metallic, v_texcoord0).x;
-    float roughness = texture2D(s_roughness, v_texcoord0).x;
-    float ao = texture2D(s_ao, v_texcoord0).x;
+	vec3 V = normalize(u_cameraPos - v_pos);
+
+	vec2 texCoords = v_texcoord0;
+
+	if(useDepthMap > 0){
+		texCoords = ParallaxMapping(v_texcoord0,  V);   
+	}
+	
+    vec3 albedo = texture2D(s_albedo, texCoords).xyz;
+    float metallic = texture2D(s_metallic, texCoords).x;
+    float roughness = texture2D(s_roughness, texCoords).x;
+    float ao = texture2D(s_ao, texCoords).x;
+
+
 
     vec3 N;
     if(useNormalMap > 0){
-        vec3 Normal = normalize(v_normal);
-        vec3 Tangent = normalize(v_tangent);
-        vec3 Bitangent = -normalize(cross(Normal,Tangent));
-
-        mat3 TBN =  mat3(Tangent,Bitangent, Normal);
-        #if BGFX_SHADER_LANGUAGE_HLSL | BGFX_SHADER_LANGUAGE_SPRIV
-            TBN = transpose( TBN ); 
-        #endif
-        vec3 BumpMapNormal = normalize(2.0 * texture2D(s_normal, v_texcoord0).xyz - vec3(1.0, 1.0, 1.0));
-
+		vec3 Normal = normalize(v_normal);
+		vec3 Tangent = normalize(v_tangent);
+		vec3 Bitangent = -normalize(cross(Normal,Tangent));
+		mat3 TBN = mat3(Tangent,Bitangent, Normal);
+		#if !(BGFX_SHADER_LANGUAGE_HLSL | BGFX_SHADER_LANGUAGE_SPRIV)
+			TBN = transpose(TBN); 
+		#endif
+        vec3 BumpMapNormal = normalize(2.0 * texture2D(s_normal, texCoords).xyz - vec3(1.0, 1.0, 1.0));
         N = normalize(mul(TBN,BumpMapNormal));
     }
     else
         N = normalize(v_normal);
 
-    vec3 V = normalize(u_cameraPos - v_pos);
     vec3 R = reflect(-V, N); 
 
     vec3 F0 = vec3(0.04,0.04,0.04); 
@@ -108,6 +164,9 @@ void main()
     for(int i = 0; i < pointLightCount; ++i)
     {
         vec3 pointLightPosition = u_lightPosition[i].xyz;
+
+		//vec3 tangentLightPos = mul(TBN,pointLightPosition);
+
         vec3 pointLightColor = u_lightColor[i].xyz;
 
 
@@ -138,7 +197,7 @@ void main()
     
 
     if(isEmissive > 0 ){
-        vec4 emissive = texture2D(s_emissive, v_texcoord0);
+        vec4 emissive = texture2D(s_emissive, texCoords);
         Lo = mix(Lo,emissive.xyz,emissive.w);
     }
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
