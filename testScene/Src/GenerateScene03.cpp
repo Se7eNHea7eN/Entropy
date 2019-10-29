@@ -91,9 +91,12 @@ void GenerateScene03(Entropy::Scene* scene) {
 
 		scene->GetRootNode()->AddChild(node->SharedPtr());
 	}
+
+	std::shared_ptr<SceneNode> tilenode(new SceneNode("tile"));
+
+
 	{
-		std::shared_ptr<SceneNode> node(new SceneNode("tile"));
-		node->Initialize();
+		tilenode->Initialize();
 		std::shared_ptr<StaticMeshComponent> meshComponent(new StaticMeshComponent());
 		meshComponent->Initialize();
 		meshComponent->GetMeshes().push_back(sphereMesh);
@@ -111,10 +114,10 @@ void GenerateScene03(Entropy::Scene* scene) {
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_prefilter, bimg::TextureFormat::RGB8))),
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_brdf, bimg::TextureFormat::RGBA8)))
 		);
-		node->GetTransform()->SetPosition(Vector3f(0, 0, 0));
-		node->AddComponent(meshComponent->SharedPtr());
+		tilenode->GetTransform()->SetPosition(Vector3f(0, 0, 0));
+		tilenode->AddComponent(meshComponent->SharedPtr());
 
-		scene->GetRootNode()->AddChild(node->SharedPtr());
+		scene->GetRootNode()->AddChild(tilenode->SharedPtr());
 	}
 
 	{
@@ -198,6 +201,7 @@ void GenerateScene03(Entropy::Scene* scene) {
 		{
 			auto rotation = Quaternionf(AngleAxisf(deltaTime * 3.14 * 0.3, Vector3f::UnitY()));
 			pointLightNode->GetTransform()->SetPosition(rotation * pointLightNode->GetTransform()->Position());
+			tilenode->GetTransform()->Rotate(-deltaTime * 3.14 * 0.1, Vector3f::UnitY());
 		});
 }
 
