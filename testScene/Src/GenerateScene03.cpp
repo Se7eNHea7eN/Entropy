@@ -66,18 +66,21 @@ void GenerateScene03(Entropy::Scene* scene) {
 		scene->GetRootNode()->AddChild(node->SharedPtr());
 	}
 	{
-		std::shared_ptr<SceneNode> node(new SceneNode("Grass"));
+		std::shared_ptr<SceneNode> node(new SceneNode("tile2"));
 		node->Initialize();
 		std::shared_ptr<StaticMeshComponent> meshComponent(new StaticMeshComponent());
 		meshComponent->Initialize();
 		meshComponent->GetMeshes().push_back(sphereMesh);
 		auto mat = std::make_shared<StandardPBRMaterial>();
 		meshComponent->GetMaterials().push_back(mat);
-		mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/grass/albedo.png", bimg::TextureFormat::RGB8))));
-		mat->SetMetallic(0.);
-		mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/grass/roughness.png", bimg::TextureFormat::RGB8))));
-		mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/grass/ao.png", bimg::TextureFormat::RGB8))));
-		mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/grass/normal.png", bimg::TextureFormat::RGB8))));
+		mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/tile2/albedo.png", bimg::TextureFormat::RGB8))));
+		// mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/tile2/metallic.png", bimg::TextureFormat::RGB8))));
+		mat->SetMetallic(0.3);
+		mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/tile2/roughness.png", bimg::TextureFormat::RGB8))));
+		mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/tile2/ao.png", bimg::TextureFormat::RGB8))));
+		mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/tile2/normal.png", bimg::TextureFormat::RGB8))));
+		mat->SetDepthMap(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/tile2/height.png", bimg::TextureFormat::RGB8))),
+			1);
 		mat->SetIBL(
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_irradiance, bimg::TextureFormat::RGB8))),
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_prefilter, bimg::TextureFormat::RGB8))),
@@ -89,18 +92,20 @@ void GenerateScene03(Entropy::Scene* scene) {
 		scene->GetRootNode()->AddChild(node->SharedPtr());
 	}
 	{
-		std::shared_ptr<SceneNode> node(new SceneNode("Plastic"));
+		std::shared_ptr<SceneNode> node(new SceneNode("tile"));
 		node->Initialize();
 		std::shared_ptr<StaticMeshComponent> meshComponent(new StaticMeshComponent());
 		meshComponent->Initialize();
 		meshComponent->GetMeshes().push_back(sphereMesh);
 		auto mat = std::make_shared<StandardPBRMaterial>();
 		meshComponent->GetMaterials().push_back(mat);
-		mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/plastic/albedo.png", bimg::TextureFormat::RGB8))));
-		mat->SetMetallic(0.);
-		mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/plastic/roughness.png", bimg::TextureFormat::RGB8))));
-		mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/plastic/ao.png", bimg::TextureFormat::RGB8))));
-		mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/plastic/normal.png", bimg::TextureFormat::RGB8))));
+		mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/tile/albedo.png", bimg::TextureFormat::RGB8))));
+		mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/tile/metallic.png", bimg::TextureFormat::RGB8))));
+		mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/tile/roughness.png", bimg::TextureFormat::RGB8))));
+		mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/tile/ao.png", bimg::TextureFormat::RGB8))));
+		mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/tile/normal.png", bimg::TextureFormat::RGB8))));
+		mat->SetDepthMap(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/tile/height.png", bimg::TextureFormat::RGB8))),
+			1);
 		mat->SetIBL(
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_irradiance, bimg::TextureFormat::RGB8))),
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_prefilter, bimg::TextureFormat::RGB8))),
@@ -137,18 +142,21 @@ void GenerateScene03(Entropy::Scene* scene) {
 	}
 
 	{
-		std::shared_ptr<SceneNode> node(new SceneNode("wall"));
+		std::shared_ptr<SceneNode> node(new SceneNode("cloth"));
 		node->Initialize();
 		std::shared_ptr<StaticMeshComponent> meshComponent(new StaticMeshComponent());
 		meshComponent->Initialize();
 		meshComponent->GetMeshes().push_back(sphereMesh);
 		auto mat = std::make_shared<StandardPBRMaterial>();
 		meshComponent->GetMaterials().push_back(mat);
-		mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/stone/albedo.png", bimg::TextureFormat::RGB8))));
-		mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/stone/metallic.png", bimg::TextureFormat::RGB8))));
-		mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/stone/roughness.png", bimg::TextureFormat::RGB8))));
-		mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/stone/ao.png", bimg::TextureFormat::RGB8))));
-		mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/stone/normal.png", bimg::TextureFormat::RGB8))));
+		mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/cloth2/albedo.png", bimg::TextureFormat::RGB8))));
+		// mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/rock/metallic.png", bimg::TextureFormat::RGB8))));
+		mat->SetMetallic(0.0);
+		mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/cloth2/roughness.png", bimg::TextureFormat::RGB8))));
+		mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/cloth2/ao.png", bimg::TextureFormat::RGB8))));
+		mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/cloth2/normal.png", bimg::TextureFormat::RGB8))));
+		mat->SetDepthMap(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/cloth2/height.png", bimg::TextureFormat::RGB8))),
+			0.05);
 		mat->SetIBL(
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_irradiance, bimg::TextureFormat::RGB8))),
 			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad(ibl_prefilter, bimg::TextureFormat::RGB8))),

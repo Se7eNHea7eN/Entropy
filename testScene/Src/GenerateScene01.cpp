@@ -159,24 +159,24 @@ void GenerateScene01(Entropy::Scene* scene) {
 		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/cubemap.dds", bimg::TextureFormat::RGB8)))));
 	scene->SetSkybox(skybox);
 
-	auto gunNode = createCerberus();
-	// auto gunNode = createGun();
+	// auto gunNode = createCerberus();
+	auto gunNode = createGun();
 	scene->GetRootNode()->AddChild(gunNode->SharedPtr());
 
 	auto camera = std::shared_ptr<Camera>(std::make_shared<Camera>());
 	auto cameraNode = std::make_shared<SceneNode>("Camera");
 	cameraNode->Initialize();
 
-	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0, 3, -5));
+	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0, 3, -8));
 	cameraNode->GetTransform()->Rotate(0.3, Vector3f::UnitX());
 	cameraNode->AddComponent(camera);
 	scene->MainCamera = camera;
 	scene->GetRootNode()->AddChild(cameraNode->SharedPtr());
 
 
-	scene->SetOnTick([&](float deltaTime)
+	scene->SetOnTick([=](float deltaTime)
 		{
-			// gunNode->GetTransform()->Rotate(deltaTime * 3.14 * 0.1, Vector3f::UnitY());
+			gunNode->GetTransform()->Rotate(deltaTime * 3.14 * 0.1, Vector3f::UnitY());
 			// cameraNode->GetTransform()->Rotate(deltaTime *3.14 * 0.1,Vector3f::UnitY());
 			// camera->updateViewMatrix(true);
 		});
