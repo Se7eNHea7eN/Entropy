@@ -85,7 +85,7 @@ inline double random_double() {
 float hit_sphere(const Vector3f& center, float radius, const Ray& r) {
 
 	Vector3f oc = r.origin() - center;
-	float a = r.direction().dot(r.direction());
+	float a = r.direction().squaredNorm();
 	float b = 2.0 * oc.dot(r.direction());
 	float c = oc.dot(oc) - radius * radius;
 	float discriminant = b * b - 4 * a * c;
@@ -96,11 +96,18 @@ float hit_sphere(const Vector3f& center, float radius, const Ray& r) {
 		return (-b - sqrt(discriminant)) / (2.0 * a);
 	}
 }
-
+Vector3f random_in_unit_sphere() {
+	Vector3f p;
+	do {
+		p = 2.0 * Vector3f(random_double(), random_double(), random_double()) - Vector3f(1, 1, 1);
+	} while (p.norm() >= 1.0);
+	return p;
+}
 Vector3f color(const Ray& r, Hittable* world) {
 	HitRecord rec;
-	if (world->hit(r, 0.0, FLT_MAX, rec)) {
-		return 0.5 * Vector3f(rec.normal.x() + 1, rec.normal.y() + 1, rec.normal.z() + 1);
+	if (world->hit(r, 0.0001, FLT_MAX, rec)) {
+		Vector3f target = rec.p + rec.normal + random_in_unit_sphere();
+		return 0.5 * color(Ray(rec.p, target - rec.p), world);
 	}
 	else {
 		Vector3f unit_direction = r.direction().normalized();
@@ -119,7 +126,7 @@ void Entropy::RayTracingRenderer::Draw() {
 
 	int nx = width;
 	int ny = height;
-	int ns = 5;
+	int ns = 1;
 
 
 
