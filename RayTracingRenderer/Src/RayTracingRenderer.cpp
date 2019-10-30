@@ -1,8 +1,10 @@
 #include "RayTracingRenderer.hpp"
 #include "Ray.hpp"
+#include "RTCamera.hpp"
 #include "GL/glew.h"
 #include "Eigen/Core"
-#include <limits>
+#include <random>
+
 using namespace Eigen;
 using namespace Entropy;
 Entropy::RayTracingRenderer::RayTracingRenderer(HWND hwnd) : hWnd(hwnd) {
@@ -72,6 +74,13 @@ void Entropy::RayTracingRenderer::Resize(int w, int h) {
 	glViewport(0, 0, width, height);
 }
 
+inline double random_double() {
+	static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+	static std::mt19937 generator;
+	static std::function<double()> rand_generator =
+		std::bind(distribution, generator);
+	return rand_generator();
+}
 
 float hit_sphere(const Vector3f& center, float radius, const Ray& r) {
 
@@ -110,27 +119,31 @@ void Entropy::RayTracingRenderer::Draw() {
 
 	int nx = width;
 	int ny = height;
-	Vector3f lower_left_corner(-1.0, -1.0, -1.0);
-	Vector3f horizontal(2.0, 0.0, 0.0);
-	Vector3f vertical(0.0, 2.0, 0.0);
-	Vector3f origin(0.0, 0.0, 0.0);
+	int ns = 5;
+
 
 
 	Hittable* list[2];
 	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5);
 	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100);
 	Hittable* world = new HittableList(list, 2);
-	
+
+	RTCamera camera;
 	glBegin(GL_POINTS);
 	glPointSize(1.0);
 	for (int j = ny - 1; j >= 0; j--) {
 		for (int i = 0; i < nx; i++) {
+			Vector3f col(0, 0, 0);
+			for (int s = 0; s < ns; s++) {
+				float u = float(i + random_double()) / float(nx);
+				float v = float(j + random_double()) / float(ny);
+				Ray r = camera.get_ray(u, v);
+				col += color(r, world);
+			}
+			col /= float(ns);
+			
 			float u = float(i) / float(nx);
 			float v = float(j) / float(ny);
-			Ray r(origin, lower_left_corner + u * horizontal + v * vertical);
-
-			Vector3f p = r.point_at_parameter(2.0);
-			Vector3f col = color(r, world);
 			glColor3f(col.x(), col.y(), col.z());
 			glVertex3f( 2*u-1, 2*v -1,0);
 		}
