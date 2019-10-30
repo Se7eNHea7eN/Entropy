@@ -71,11 +71,25 @@ void Entropy::RayTracingRenderer::Resize(int w, int h) {
 	glViewport(0, 0, width, height);
 }
 
+
+bool hit_sphere(const Vector3f& center, float radius, const Ray& r) {
+
+	Vector3f oc = r.origin() - center;
+	float a = r.direction().dot(r.direction());
+	float b = 2.0 * oc.dot(r.direction());
+	float c = oc.dot(oc) - radius * radius;
+	float discriminant = b * b - 4 * a * c;
+	return (discriminant > 0);
+}
+
 Vector3f color(const Ray& r) {
+	if (hit_sphere(Vector3f(0, 0, -1), 0.5, r))
+		return Vector3f(1, 0, 0);
 	Vector3f unit_direction = Vector3f(r.direction()).normalized();
 	float t = 0.5 * (unit_direction.y() + 1.0);
 	return (1.0 - t) * Vector3f(1.0, 1.0, 1.0) + t * Vector3f(0.5, 0.7, 1.0);
 }
+
 void Entropy::RayTracingRenderer::Draw() {
 	wglMakeCurrent(hDC, hRC);
 	glClearColor(0.0f, 0.2f, 0.4f, 1.0f);
