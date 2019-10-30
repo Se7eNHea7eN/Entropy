@@ -53,14 +53,16 @@ void RenderWidget::resizeEvent(QResizeEvent* resizeEvent) {
 	renderer->Resize(width, height);
 
 	// because Qt is not sending update request when resizing smaller
-	render();
+	if(!passiveRender)
+		render();
 }
 
 bool RenderWidget::event(QEvent* event) {
 	switch (event->type()) {
 	case QEvent::UpdateRequest:
 		_updatePending = false;
-		_doRender();
+		if (!passiveRender)
+			_doRender();
 		return true;
 	default:
 		return QWidget::event(event);
@@ -95,11 +97,12 @@ void RenderWidget::_init() {
 	// do your init code here...
 
 	auto hwnd = (HWND)nativeWindowHandler;
-	// RECT rc;
-	// GetClientRect(hwnd, &rc);
-	// int width = rc.right - rc.left;
-	// int height = rc.bottom - rc.top;
+	RECT rc;
+	GetClientRect(hwnd, &rc);
+	int width = rc.right - rc.left;
+	int height = rc.bottom - rc.top;
 	renderer->Initialize();
+	renderer->Resize(width, height);
 	// mD3DApp->SetClientWidth(width);
 	// mD3DApp->SetClientHeight(height);
 	// mD3DApp->InitQt(hwnd);

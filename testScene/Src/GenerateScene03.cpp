@@ -30,7 +30,7 @@ void GenerateScene03(Entropy::Scene* scene) {
 	auto cameraNode = std::make_shared<SceneNode>("Camera");
 	cameraNode->Initialize();
 
-	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0, 0, -8));
+	cameraNode->GetTransform()->Translate(Eigen::Vector3f(0, 0, -6.5));
 	// cameraNode->GetTransform()->Rotate(0.6, Vector3f::UnitX());
 	cameraNode->AddComponent(camera);
 	scene->MainCamera = camera;

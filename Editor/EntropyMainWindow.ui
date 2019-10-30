@@ -460,7 +460,20 @@
     <item>
      <layout class="QHBoxLayout" name="toolbar">
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="buttonRender">
+        <property name="maximumSize">
+         <size>
+          <width>50</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Render</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="buttonPlay">
         <property name="maximumSize">
          <size>
           <width>50</width>
@@ -492,12 +505,25 @@
          </layout>
         </widget>
         <widget class="QWidget" name="RayTracing">
+         <property name="minimumSize">
+          <size>
+           <width>512</width>
+           <height>512</height>
+          </size>
+         </property>
          <attribute name="title">
           <string>RayTracing</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="Entropy::RenderWidget" name="rayTracingRenderView" native="true"/>
+           <widget class="Entropy::RenderWidget" name="rayTracingRenderView" native="true">
+            <property name="minimumSize">
+             <size>
+              <width>512</width>
+              <height>512</height>
+             </size>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

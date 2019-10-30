@@ -12,7 +12,8 @@ namespace Entropy {
 
 	public:
 		EntropyMainWindow(QWidget* parent = Q_NULLPTR);
-
+	public slots:
+		void ClickRender();
 	private:
 		EntropyCore* engineCore = new EntropyCore();
 		Ui::EntropyMainWindowClass ui;

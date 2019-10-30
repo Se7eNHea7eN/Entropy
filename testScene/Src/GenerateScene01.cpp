@@ -99,7 +99,11 @@ std::shared_ptr<SceneNode> createRifle() {
 	mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Metallic.jpg", bimg::TextureFormat::R8))));
 	mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Roughness.jpg", bimg::TextureFormat::R8))));
 	mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_AO.jpg", bimg::TextureFormat::R8))));
-
+	mat->SetIBL(
+		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/irradiance.dds", bimg::TextureFormat::RGB8))),
+		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/prefilter.dds", bimg::TextureFormat::RGB8))),
+		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/brdf.png", bimg::TextureFormat::RGBA8)))
+	);
 	node->GetTransform()->SetScale(Vector3f(0.015, 0.015, 0.015));
 	node->AddComponent(meshComponent->SharedPtr());
 	return node;
@@ -160,7 +164,7 @@ void GenerateScene01(Entropy::Scene* scene) {
 	scene->SetSkybox(skybox);
 
 	// auto gunNode = createCerberus();
-	auto gunNode = createGun();
+	auto gunNode = createRifle();
 	scene->GetRootNode()->AddChild(gunNode->SharedPtr());
 
 	auto camera = std::shared_ptr<Camera>(std::make_shared<Camera>());

@@ -12,7 +12,7 @@ int main(int _argc, const char* const* _argv)
 	// app.entropyCore->debugMode = true;
 	app.entropyCore->CreateScene("Test Scene");
 	auto scene = app.entropyCore->CurrentScene();
-	GenerateScene03(scene);
+	GenerateScene01(scene);
 	try {
 		return app.run(_argc, _argv);
 	}catch(std::exception e) {
