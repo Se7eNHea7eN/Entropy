@@ -72,21 +72,29 @@ void Entropy::RayTracingRenderer::Resize(int w, int h) {
 }
 
 
-bool hit_sphere(const Vector3f& center, float radius, const Ray& r) {
+float hit_sphere(const Vector3f& center, float radius, const Ray& r) {
 
 	Vector3f oc = r.origin() - center;
 	float a = r.direction().dot(r.direction());
 	float b = 2.0 * oc.dot(r.direction());
 	float c = oc.dot(oc) - radius * radius;
 	float discriminant = b * b - 4 * a * c;
-	return (discriminant > 0);
+	if (discriminant < 0) {
+		return -1.0;
+	}
+	else {
+		return (-b - sqrt(discriminant)) / (2.0 * a);
+	}
 }
 
 Vector3f color(const Ray& r) {
-	if (hit_sphere(Vector3f(0, 0, -1), 0.5, r))
-		return Vector3f(1, 0, 0);
+	float t = hit_sphere(Vector3f(0, 0, -1), 0.5, r);
+	if (t > 0.0) {
+		Vector3f N = Vector3f(r.point_at_parameter(t) - Vector3f(0, 0, -1)).normalized();
+		return 0.5 * Vector3f(N.x() + 1, N.y() + 1, N.z() + 1);
+	}
 	Vector3f unit_direction = Vector3f(r.direction()).normalized();
-	float t = 0.5 * (unit_direction.y() + 1.0);
+	t = 0.5 * (unit_direction.y() + 1.0);
 	return (1.0 - t) * Vector3f(1.0, 1.0, 1.0) + t * Vector3f(0.5, 0.7, 1.0);
 }
 
