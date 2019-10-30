@@ -82,20 +82,6 @@ inline double random_double() {
 	return rand_generator();
 }
 
-float hit_sphere(const Vector3f& center, float radius, const Ray& r) {
-
-	Vector3f oc = r.origin() - center;
-	float a = r.direction().squaredNorm();
-	float b = 2.0 * oc.dot(r.direction());
-	float c = oc.dot(oc) - radius * radius;
-	float discriminant = b * b - 4 * a * c;
-	if (discriminant < 0) {
-		return -1.0;
-	}
-	else {
-		return (-b - sqrt(discriminant)) / (2.0 * a);
-	}
-}
 Vector3f random_in_unit_sphere() {
 	Vector3f p;
 	do {
@@ -103,9 +89,10 @@ Vector3f random_in_unit_sphere() {
 	} while (p.norm() >= 1.0);
 	return p;
 }
+
 Vector3f color(const Ray& r, Hittable* world) {
 	HitRecord rec;
-	if (world->hit(r, 0.0001, FLT_MAX, rec)) {
+	if (world->hit(r, 0.001, FLT_MAX, rec)) {
 		Vector3f target = rec.p + rec.normal + random_in_unit_sphere();
 		return 0.5 * color(Ray(rec.p, target - rec.p), world);
 	}
@@ -128,8 +115,6 @@ void Entropy::RayTracingRenderer::Draw() {
 	int ny = height;
 	int ns = 1;
 
-
-
 	Hittable* list[2];
 	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5);
 	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100);
@@ -148,7 +133,7 @@ void Entropy::RayTracingRenderer::Draw() {
 				col += color(r, world);
 			}
 			col /= float(ns);
-			
+			col = Vector3f(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
 			float u = float(i) / float(nx);
 			float v = float(j) / float(ny);
 			glColor3f(col.x(), col.y(), col.z());
