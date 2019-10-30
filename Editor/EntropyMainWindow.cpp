@@ -13,7 +13,7 @@ EntropyMainWindow::EntropyMainWindow(QWidget *parent)
 	
 	engineCore->CreateScene("Test Scene");
 	auto scene = engineCore->CurrentScene();
-	GenerateScene02(scene);
+	// GenerateScene02(scene);
 	
 	ui.previewRenderView->renderer = engineCore->CreateRenderer((HWND)ui.previewRenderView->winId());
 	ui.rayTracingRenderView->renderer = new RayTracingRenderer((HWND)ui.rayTracingRenderView->winId());

@@ -218,46 +218,41 @@ void Entropy::BgfxRenderer::Resize(int w, int h) {
 int lastResetWidth = 0;
 int lastResetHeight = 0;
 void Entropy::BgfxRenderer::Draw() {
-	if(init) {
-		init = false;
-
-	}
-
-	if(lastResetWidth != width || lastResetHeight != height) {
-		bgfx::reset(width, height, BGFX_RESET_VSYNC);
-		auto camera = engine->CurrentScene()->MainCamera;
-		camera->SetViewport(width, height);
-		lastResetWidth = width;
-		lastResetHeight = height;
-	}
 	bgfx::touch(VIEWID_SCENE);
+	if(engine->CurrentScene()->MainCamera != nullptr) {
+		if (lastResetWidth != width || lastResetHeight != height) {
+			bgfx::reset(width, height, BGFX_RESET_VSYNC);
+			auto camera = engine->CurrentScene()->MainCamera;
+			camera->SetViewport(width, height);
+			lastResetWidth = width;
+			lastResetHeight = height;
+		}
+		{
+			auto camera = engine->CurrentScene()->MainCamera;
+			auto viewMatrix = camera->ViewMatrix().matrix();
 
-	{
-		auto camera = engine->CurrentScene()->MainCamera;
-		auto viewMatrix = camera->ViewMatrix().matrix();
+			Map<Matrix4f>(viewMatrixArray, viewMatrix.rows(), viewMatrix.cols()) = viewMatrix;
 
-		Map<Matrix4f>(viewMatrixArray, viewMatrix.rows(), viewMatrix.cols()) = viewMatrix;
-		
-		auto projectionMatrix = camera->ProjectionMatrix();
+			auto projectionMatrix = camera->ProjectionMatrix();
 
-		Map<Matrix4f>(projectionMatrixArray, projectionMatrix.rows(), projectionMatrix.cols()) = projectionMatrix;
-		Log("projectionMatrixArray1 = \n%s", DebugString(projectionMatrixArray));
-		// bx::mtxProj(projectionMatrixArray, bx::toDeg(camera->FovY()), float(width) / float(height), camera->NearDistance(), camera->FarDistance(), bgfx::getCaps()->homogeneousDepth);
-		// bx::mtxOrtho(projectionMatrixArray, 0, 1920 * 2, 1080 *2 , 0, 0.0, 1000, 0, bgfx::getCaps()->homogeneousDepth);
-		// bx::mtxOrtho(projectionMatrixArray, -4, 4, -2, 2, 0.1f, 1000.0f, 0.0, bgfx::getCaps()->homogeneousDepth,bx::Handness::Right);
+			Map<Matrix4f>(projectionMatrixArray, projectionMatrix.rows(), projectionMatrix.cols()) = projectionMatrix;
+			Log("projectionMatrixArray1 = \n%s", DebugString(projectionMatrixArray));
+			// bx::mtxProj(projectionMatrixArray, bx::toDeg(camera->FovY()), float(width) / float(height), camera->NearDistance(), camera->FarDistance(), bgfx::getCaps()->homogeneousDepth);
+			// bx::mtxOrtho(projectionMatrixArray, 0, 1920 * 2, 1080 *2 , 0, 0.0, 1000, 0, bgfx::getCaps()->homogeneousDepth);
+			// bx::mtxOrtho(projectionMatrixArray, -4, 4, -2, 2, 0.1f, 1000.0f, 0.0, bgfx::getCaps()->homogeneousDepth,bx::Handness::Right);
 
-		Log("projectionMatrixArray2 =\n%s", DebugString(projectionMatrixArray));
+			Log("projectionMatrixArray2 =\n%s", DebugString(projectionMatrixArray));
 
-		bgfx::setViewTransform(0, viewMatrixArray, projectionMatrixArray);
+			bgfx::setViewTransform(0, viewMatrixArray, projectionMatrixArray);
 
-		// Set view 0 default viewport.
-		bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
-	}
+			// Set view 0 default viewport.
+			bgfx::setViewRect(0, 0, 0, uint16_t(width), uint16_t(height));
+		}
 
-	// This dummy draw call is here to make sure that view 0 is cleared
-	// if no other draw calls are submitted to view 0.
+		// This dummy draw call is here to make sure that view 0 is cleared
+		// if no other draw calls are submitted to view 0.
 
-	uint64_t state = 0
+		uint64_t state = 0
 			| BGFX_STATE_WRITE_RGB
 			| BGFX_STATE_WRITE_A
 			| BGFX_STATE_WRITE_Z
@@ -265,26 +260,27 @@ void Entropy::BgfxRenderer::Draw() {
 			// | BGFX_STATE_DEPTH_TEST_LESS
 			// | BGFX_STATE_CULL_CW
 			| BGFX_STATE_MSAA
-		// | BGFX_STATE_LINEAA
-		// | BGFX_STATE_PT_TRISTRIP
-		// | BGFX_STATE_PT_LINESTRIP
-		;
-	if(engine->CurrentScene()->GetSkybox() != nullptr) {
-		bgfx::setVertexBuffer(0, cubeVbh);
-		bgfx::setIndexBuffer(cubeIbh);
-		bgfx::setTexture(0, s_skybox, cubeTexture);
-		bgfx::setViewFrameBuffer(VIEWID_SCENE, BGFX_INVALID_HANDLE);
-		bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
+			// | BGFX_STATE_LINEAA
+			// | BGFX_STATE_PT_TRISTRIP
+			// | BGFX_STATE_PT_LINESTRIP
+			;
+		if (engine->CurrentScene()->GetSkybox() != nullptr) {
+			bgfx::setVertexBuffer(0, cubeVbh);
+			bgfx::setIndexBuffer(cubeIbh);
+			bgfx::setTexture(0, s_skybox, cubeTexture);
+			bgfx::setViewFrameBuffer(VIEWID_SCENE, BGFX_INVALID_HANDLE);
+			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL);
 
-		bgfx::submit(0, skyProgram);
-	}
+			bgfx::submit(0, skyProgram);
+		}
 
-	for (auto g : geometries) {
-		bgfx::setState(state | g->indiceType);
-		g->Submit(engine->CurrentScene());
+		for (auto g : geometries) {
+			bgfx::setState(state | g->indiceType);
+			g->Submit(engine->CurrentScene());
+		}
 	}
+	
 	bgfx::frame();
-
 }
 
 void Entropy::BgfxRenderer::AwaitRenderFrame() {
