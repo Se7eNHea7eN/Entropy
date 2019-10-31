@@ -1,4 +1,4 @@
-#include "RayTracingRenderer.hpp"
+﻿#include "RayTracingRenderer.hpp"
 #include "Ray.hpp"
 #include "RTCamera.hpp"
 #include "RTMaterial.hpp"
@@ -8,6 +8,7 @@
 
 using namespace Eigen;
 using namespace Entropy;
+void Save_bmp(unsigned char* data, int width, int height);
 
 Entropy::RayTracingRenderer::RayTracingRenderer(HWND hwnd) : hWnd(hwnd) {
 }
@@ -102,8 +103,11 @@ void RayTracingRenderer::Draw() {
 
 	glLoadIdentity();
 
-	int nx = width;
-	int ny = height;
+	// int nx = width - width%2;
+	// int ny = height - height % 2;
+
+	int nx = 1280;
+	int ny = 720;
 	int ns = 4;
 
 	Hittable* list[5];
@@ -115,7 +119,7 @@ void RayTracingRenderer::Draw() {
 	list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
 	Hittable* world = new HittableList(list, 5);
 
-	RTCamera camera(1.0 * width / height);
+	RTCamera camera(1.0 * nx / ny);
 
 	unsigned char* buffer = new unsigned char[nx * ny * 3];
 
@@ -144,7 +148,7 @@ void RayTracingRenderer::Draw() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, nx, ny, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
 
 	glLoadIdentity();
 	glBindTexture(GL_TEXTURE_2D, texture);
@@ -161,7 +165,7 @@ void RayTracingRenderer::Draw() {
 
 	glEnd();
 	SwapBuffers(hDC);
-
+	Save_bmp(buffer, nx ,ny);
 	delete buffer;
 }
 
@@ -175,4 +179,57 @@ void drawPoint(Vector3f position, Vector3f color) {
 
 void RayTracingRenderer::AwaitRenderFrame() {
 }
- 
+
+void Save_bmp(unsigned char* data,int width,int height)
+{
+	int i;
+	unsigned char temp;
+	for (i = 0; i < width*height*3; i += 3)
+	{
+		//swap R and B; raw_image[i + 1] is G, so it stays where it is.
+		temp = data[i + 0];
+		data[i + 0] = data[i + 2];
+		data[i + 2] = temp;
+	}
+	BITMAPFILEHEADER bmfHdr;
+	BITMAPINFOHEADER bi;
+	const int count = 3;
+	bi.biSize = sizeof(BITMAPINFOHEADER);
+	bi.biWidth = width;
+	bi.biHeight = height;
+	bi.biPlanes = 1;
+	bi.biBitCount = count * 8;
+	bi.biCompression = BI_RGB;
+	bi.biSizeImage = width * height * 3;
+	bi.biXPelsPerMeter = 0;
+	bi.biYPelsPerMeter = 0;
+	bi.biClrImportant = 0;
+	bi.biClrUsed = 0;
+	auto biBitCount = count * 8;
+	auto dwBmBitsSize = ((width * biBitCount + biBitCount - 1) / biBitCount) * count * height;
+	auto dwPaletteSize = 0;
+
+	bmfHdr.bfType = 0x4D42;
+	auto dwDIBSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dwPaletteSize + dwBmBitsSize;
+	bmfHdr.bfSize = dwDIBSize;
+	bmfHdr.bfReserved1 = 0;
+	bmfHdr.bfReserved2 = 0;
+	bmfHdr.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER) + dwPaletteSize;
+
+	//创建位图文件                  
+	auto fh = CreateFile("RT.bmp", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+
+	if (fh == INVALID_HANDLE_VALUE)
+		return;
+
+	DWORD dwWritten = 0;
+
+	//     写入位图文件头              
+	WriteFile(fh, (LPSTR)&bmfHdr, sizeof(BITMAPFILEHEADER), &dwWritten, NULL);
+	//     写入位图文件其余内容              
+	WriteFile(fh, (LPSTR)&bi, sizeof(bi), &dwWritten, NULL);
+
+	WriteFile(fh, (LPSTR)data, width * height * 3, &dwWritten, NULL);
+	CloseHandle(fh);
+}
