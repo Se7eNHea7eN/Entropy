@@ -3,8 +3,7 @@
 using namespace Eigen;
 
 namespace Entropy {
-
-
+	class RTMaterial;
 	class Ray {
 	public:
 		Ray() {
@@ -27,6 +26,7 @@ namespace Entropy {
 		float t;
 		Vector3f p;
 		Vector3f normal;
+		RTMaterial* mat_ptr;
 	};
 
 	class Hittable {
@@ -41,11 +41,13 @@ namespace Entropy {
 		Sphere() {
 		}
 
-		Sphere(Vector3f cen, float r) : center(cen), radius(r) {
+		Sphere(Vector3f cen, float r, RTMaterial* m) : center(cen), radius(r), mat_ptr(m) {
 		};
 		virtual bool hit(const Ray& r, float tmin, float tmax, HitRecord& rec) const;
 		Vector3f center;
 		float radius;
+		RTMaterial* mat_ptr;
+
 	};
 
 	bool Sphere::hit(const Ray& r, float t_min, float t_max, HitRecord& rec) const {
@@ -60,6 +62,7 @@ namespace Entropy {
 				rec.t = temp;
 				rec.p = r.point_at_parameter(rec.t);
 				rec.normal = (rec.p - center) / radius;
+				rec.mat_ptr = mat_ptr;
 				return true;
 			}
 			temp = (-b + sqrt(discriminant)) / a;
@@ -67,6 +70,7 @@ namespace Entropy {
 				rec.t = temp;
 				rec.p = r.point_at_parameter(rec.t);
 				rec.normal = (rec.p - center) / radius;
+				rec.mat_ptr = mat_ptr;
 				return true;
 			}
 		}

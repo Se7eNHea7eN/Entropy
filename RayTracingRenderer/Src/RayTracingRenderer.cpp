@@ -1,9 +1,10 @@
 #include "RayTracingRenderer.hpp"
 #include "Ray.hpp"
 #include "RTCamera.hpp"
+#include "RTMaterial.hpp"
 #include "GL/glew.h"
 #include "Eigen/Core"
-#include <random>
+#include "Utils.hpp"
 
 using namespace Eigen;
 using namespace Entropy;
@@ -74,27 +75,17 @@ void Entropy::RayTracingRenderer::Resize(int w, int h) {
 	glViewport(0, 0, width, height);
 }
 
-inline double random_double() {
-	static std::uniform_real_distribution<double> distribution(0.0, 1.0);
-	static std::mt19937 generator;
-	static std::function<double()> rand_generator =
-		std::bind(distribution, generator);
-	return rand_generator();
-}
-
-Vector3f random_in_unit_sphere() {
-	Vector3f p;
-	do {
-		p = 2.0 * Vector3f(random_double(), random_double(), random_double()) - Vector3f(1, 1, 1);
-	} while (p.norm() >= 1.0);
-	return p;
-}
-
-Vector3f color(const Ray& r, Hittable* world) {
+Vector3f color(const Ray& r, Hittable* world, int depth) {
 	HitRecord rec;
 	if (world->hit(r, 0.001, FLT_MAX, rec)) {
-		Vector3f target = rec.p + rec.normal + random_in_unit_sphere();
-		return 0.5 * color(Ray(rec.p, target - rec.p), world);
+		Ray scattered;
+		Vector3f attenuation;
+		if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
+			return attenuation.cwiseProduct(color(scattered, world, depth + 1));
+		}
+		else {
+			return Vector3f(0, 0, 0);
+		}
 	}
 	else {
 		Vector3f unit_direction = r.direction().normalized();
@@ -103,24 +94,27 @@ Vector3f color(const Ray& r, Hittable* world) {
 	}
 }
 
-void Entropy::RayTracingRenderer::Draw() {
+void RayTracingRenderer::Draw() {
 	wglMakeCurrent(hDC, hRC);
 	glClearColor(0.0f, 0.2f, 0.4f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glLoadIdentity();
-	
 
 	int nx = width;
-	int ny = height;
+	int ny = height ;
 	int ns = 1;
 
-	Hittable* list[2];
-	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5);
-	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100);
-	Hittable* world = new HittableList(list, 2);
+	Hittable* list[4];
+
+	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.8, 0.3, 0.3)));
+	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8, 0.8, 0.0)));
+	list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.6, 0.2)));
+	list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.8, 0.8)));
+	Hittable* world = new HittableList(list, 4);
 
 	RTCamera camera;
+	camera.setRatio(1.0 * width / height);
 	glBegin(GL_POINTS);
 	glPointSize(1.0);
 	for (int j = ny - 1; j >= 0; j--) {
@@ -130,7 +124,7 @@ void Entropy::RayTracingRenderer::Draw() {
 				float u = float(i + random_double()) / float(nx);
 				float v = float(j + random_double()) / float(ny);
 				Ray r = camera.get_ray(u, v);
-				col += color(r, world);
+				col += color(r, world,0);
 			}
 			col /= float(ns);
 			col = Vector3f(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
@@ -145,5 +139,5 @@ void Entropy::RayTracingRenderer::Draw() {
 	SwapBuffers(hDC);
 }
 
-void Entropy::RayTracingRenderer::AwaitRenderFrame() {
+void RayTracingRenderer::AwaitRenderFrame() {
 }

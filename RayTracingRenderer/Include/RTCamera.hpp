@@ -18,5 +18,10 @@ namespace Entropy {
 		Vector3f lower_left_corner;
 		Vector3f horizontal;
 		Vector3f vertical;
+
+		void setRatio(float ratio) {
+			horizontal = Vector3f(2.0 * ratio, 0.0, 0.0);
+			lower_left_corner = Vector3f(-1.0 * ratio, -1.0, -1.0);
+		}
 	};
 }
