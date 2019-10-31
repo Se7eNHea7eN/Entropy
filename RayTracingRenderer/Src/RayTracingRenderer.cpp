@@ -103,15 +103,17 @@ void RayTracingRenderer::Draw() {
 
 	int nx = width;
 	int ny = height ;
-	int ns = 4;
+	int ns = 8;
 
-	Hittable* list[4];
-
-	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.8, 0.3, 0.3)));
+	Hittable* list[5];
+	
+	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.1, 0.2, 0.5)));
 	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8, 0.8, 0.0)));
 	list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.6, 0.2),0.3));
-	list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.8, 0.8),1.0));
-	Hittable* world = new HittableList(list, 4);
+	list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Dielectric(1.5));
+	list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
+	Hittable* world = new HittableList(list, 5);
+
 
 	RTCamera camera(1.0 * width / height);
 	glBegin(GL_POINTS);
