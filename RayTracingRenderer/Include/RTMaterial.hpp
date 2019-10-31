@@ -30,15 +30,18 @@ namespace Entropy {
 
 	class Metal : public RTMaterial {
 	public:
-		Metal(const Vector3f& a) : albedo(a) {}
+		Metal(const Vector3f& a, float f) : albedo(a) {
+			if (f < 1) fuzz = f; else fuzz = 1;
+		}
 		virtual bool scatter(const Ray& r_in, const HitRecord& rec,
 			Vector3f& attenuation, Ray& scattered) const {
 			Vector3f reflected = reflect(r_in.direction().normalized(), rec.normal);
-			scattered = Ray(rec.p, reflected);
+			scattered = Ray(rec.p, reflected + fuzz * random_in_unit_sphere());
 			attenuation = albedo;
 			return scattered.direction().dot(rec.normal) > 0;
 		}
 		Vector3f albedo;
+		float fuzz;
 	};
 	
 }

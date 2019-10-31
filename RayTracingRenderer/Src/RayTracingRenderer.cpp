@@ -103,14 +103,14 @@ void RayTracingRenderer::Draw() {
 
 	int nx = width;
 	int ny = height ;
-	int ns = 1;
+	int ns = 4;
 
 	Hittable* list[4];
 
 	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.8, 0.3, 0.3)));
 	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8, 0.8, 0.0)));
-	list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.6, 0.2)));
-	list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.8, 0.8)));
+	list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.6, 0.2),0.3));
+	list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.8, 0.8),1.0));
 	Hittable* world = new HittableList(list, 4);
 
 	RTCamera camera;
