@@ -8,6 +8,7 @@
 
 using namespace Eigen;
 using namespace Entropy;
+
 Entropy::RayTracingRenderer::RayTracingRenderer(HWND hwnd) : hWnd(hwnd) {
 }
 
@@ -19,53 +20,53 @@ Entropy::RayTracingRenderer::~RayTracingRenderer() {
 }
 
 void Entropy::RayTracingRenderer::Initialize() {
-	GLuint		PixelFormat;			// Holds The Results After Searching For A Match
-	PIXELFORMATDESCRIPTOR pfd =				// pfd Tells Windows How We Want Things To Be
+	GLuint PixelFormat; // Holds The Results After Searching For A Match
+	PIXELFORMATDESCRIPTOR pfd = // pfd Tells Windows How We Want Things To Be
 	{
-		sizeof(PIXELFORMATDESCRIPTOR),				// Size Of This Pixel Format Descriptor
-		1,											// Version Number
-		PFD_DRAW_TO_WINDOW |						// Format Must Support Window
-		PFD_SUPPORT_OPENGL |						// Format Must Support OpenGL
-		PFD_DOUBLEBUFFER,							// Must Support Double Buffering
-		PFD_TYPE_RGBA,								// Request An RGBA Format
-		32,										// Select Our Color Depth
-		0, 0, 0, 0, 0, 0,							// Color Bits Ignored
-		0,											// No Alpha Buffer
-		0,											// Shift Bit Ignored
-		0,											// No Accumulation Buffer
-		0, 0, 0, 0,									// Accumulation Bits Ignored
-		16,											// 16Bit Z-Buffer (Depth Buffer)  
-		0,											// No Stencil Buffer
-		0,											// No Auxiliary Buffer
-		PFD_MAIN_PLANE,								// Main Drawing Layer
-		0,											// Reserved
-		0, 0, 0										// Layer Masks Ignored
+		sizeof(PIXELFORMATDESCRIPTOR), // Size Of This Pixel Format Descriptor
+		1, // Version Number
+		PFD_DRAW_TO_WINDOW | // Format Must Support Window
+		PFD_SUPPORT_OPENGL | // Format Must Support OpenGL
+		PFD_DOUBLEBUFFER, // Must Support Double Buffering
+		PFD_TYPE_RGBA, // Request An RGBA Format
+		32, // Select Our Color Depth
+		0, 0, 0, 0, 0, 0, // Color Bits Ignored
+		0, // No Alpha Buffer
+		0, // Shift Bit Ignored
+		0, // No Accumulation Buffer
+		0, 0, 0, 0, // Accumulation Bits Ignored
+		16, // 16Bit Z-Buffer (Depth Buffer)  
+		0, // No Stencil Buffer
+		0, // No Auxiliary Buffer
+		PFD_MAIN_PLANE, // Main Drawing Layer
+		0, // Reserved
+		0, 0, 0 // Layer Masks Ignored
 	};
-	if (!(hDC = GetDC(hWnd)))							// Did We Get A Device Context?
+	if (!(hDC = GetDC(hWnd))) // Did We Get A Device Context?
 	{
 		MessageBox(NULL, "Can't Create A GL Device Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		return;								// Return FALSE
+		return; // Return FALSE
 	}
-	if (!(PixelFormat = ChoosePixelFormat(hDC, &pfd)))	// Did Windows Find A Matching Pixel Format?
+	if (!(PixelFormat = ChoosePixelFormat(hDC, &pfd))) // Did Windows Find A Matching Pixel Format?
 	{
 		MessageBox(NULL, "Can't Find A Suitable PixelFormat.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		return;								// Return FALSE
+		return; // Return FALSE
 	}
 
-	if (!SetPixelFormat(hDC, PixelFormat, &pfd))		// Are We Able To Set The Pixel Format?
+	if (!SetPixelFormat(hDC, PixelFormat, &pfd)) // Are We Able To Set The Pixel Format?
 	{
 		MessageBox(NULL, "Can't Set The PixelFormat.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		return;								// Return FALSE
+		return; // Return FALSE
 	}
-	if (!(hRC = wglCreateContext(hDC)))				// Are We Able To Get A Rendering Context?
+	if (!(hRC = wglCreateContext(hDC))) // Are We Able To Get A Rendering Context?
 	{
 		MessageBox(NULL, "Can't Create A GL Rendering Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		return;								// Return FALSE
+		return; // Return FALSE
 	}
-	if (!wglMakeCurrent(hDC, hRC))					// Try To Activate The Rendering Context
+	if (!wglMakeCurrent(hDC, hRC)) // Try To Activate The Rendering Context
 	{
 		MessageBox(NULL, "Can't Activate The GL Rendering Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
-		return;								// Return FALSE
+		return; // Return FALSE
 	}
 }
 
@@ -102,23 +103,24 @@ void RayTracingRenderer::Draw() {
 	glLoadIdentity();
 
 	int nx = width;
-	int ny = height ;
-	int ns = 8;
+	int ny = height;
+	int ns = 4;
 
 	Hittable* list[5];
-	
+
 	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.1, 0.2, 0.5)));
 	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8, 0.8, 0.0)));
-	list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.6, 0.2),0.3));
+	list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.6, 0.2), 0.3));
 	list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Dielectric(1.5));
 	list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
 	Hittable* world = new HittableList(list, 5);
 
-
 	RTCamera camera(1.0 * width / height);
-	glBegin(GL_POINTS);
-	glPointSize(1.0);
-	for (int j = ny - 1; j >= 0; j--) {
+
+	unsigned char* buffer = new unsigned char[nx * ny * 3];
+
+	int index = 0;
+	for (int j = 0; j < ny; j++) {
 		for (int i = 0; i < nx; i++) {
 			Vector3f col(0, 0, 0);
 			for (int s = 0; s < ns; s++) {
@@ -129,16 +131,48 @@ void RayTracingRenderer::Draw() {
 			}
 			col /= float(ns);
 			col = Vector3f(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
-			float u = float(i) / float(nx);
-			float v = float(j) / float(ny);
-			glColor3f(col.x(), col.y(), col.z());
-			glVertex3f( 2*u-1, 2*v -1,0);
+			buffer[index++] = 255.99* col.x();
+			buffer[index++] = 255.99 * col.y();
+			buffer[index++] = 255.99 * col.z();
 		}
 	}
-	glEnd();
 
+	unsigned int texture;
+	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+
+	glLoadIdentity();
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(-1.0, -1.0, 1.0);
+	glTexCoord2f(1.0, 0.0);
+	glVertex3f(1.0, -1.0, 1.0);
+	glTexCoord2f(1.0, 1.0);
+	glVertex3f(1.0, 1.0, 1.0);
+	glTexCoord2f(0.0, 1.0);
+	glVertex3f(-1.0, 1.0, 1.0);
+
+	glEnd();
 	SwapBuffers(hDC);
+
+	delete buffer;
+}
+
+void drawPoint(Vector3f position, Vector3f color) {
+	glBegin(GL_POINTS);
+	glPointSize(1.0);
+	glColor3f(color.x(), color.y(), color.z());
+	glVertex3f(position.x(), position.y(), position.z());
+	glEnd();
 }
 
 void RayTracingRenderer::AwaitRenderFrame() {
 }
+ 
