@@ -113,8 +113,7 @@ void RayTracingRenderer::Draw() {
 	list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.8, 0.8),1.0));
 	Hittable* world = new HittableList(list, 4);
 
-	RTCamera camera;
-	camera.setRatio(1.0 * width / height);
+	RTCamera camera(1.0 * width / height);
 	glBegin(GL_POINTS);
 	glPointSize(1.0);
 	for (int j = ny - 1; j >= 0; j--) {
