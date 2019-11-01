@@ -19,7 +19,6 @@ namespace Entropy {
 		void Resize(int w, int h) override;
 		void Draw() override;
 		void AwaitRenderFrame() override;
-		void RenderTask(Tile* tiles, int tileCount);
 		void Render();
 		void SetOnUpdate(const std::function<void()>& on_update) {
 			onUpdate = on_update;
@@ -36,7 +35,7 @@ namespace Entropy {
 		std::thread threads[16];
 		Hittable* world;
 		RTCamera* camera;
-		int sampleCount = 10;
+		int sampleCount = 32;
 		std::function<void()> onUpdate;
 
 	private:

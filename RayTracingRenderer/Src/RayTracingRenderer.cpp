@@ -8,6 +8,7 @@
 #include <thread>
 #include <mutex>
 #include "Utils/Debug.hpp"
+#include <Utils\ThreadPool.hpp>
 
 using namespace Eigen;
 using namespace Entropy;
@@ -174,39 +175,6 @@ void RayTracingRenderer::CheckTiles() {
 	Save_bmp(renderBuffer, renderWidth ,renderHeight);
 }
 
-void RayTracingRenderer::RenderTask(Tile* tiles, int tileCount) {
-	for (int index = 0; index < tileCount; index++) {
-		Tile& t = tiles[index];
-		Log("start render tile %d %d", t.left, t.top);
-		
-		for (int j = t.top; j < t.bottom; j++) {
-			for (int i = t.left; i < t.right; i++) {
-				Vector3f col(0, 0, 0);
-				for (int s = 0; s < sampleCount; s++) {
-					float u = float(i + random_double()) / float(renderWidth);
-					float v = float(j + random_double()) / float(renderHeight);
-					Ray r = camera->get_ray(u, v);
-					col += color(r, world, 0);
-				}
-				col /= float(sampleCount);
-				col = Vector3f(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
-
-				int position = (j * renderWidth + i) * 3;
-				renderBuffer[position] = 255.99 * col.x();
-				renderBuffer[position + 1] = 255.99 * col.y();
-				renderBuffer[position + 2] = 255.99 * col.z();
-			}
-		}
-		t.isdone = true;
-		CheckTiles();
-		if (onUpdate != nullptr)
-			onUpdate();
-	}
-}
-
-void thread_task(RayTracingRenderer* renderer,  Tile* tiles,int tileCount) {
-	renderer->RenderTask(tiles,tileCount);
-}
 
 void RayTracingRenderer::Draw() {
 	wglMakeCurrent(hDC, hRC);
@@ -251,9 +219,44 @@ void RayTracingRenderer::Render() {
 			t.isdone = false;
 		}
 	}
-	for (int i = 0; i < 16; i++) {
-		threads[i] = std::thread(thread_task, this, tiles[i], 16);
-	}
+
+	new std::thread([&]
+		{
+			ThreadPool pool(15);
+
+			for (int i = 0; i < 16; ++i) {
+				for (int j = 0; j < 16; ++j) {
+					pool.enqueue([=] {
+						auto& t = tiles[i][j];
+						Log("start render tile %d %d", t.left / 16, t.top / 16);
+						for (int j = t.top; j < t.bottom; j++) {
+							for (int i = t.left; i < t.right; i++) {
+								Vector3f col(0, 0, 0);
+								for (int s = 0; s < sampleCount; s++) {
+									float u = float(i + random_double()) / float(renderWidth);
+									float v = float(j + random_double()) / float(renderHeight);
+									Ray r = camera->get_ray(u, v);
+									col += color(r, world, 0);
+								}
+								col /= float(sampleCount);
+								col = Vector3f(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
+
+								int position = (j * renderWidth + i) * 3;
+								renderBuffer[position] = 255.99 * col.x();
+								renderBuffer[position + 1] = 255.99 * col.y();
+								renderBuffer[position + 2] = 255.99 * col.z();
+							}
+						}
+						Log("end render tile %d %d", t.left / 16, t.top / 16);
+						t.isdone = true;
+						CheckTiles();
+						if (onUpdate != nullptr)
+							onUpdate();
+						});
+				}
+			}
+		});
+
 }
 
 void Save_bmp(unsigned char* data,int width,int height)
