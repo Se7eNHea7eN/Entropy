@@ -81,26 +81,60 @@ void RayTracingRenderer::Initialize() {
 
 
 
-	Hittable** list = new Hittable*[5];
-
-	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.1, 0.2, 0.5)));
-	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8, 0.8, 0.0)));
-	list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.6, 0.2), 0.3));
-	list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Dielectric(1.5));
-	list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
-	world = new HittableList(list, 5);
-
-
-	Vector3f lookfrom(3, 3, 2);
-	Vector3f lookat(0, 0, -1);
-	float dist_to_focus = (lookfrom - lookat).norm();
-	float aperture = 2.0;
-
+	Vector3f lookfrom(13, 2, 3);
+	Vector3f lookat(0, 0, 0);
+	float dist_to_focus = 10.0;
+	float aperture = 0.1;
 	
 	camera = new RTCamera(lookfrom, lookat, Vector3f(0, 1, 0), 20,
 		float(renderWidth) / float(renderHeight), aperture, dist_to_focus);
 
 	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
+
+	// Hittable** list = new Hittable *[];
+	//
+	// list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.1, 0.2, 0.5)));
+	// list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8, 0.8, 0.0)));
+	// list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.6, 0.2), 0.3));
+	// list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Dielectric(1.5));
+	// list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
+	// world = new HittableList(list, 5);
+	int n = 500;
+	Hittable** list = new Hittable * [n + 1];
+	list[0] = new Sphere(Vector3f(0, -1000, 0), 1000, new Lambertian(Vector3f(0.5, 0.5, 0.5)));
+	int i = 1;
+	for (int a = -11; a < 11; a++) {
+		for (int b = -11; b < 11; b++) {
+			float choose_mat = random_double();
+			Vector3f center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
+			if ((center - Vector3f(4, 0.2, 0)).norm() > 0.9) {
+				if (choose_mat < 0.8) {  // diffuse
+					list[i++] = new Sphere(center, 0.2,
+						new Lambertian(Vector3f(random_double() * random_double(),
+							random_double() * random_double(),
+							random_double() * random_double())
+						)
+					);
+				}
+				else if (choose_mat < 0.95) { // metal
+					list[i++] = new Sphere(center, 0.2,
+						new Metal(Vector3f(0.5 * (1 + random_double()),
+							0.5 * (1 + random_double()),
+							0.5 * (1 + random_double())),
+							0.5 * random_double()));
+				}
+				else {  // glass
+					list[i++] = new Sphere(center, 0.2, new Dielectric(1.5));
+				}
+			}
+		}
+	}
+
+	list[i++] = new Sphere(Vector3f(0, 1, 0), 1.0, new Dielectric(1.5));
+	list[i++] = new Sphere(Vector3f(-4, 1, 0), 1.0, new Lambertian(Vector3f(0.4, 0.2, 0.1)));
+	list[i++] = new Sphere(Vector3f(4, 1, 0), 1.0, new Metal(Vector3f(0.7, 0.6, 0.5), 0.0));
+
+	world = new HittableList(list, i);
 }
 
 void Entropy::RayTracingRenderer::Resize(int w, int h) {
@@ -140,7 +174,7 @@ void RayTracingRenderer::CheckTiles() {
 	Save_bmp(renderBuffer, renderWidth ,renderHeight);
 }
 
-void RayTracingRenderer::RenderTask(Tile* tiles, int tileCount, int sampleCount) {
+void RayTracingRenderer::RenderTask(Tile* tiles, int tileCount) {
 	for (int index = 0; index < tileCount; index++) {
 		Tile& t = tiles[index];
 		Log("start render tile %d %d", t.left, t.top);
@@ -170,8 +204,8 @@ void RayTracingRenderer::RenderTask(Tile* tiles, int tileCount, int sampleCount)
 	}
 }
 
-void thread_task(RayTracingRenderer* renderer,  Tile* tiles,int tileCount,int sampleCount) {
-	renderer->RenderTask(tiles,tileCount,sampleCount);
+void thread_task(RayTracingRenderer* renderer,  Tile* tiles,int tileCount) {
+	renderer->RenderTask(tiles,tileCount);
 }
 
 void RayTracingRenderer::Draw() {
@@ -204,9 +238,6 @@ void RayTracingRenderer::AwaitRenderFrame() {
 }
 void RayTracingRenderer::Render() {
 	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
-
-	int ns = 4;
-
 	int tileWidth = renderWidth / 16;
 	int tileHeight = renderHeight / 16;
 
@@ -221,7 +252,7 @@ void RayTracingRenderer::Render() {
 		}
 	}
 	for (int i = 0; i < 16; i++) {
-		threads[i] = std::thread(thread_task, this, tiles[i], 16, ns);
+		threads[i] = std::thread(thread_task, this, tiles[i], 16);
 	}
 }
 
