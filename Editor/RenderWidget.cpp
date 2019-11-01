@@ -53,16 +53,14 @@ void RenderWidget::resizeEvent(QResizeEvent* resizeEvent) {
 	renderer->Resize(width, height);
 
 	// because Qt is not sending update request when resizing smaller
-	if(!passiveRender)
-		render();
+	render();
 }
 
 bool RenderWidget::event(QEvent* event) {
 	switch (event->type()) {
 	case QEvent::UpdateRequest:
 		_updatePending = false;
-		if (!passiveRender)
-			_doRender();
+		_doRender();
 		return true;
 	default:
 		return QWidget::event(event);

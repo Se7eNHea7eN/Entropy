@@ -17,10 +17,8 @@ public:
 
 	void render();
 	Renderer* renderer;
-	void _doRender();
 public:
 	bool continuousRender = false;
-	bool passiveRender = false;
 
 protected:
 	virtual void paintEvent(QPaintEvent* paintEvent) override;
@@ -36,6 +34,8 @@ private:
 	void _init();
 
 private:
+	void _doRender();
+
 	bool _updatePending = false;
 	bool _isInit = false;
 

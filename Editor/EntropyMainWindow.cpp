@@ -4,7 +4,7 @@
 #include "GenerateScene.hpp"
 #include "RayTracingRenderer.hpp"
 using namespace Entropy;
-
+RayTracingRenderer* rtRenderer;
 EntropyMainWindow::EntropyMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
@@ -16,11 +16,15 @@ EntropyMainWindow::EntropyMainWindow(QWidget *parent)
 	// GenerateScene02(scene);
 	
 	ui.previewRenderView->renderer = engineCore->CreateRenderer((HWND)ui.previewRenderView->winId());
-	ui.rayTracingRenderView->renderer = new RayTracingRenderer((HWND)ui.rayTracingRenderView->winId());
-	ui.rayTracingRenderView->passiveRender = true;
+	rtRenderer = new RayTracingRenderer((HWND)ui.rayTracingRenderView->winId());
+	ui.rayTracingRenderView->renderer = rtRenderer;
+	rtRenderer->SetOnUpdate([=]
+		{
+			ui.rayTracingRenderView->render();
+		});
 	ui.treeWidget->SetScene(scene);
 }
 
 void EntropyMainWindow::ClickRender() {
-	ui.rayTracingRenderView->_doRender();
+	rtRenderer->Render();
 }

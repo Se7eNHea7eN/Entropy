@@ -5,22 +5,25 @@
 #include "GL/glew.h"
 #include "Eigen/Core"
 #include "Utils.hpp"
+#include <thread>
+#include <mutex>
+#include "Utils/Debug.hpp"
 
 using namespace Eigen;
 using namespace Entropy;
 void Save_bmp(unsigned char* data, int width, int height);
 
-Entropy::RayTracingRenderer::RayTracingRenderer(HWND hwnd) : hWnd(hwnd) {
+RayTracingRenderer::RayTracingRenderer(HWND hwnd) : hWnd(hwnd) {
 }
 
-Entropy::RayTracingRenderer::~RayTracingRenderer() {
+RayTracingRenderer::~RayTracingRenderer() {
 	wglDeleteContext(hRC);
 	hRC = nullptr;
 	ReleaseDC(hWnd, hDC);
 	hDC = nullptr;
 }
 
-void Entropy::RayTracingRenderer::Initialize() {
+void RayTracingRenderer::Initialize() {
 	GLuint PixelFormat; // Holds The Results After Searching For A Match
 	PIXELFORMATDESCRIPTOR pfd = // pfd Tells Windows How We Want Things To Be
 	{
@@ -69,6 +72,27 @@ void Entropy::RayTracingRenderer::Initialize() {
 		MessageBox(NULL, "Can't Activate The GL Rendering Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		return; // Return FALSE
 	}
+
+	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+
+	Hittable** list = new Hittable*[5];
+
+	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.1, 0.2, 0.5)));
+	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8, 0.8, 0.0)));
+	list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.6, 0.2), 0.3));
+	list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Dielectric(1.5));
+	list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
+	world = new HittableList(list, 5);
+
+	camera = new RTCamera(1.0 * renderWidth / renderHeight);
+
+	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
 }
 
 void Entropy::RayTracingRenderer::Resize(int w, int h) {
@@ -94,6 +118,52 @@ Vector3f color(const Ray& r, Hittable* world, int depth) {
 		float t = 0.5 * (unit_direction.y() + 1.0);
 		return (1.0 - t) * Vector3f(1.0, 1.0, 1.0) + t * Vector3f(0.5, 0.7, 1.0);
 	}
+
+}
+
+
+void RayTracingRenderer::CheckTiles() {
+	for (int j = 0; j < 16; j++) {
+		for (int i = 0; i < 16; i++) {
+			auto t = tiles[j][i];
+			if (!t.isdone) return;
+		}
+	}
+	Save_bmp(renderBuffer, renderWidth ,renderHeight);
+}
+
+void RayTracingRenderer::RenderTask(Tile* tiles, int tileCount, int sampleCount) {
+	for (int index = 0; index < tileCount; index++) {
+		Tile& t = tiles[index];
+		Log("start render tile %d %d", t.left, t.top);
+		
+		for (int j = t.top; j < t.bottom; j++) {
+			for (int i = t.left; i < t.right; i++) {
+				Vector3f col(0, 0, 0);
+				for (int s = 0; s < sampleCount; s++) {
+					float u = float(i + random_double()) / float(renderWidth);
+					float v = float(j + random_double()) / float(renderHeight);
+					Ray r = camera->get_ray(u, v);
+					col += color(r, world, 0);
+				}
+				col /= float(sampleCount);
+				col = Vector3f(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
+
+				int position = (j * renderWidth + i) * 3;
+				renderBuffer[position] = 255.99 * col.x();
+				renderBuffer[position + 1] = 255.99 * col.y();
+				renderBuffer[position + 2] = 255.99 * col.z();
+			}
+		}
+		t.isdone = true;
+		CheckTiles();
+		if (onUpdate != nullptr)
+			onUpdate();
+	}
+}
+
+void thread_task(RayTracingRenderer* renderer,  Tile* tiles,int tileCount,int sampleCount) {
+	renderer->RenderTask(tiles,tileCount,sampleCount);
 }
 
 void RayTracingRenderer::Draw() {
@@ -102,56 +172,10 @@ void RayTracingRenderer::Draw() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glLoadIdentity();
-
-	// int nx = width - width%2;
-	// int ny = height - height % 2;
-
-	int nx = 1280;
-	int ny = 720;
-	int ns = 4;
-
-	Hittable* list[5];
-
-	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.1, 0.2, 0.5)));
-	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8, 0.8, 0.0)));
-	list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.6, 0.2), 0.3));
-	list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Dielectric(1.5));
-	list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
-	Hittable* world = new HittableList(list, 5);
-
-	RTCamera camera(1.0 * nx / ny);
-
-	unsigned char* buffer = new unsigned char[nx * ny * 3];
-
-	int index = 0;
-	for (int j = 0; j < ny; j++) {
-		for (int i = 0; i < nx; i++) {
-			Vector3f col(0, 0, 0);
-			for (int s = 0; s < ns; s++) {
-				float u = float(i + random_double()) / float(nx);
-				float v = float(j + random_double()) / float(ny);
-				Ray r = camera.get_ray(u, v);
-				col += color(r, world,0);
-			}
-			col /= float(ns);
-			col = Vector3f(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
-			buffer[index++] = 255.99* col.x();
-			buffer[index++] = 255.99 * col.y();
-			buffer[index++] = 255.99 * col.z();
-		}
-	}
-
-	unsigned int texture;
-	glEnable(GL_TEXTURE_2D);
-	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, nx, ny, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, renderWidth, renderHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, renderBuffer);
 
 	glLoadIdentity();
-	glBindTexture(GL_TEXTURE_2D, texture);
 
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0);
@@ -162,34 +186,47 @@ void RayTracingRenderer::Draw() {
 	glVertex3f(1.0, 1.0, 1.0);
 	glTexCoord2f(0.0, 1.0);
 	glVertex3f(-1.0, 1.0, 1.0);
-
 	glEnd();
+
 	SwapBuffers(hDC);
-	Save_bmp(buffer, nx ,ny);
-	delete buffer;
-}
-
-void drawPoint(Vector3f position, Vector3f color) {
-	glBegin(GL_POINTS);
-	glPointSize(1.0);
-	glColor3f(color.x(), color.y(), color.z());
-	glVertex3f(position.x(), position.y(), position.z());
-	glEnd();
+	
 }
 
 void RayTracingRenderer::AwaitRenderFrame() {
+}
+void RayTracingRenderer::Render() {
+	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
+
+	int ns = 4;
+
+	int tileWidth = renderWidth / 16;
+	int tileHeight = renderHeight / 16;
+
+	for (int j = 0; j < 16; j++) {
+		for (int i = 0; i < 16; i++) {
+			Tile& t = tiles[j][i];
+			t.left = i * tileWidth;
+			t.right = i * tileWidth + tileWidth;
+			t.top = j * tileHeight;
+			t.bottom = j * tileHeight + tileHeight;
+			t.isdone = false;
+		}
+	}
+	for (int i = 0; i < 16; i++) {
+		threads[i] = std::thread(thread_task, this, tiles[i], 16, ns);
+	}
 }
 
 void Save_bmp(unsigned char* data,int width,int height)
 {
 	int i;
-	unsigned char temp;
+	unsigned char* copy = new unsigned char[width * height * 3];
 	for (i = 0; i < width*height*3; i += 3)
 	{
 		//swap R and B; raw_image[i + 1] is G, so it stays where it is.
-		temp = data[i + 0];
-		data[i + 0] = data[i + 2];
-		data[i + 2] = temp;
+		copy[i + 0] = data[i + 2];
+		copy[i + 1] = data[i + 1];
+		copy[i + 2] = data[i + 0];
 	}
 	BITMAPFILEHEADER bmfHdr;
 	BITMAPINFOHEADER bi;
@@ -230,6 +267,7 @@ void Save_bmp(unsigned char* data,int width,int height)
 	//     写入位图文件其余内容              
 	WriteFile(fh, (LPSTR)&bi, sizeof(bi), &dwWritten, NULL);
 
-	WriteFile(fh, (LPSTR)data, width * height * 3, &dwWritten, NULL);
+	WriteFile(fh, (LPSTR)copy, width * height * 3, &dwWritten, NULL);
 	CloseHandle(fh);
+	delete copy;
 }

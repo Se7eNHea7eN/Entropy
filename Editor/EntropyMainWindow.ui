@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>400</height>
+    <width>745</width>
+    <height>642</height>
    </rect>
   </property>
   <property name="palette">
@@ -492,7 +492,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="Preview">
          <attribute name="title">
@@ -507,8 +507,14 @@
         <widget class="QWidget" name="RayTracing">
          <property name="minimumSize">
           <size>
-           <width>512</width>
-           <height>512</height>
+           <width>960</width>
+           <height>540</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>960</width>
+           <height>540</height>
           </size>
          </property>
          <attribute name="title">
@@ -538,7 +544,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>600</width>
+     <width>745</width>
      <height>23</height>
     </rect>
    </property>
@@ -610,7 +616,7 @@
           <x>0</x>
           <y>0</y>
           <width>69</width>
-          <height>251</height>
+          <height>493</height>
          </rect>
         </property>
         <attribute name="label">
@@ -623,7 +629,7 @@
           <x>0</x>
           <y>0</y>
           <width>69</width>
-          <height>251</height>
+          <height>493</height>
          </rect>
         </property>
         <attribute name="label">
