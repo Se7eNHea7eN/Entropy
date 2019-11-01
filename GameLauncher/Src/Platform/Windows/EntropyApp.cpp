@@ -1,4 +1,4 @@
-#include "bx/Thread.h"
+ #include "bx/Thread.h"
 
 #include <windows.h>
 #include <windowsx.h>

@@ -90,7 +90,7 @@ void RayTracingRenderer::Initialize() {
 	list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
 	world = new HittableList(list, 5);
 
-	camera = new RTCamera(1.0 * renderWidth / renderHeight);
+	camera = new RTCamera(Vector3f(-2, 2, 1), Vector3f(0, 0, -1), Vector3f(0, 1, 0), 90, float(renderWidth) / float(renderHeight));;
 
 	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
 }
