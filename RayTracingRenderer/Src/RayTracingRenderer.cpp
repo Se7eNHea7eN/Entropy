@@ -90,7 +90,15 @@ void RayTracingRenderer::Initialize() {
 	list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
 	world = new HittableList(list, 5);
 
-	camera = new RTCamera(Vector3f(-2, 2, 1), Vector3f(0, 0, -1), Vector3f(0, 1, 0), 90, float(renderWidth) / float(renderHeight));;
+
+	Vector3f lookfrom(3, 3, 2);
+	Vector3f lookat(0, 0, -1);
+	float dist_to_focus = (lookfrom - lookat).norm();
+	float aperture = 2.0;
+
+	
+	camera = new RTCamera(lookfrom, lookat, Vector3f(0, 1, 0), 20,
+		float(renderWidth) / float(renderHeight), aperture, dist_to_focus);
 
 	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
 }
