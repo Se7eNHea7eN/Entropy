@@ -20,10 +20,10 @@ using namespace Entropy;
 
 #define PI 3.14159265359
 void GenerateScene03(Entropy::Scene* scene) {
-	// auto skybox = std::make_shared<SkyBox>();
-	// skybox->SetHdrTexture(std::shared_ptr<Texture>(
-	// 	new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/cubemap.dds", bimg::TextureFormat::RGB8)))));
-	// scene->SetSkybox(skybox);
+	auto skybox = std::make_shared<SkyBox>();
+	skybox->SetHdrTexture(std::shared_ptr<Texture>(
+		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/irradiance.dds", bimg::TextureFormat::RGB8)))));
+	scene->SetSkybox(skybox);
 
 	auto camera = std::shared_ptr<Camera>(std::make_shared<Camera>());
 	camera->SetFovY(PI /8);

@@ -165,10 +165,7 @@ void main()
     {
         vec3 pointLightPosition = u_lightPosition[i].xyz;
 
-		//vec3 tangentLightPos = mul(TBN,pointLightPosition);
-
         vec3 pointLightColor = u_lightColor[i].xyz;
-
 
         vec3 L = normalize(pointLightPosition - v_pos.xyz);
         vec3 H = normalize(V + L);
