@@ -32,3 +32,11 @@ include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Eigen")
 target_link_libraries(${PROJECT_NAME} debug   ${CMAKE_CURRENT_SOURCE_DIR}/../glew/libs/glew32d.lib)
 target_link_libraries(${PROJECT_NAME} optimized ${CMAKE_CURRENT_SOURCE_DIR}/../glew/libs/glew32.lib)
 target_link_libraries(${PROJECT_NAME} opengl32.lib )
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")

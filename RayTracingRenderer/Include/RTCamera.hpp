@@ -1,7 +1,7 @@
 #pragma once
 #include "Ray.hpp"
 #include "Utils.hpp"
-
+#include <Eigen/Geometry>
 namespace Entropy {
 	class RTCamera {
 	public:
