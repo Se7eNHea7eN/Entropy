@@ -32,6 +32,7 @@ namespace Entropy {
 			horizontal = 2 * half_width * focus_dist * u;
 			vertical = 2 * half_height * focus_dist * v;
 		}
+
 		Vector3f random_in_unit_disk() {
 			Vector3f p;
 			do {
@@ -39,13 +40,14 @@ namespace Entropy {
 			} while (p.squaredNorm() >= 1.0);
 			return p;
 		}
+
 		Ray get_ray(float s, float t) {
 			Vector3f rd = lens_radius * random_in_unit_disk();
 			Vector3f offset = u * rd.x() + v * rd.y();
 			float time = time0 + random_double() * (time1 - time0);
 			return Ray(origin + offset,
 				lower_left_corner + s * horizontal + t * vertical
-				- origin - offset);
+				- origin - offset,time);
 		}
 
 		Vector3f origin;
