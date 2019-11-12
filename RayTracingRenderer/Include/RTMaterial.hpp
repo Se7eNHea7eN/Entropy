@@ -19,7 +19,7 @@ namespace Entropy {
 		virtual bool scatter(const Ray& r_in, const HitRecord& rec,
 			Vector3f& attenuation, Ray& scattered) const {
 			Vector3f target = rec.p + rec.normal + random_in_unit_sphere();
-			scattered = Ray(rec.p, target - rec.p);
+			scattered = Ray(rec.p, target - rec.p, r_in.time());
 			attenuation = albedo;
 			return true;
 		}
@@ -55,7 +55,6 @@ namespace Entropy {
 			float ni_over_nt;
 			attenuation = Vector3f(1.0, 1.0, 1.0);
 			Vector3f refracted;
-
 
 			float reflect_prob;
 			float cosine;

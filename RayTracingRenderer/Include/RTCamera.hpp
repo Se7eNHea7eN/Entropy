@@ -6,7 +6,10 @@ namespace Entropy {
 	class RTCamera {
 	public:
 		RTCamera(Vector3f lookfrom, Vector3f lookat, Vector3f vup, float vfov, float aspect,
-			float aperture, float focus_dist) {
+			float aperture, float focus_dist,
+			float t0, float t1) {
+			time0 = t0;
+			time1 = t1;
 			lens_radius = aperture / 2;
 			const float PI = 3.1415926535897932384;
 			// horizontal = Vector3f(2.0 * ratio, 0.0, 0.0);
@@ -39,6 +42,7 @@ namespace Entropy {
 		Ray get_ray(float s, float t) {
 			Vector3f rd = lens_radius * random_in_unit_disk();
 			Vector3f offset = u * rd.x() + v * rd.y();
+			float time = time0 + random_double() * (time1 - time0);
 			return Ray(origin + offset,
 				lower_left_corner + s * horizontal + t * vertical
 				- origin - offset);
@@ -49,6 +53,7 @@ namespace Entropy {
 		Vector3f horizontal;
 		Vector3f vertical;
 		Vector3f u, v, w;
+		float time0, time1;
 		float lens_radius;
 	};
 }

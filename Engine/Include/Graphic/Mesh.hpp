@@ -1,11 +1,17 @@
 #pragma once
 #include <cstdint>
+#include <vector>
 #include "Common/Object.hpp"
 #include "Graphic/Vertex.hpp"
+#include "Eigen/Core"
+using namespace Eigen;
 namespace Entropy {
 	class Mesh : Object {
 	public:
 		Mesh() = default;
+		Mesh( Mesh& m) = default;
+
+		~Mesh() = default;
 
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;

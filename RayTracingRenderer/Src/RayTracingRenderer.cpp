@@ -88,7 +88,7 @@ void RayTracingRenderer::Initialize() {
 	float aperture = 0.1;
 	
 	camera = new RTCamera(lookfrom, lookat, Vector3f(0, 1, 0), 20,
-		float(renderWidth) / float(renderHeight), aperture, dist_to_focus);
+		float(renderWidth) / float(renderHeight), aperture, dist_to_focus, 0.0, 1.0);
 
 	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
 
@@ -100,17 +100,20 @@ void RayTracingRenderer::Initialize() {
 	// list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Dielectric(1.5));
 	// list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
 	// world = new HittableList(list, 5);
-	int n = 500;
+	int n = 50000;
 	Hittable** list = new Hittable * [n + 1];
 	list[0] = new Sphere(Vector3f(0, -1000, 0), 1000, new Lambertian(Vector3f(0.5, 0.5, 0.5)));
 	int i = 1;
-	for (int a = -11; a < 11; a++) {
-		for (int b = -11; b < 11; b++) {
+	for (int a = -10; a < 10; a++) {
+		for (int b = -10; b < 10; b++) {
 			float choose_mat = random_double();
 			Vector3f center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
 			if ((center - Vector3f(4, 0.2, 0)).norm() > 0.9) {
 				if (choose_mat < 0.8) {  // diffuse
-					list[i++] = new Sphere(center, 0.2,
+					list[i++] = new MovingSphere(
+						center,
+						center+ Vector3f(0, 0.5 * random_double(), 0),
+						0.0,1.0,0.2,
 						new Lambertian(Vector3f(random_double() * random_double(),
 							random_double() * random_double(),
 							random_double() * random_double())
