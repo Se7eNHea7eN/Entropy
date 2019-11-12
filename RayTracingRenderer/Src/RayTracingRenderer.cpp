@@ -80,8 +80,6 @@ void RayTracingRenderer::Initialize() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-
-
 	Vector3f lookfrom(13, 2, 3);
 	Vector3f lookat(0, 0, 0);
 	float dist_to_focus = 10.0;
@@ -138,7 +136,8 @@ void RayTracingRenderer::Initialize() {
 	list[i++] = new Sphere(Vector3f(-4, 1, 0), 1.0, new Lambertian(Vector3f(0.4, 0.2, 0.1)));
 	list[i++] = new Sphere(Vector3f(4, 1, 0), 1.0, new Metal(Vector3f(0.7, 0.6, 0.5), 0.0));
 
-	world = new HittableList(list, i);
+	//world = new HittableList(list, i);
+	world = new bvh_node(list, i,0,1);
 }
 
 void Entropy::RayTracingRenderer::Resize(int w, int h) {
