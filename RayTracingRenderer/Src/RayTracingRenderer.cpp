@@ -80,6 +80,24 @@ Hittable* createLightScene() {
 	return new HittableList(list, 4);
 }
 
+Hittable* cornell_box() {
+	Hittable** list = new Hittable * [5];
+	int i = 0;
+	RTMaterial* red = new Lambertian(new ConstantTexture(Vector3f(0.65, 0.05, 0.05)));
+	RTMaterial* white = new Lambertian(new ConstantTexture(Vector3f(0.73, 0.73, 0.73)));
+	RTMaterial* green = new Lambertian(new ConstantTexture(Vector3f(0.12, 0.45, 0.15)));
+	RTMaterial* light = new DiffuseLight(new ConstantTexture(Vector3f(15, 15, 15)));
+
+	list[i++] = new YZRect(0, 555, 0, 555, 555, green);
+	list[i++] = new YZRect(0, 555, 0, 555, 0, red);
+	list[i++] = new XZRect(213, 343, 227, 332, 554, light);
+	list[i++] = new XZRect(0, 555, 0, 555, 0, white);
+	list[i++] = new XYRect(0, 555, 0, 555, 555, white);
+
+	return new HittableList(list, i);
+}
+
+
 void RayTracingRenderer::Initialize() {
 	GLuint PixelFormat; // Holds The Results After Searching For A Match
 	PIXELFORMATDESCRIPTOR pfd = // pfd Tells Windows How We Want Things To Be
@@ -137,8 +155,8 @@ void RayTracingRenderer::Initialize() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	//Vector3f lookfrom(0, 0, -20);
-	Vector3f lookfrom(8, 2, 4);
-	Vector3f lookat(0, 3, 0);
+	Vector3f lookfrom(278, 278, -800);
+	Vector3f lookat(278, 278, 0);
 	float dist_to_focus = 10.0;
 	float aperture = 0.0;
 	float vfov = 40.0;
@@ -149,7 +167,7 @@ void RayTracingRenderer::Initialize() {
 	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
 
 	//world = createScene();
-	world = createLightScene();
+	world = cornell_box();
 }
 
 void Entropy::RayTracingRenderer::Resize(int w, int h) {
