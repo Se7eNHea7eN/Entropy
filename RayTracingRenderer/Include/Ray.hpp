@@ -308,6 +308,9 @@ namespace Entropy {
 		Hittable* ptr;
 	};
 
+
+
+
 	class HittableList : public Hittable {
 	public:
 		HittableList() {}
@@ -355,5 +358,36 @@ namespace Entropy {
 		return hit_anything;
 	}
 
+	class Box : public Hittable {
+	public:
+		Box() {}
+		Box(const Vector3f& p0, const Vector3f& p1, RTMaterial* ptr);
+		virtual bool hit(const Ray& r, float t0, float t1, HitRecord& rec) const;
+		virtual bool bounding_box(float t0, float t1, AABB& box) const {
+			box = AABB(pmin, pmax);
+			return true;
+		}
+		Vector3f pmin, pmax;
+		Hittable* list_ptr;
+	};
 
+	Box::Box(const Vector3f& p0, const Vector3f& p1, RTMaterial* ptr) {
+		pmin = p0;
+		pmax = p1;
+		Hittable** list = new Hittable * [6];
+		list[0] = new XYRect(p0.x(), p1.x(), p0.y(), p1.y(), p1.z(), ptr);
+		list[1] = new flip_normals(
+			new XYRect(p0.x(), p1.x(), p0.y(), p1.y(), p0.z(), ptr));
+		list[2] = new XZRect(p0.x(), p1.x(), p0.z(), p1.z(), p1.y(), ptr);
+		list[3] = new flip_normals(
+			new XZRect(p0.x(), p1.x(), p0.z(), p1.z(), p0.y(), ptr));
+		list[4] = new YZRect(p0.y(), p1.y(), p0.z(), p1.z(), p1.x(), ptr);
+		list[5] = new flip_normals(
+			new YZRect(p0.y(), p1.y(), p0.z(), p1.z(), p0.x(), ptr));
+		list_ptr = new HittableList(list, 6);
+	}
+
+	bool Box::hit(const Ray& r, float t0, float t1, HitRecord& rec) const {
+		return list_ptr->hit(r, t0, t1, rec);
+	}
 }

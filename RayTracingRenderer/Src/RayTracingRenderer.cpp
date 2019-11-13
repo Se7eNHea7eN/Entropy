@@ -95,6 +95,8 @@ Hittable* cornell_box() {
 	list[i++] = new XZRect(0, 555, 0, 555, 0, white);
 	list[i++] = new flip_normals(new XYRect(0, 555, 0, 555, 555, white));
 
+	list[i++] = new Box(Vector3f(130, 0, 65), Vector3f(295, 165, 230), white);
+	list[i++] = new Box(Vector3f(265, 0, 295), Vector3f(430, 330, 460), white);
 	return new HittableList(list, i);
 }
 
