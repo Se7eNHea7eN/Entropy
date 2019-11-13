@@ -1,5 +1,6 @@
 ﻿#include "RayTracingRenderer.hpp"
 #include "Ray.hpp"
+#include "Bvh.hpp"
 #include "RTCamera.hpp"
 #include "RTMaterial.hpp"
 #include "GL/glew.h"
@@ -100,7 +101,11 @@ void RayTracingRenderer::Initialize() {
 	// world = new HittableList(list, 5);
 	int n = 50000;
 	Hittable** list = new Hittable * [n + 1];
-	list[0] = new Sphere(Vector3f(0, -1000, 0), 1000, new Lambertian(Vector3f(0.5, 0.5, 0.5)));
+	RTTexture* checker = new CheckerTexture(
+		new ConstantTexture(Vector3f(0.2, 0.3, 0.1)),
+		new ConstantTexture(Vector3f(0.9, 0.9, 0.9))
+	);
+	list[0] = new Sphere(Vector3f(0, -1000, 0), 1000, new Lambertian(checker));
 	int i = 1;
 	for (int a = -10; a < 10; a++) {
 		for (int b = -10; b < 10; b++) {
@@ -112,9 +117,9 @@ void RayTracingRenderer::Initialize() {
 						center,
 						center+ Vector3f(0, 0.5 * random_double(), 0),
 						0.0,1.0,0.2,
-						new Lambertian(Vector3f(random_double() * random_double(),
+						new Lambertian(new ConstantTexture(Vector3f(random_double() * random_double(),
 							random_double() * random_double(),
-							random_double() * random_double())
+							random_double() * random_double()))
 						)
 					);
 				}
@@ -133,11 +138,11 @@ void RayTracingRenderer::Initialize() {
 	}
 
 	list[i++] = new Sphere(Vector3f(0, 1, 0), 1.0, new Dielectric(1.5));
-	list[i++] = new Sphere(Vector3f(-4, 1, 0), 1.0, new Lambertian(Vector3f(0.4, 0.2, 0.1)));
+	list[i++] = new Sphere(Vector3f(-4, 1, 0), 1.0, new Lambertian(new ConstantTexture(Vector3f(0.4, 0.2, 0.1))));
 	list[i++] = new Sphere(Vector3f(4, 1, 0), 1.0, new Metal(Vector3f(0.7, 0.6, 0.5), 0.0));
 
 	//world = new HittableList(list, i);
-	world = new bvh_node(list, i,0,1);
+	world = new BvhNode(list, i,0,1);
 }
 
 void Entropy::RayTracingRenderer::Resize(int w, int h) {

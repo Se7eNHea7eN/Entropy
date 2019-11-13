@@ -1,4 +1,5 @@
 #pragma once
+#include "RTTexture.hpp"
 #include "Eigen/Core"
 #include "Ray.hpp"
 
@@ -15,16 +16,16 @@ namespace Entropy {
 
 	class Lambertian : public RTMaterial {
 	public:
-		Lambertian(const Vector3f& a) : albedo(a) {}
+		Lambertian(RTTexture* a) : albedo(a) {}
 		virtual bool scatter(const Ray& r_in, const HitRecord& rec,
 			Vector3f& attenuation, Ray& scattered) const {
 			Vector3f target = rec.p + rec.normal + random_in_unit_sphere();
 			scattered = Ray(rec.p, target - rec.p, r_in.time());
-			attenuation = albedo;
+			attenuation = albedo->value(0, 0, rec.p);
 			return true;
 		}
 
-		Vector3f albedo;
+		RTTexture* albedo;
 	};
 
 
