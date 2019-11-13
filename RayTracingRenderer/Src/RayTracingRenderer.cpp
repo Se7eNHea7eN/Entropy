@@ -88,11 +88,12 @@ Hittable* cornell_box() {
 	RTMaterial* green = new Lambertian(new ConstantTexture(Vector3f(0.12, 0.45, 0.15)));
 	RTMaterial* light = new DiffuseLight(new ConstantTexture(Vector3f(15, 15, 15)));
 
-	list[i++] = new YZRect(0, 555, 0, 555, 555, green);
+	list[i++] = new flip_normals(new YZRect(0, 555, 0, 555, 555, green));
 	list[i++] = new YZRect(0, 555, 0, 555, 0, red);
 	list[i++] = new XZRect(213, 343, 227, 332, 554, light);
+	list[i++] = new flip_normals(new XZRect(0, 555, 0, 555, 555, white));
 	list[i++] = new XZRect(0, 555, 0, 555, 0, white);
-	list[i++] = new XYRect(0, 555, 0, 555, 555, white);
+	list[i++] = new flip_normals(new XYRect(0, 555, 0, 555, 555, white));
 
 	return new HittableList(list, i);
 }
