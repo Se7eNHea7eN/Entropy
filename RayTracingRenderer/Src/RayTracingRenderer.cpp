@@ -25,6 +25,61 @@ RayTracingRenderer::~RayTracingRenderer() {
 	hDC = nullptr;
 }
 
+Hittable* createScene() {
+	int n = 50000;
+	Hittable** list = new Hittable * [n + 1];
+	RTTexture* checker = new noise_texture(4);
+	list[0] = new Sphere(Vector3f(0, -1000, 0), 1000, new Lambertian(checker));
+	int i = 1;
+	for (int a = -10; a < 10; a++) {
+		for (int b = -10; b < 10; b++) {
+			float choose_mat = random_double();
+			Vector3f center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
+			if ((center - Vector3f(4, 0.2, 0)).norm() > 0.9) {
+				if (choose_mat < 0.8) {  // diffuse
+					list[i++] = new MovingSphere(
+						center,
+						center + Vector3f(0, 0.5 * random_double(), 0),
+						0.0, 1.0, 0.2,
+						new Lambertian(new ConstantTexture(Vector3f(random_double() * random_double(),
+							random_double() * random_double(),
+							random_double() * random_double()))
+						)
+					);
+				}
+				else if (choose_mat < 0.95) { // metal
+					list[i++] = new Sphere(center, 0.2,
+						new Metal(Vector3f(0.5 * (1 + random_double()),
+							0.5 * (1 + random_double()),
+							0.5 * (1 + random_double())),
+							0.5 * random_double()));
+				}
+				else {  // glass
+					list[i++] = new Sphere(center, 0.2, new Dielectric(1.5));
+				}
+			}
+		}
+	}
+
+	list[i++] = new Sphere(Vector3f(0, 1, 0), 1.0, new Dielectric(1.5));
+	list[i++] = new Sphere(Vector3f(-4, 1, 0), 1.0, new Lambertian(new ConstantTexture(Vector3f(0.4, 0.2, 0.1))));
+	list[i++] = new Sphere(Vector3f(4, 1, 0), 1.0, new Metal(Vector3f(0.7, 0.6, 0.5), 0.0));
+
+	return new BvhNode(list, i, 0, 1);
+}
+
+Hittable* createLightScene() {
+	RTTexture* pertext = new noise_texture(4);
+	Hittable** list = new Hittable * [4];
+	list[0] = new Sphere(Vector3f(0, -1000, 0), 1000, new Lambertian(pertext));
+	list[1] = new Sphere(Vector3f(0, 2, 0), 2, new Lambertian(pertext));
+	list[2] = new Sphere(Vector3f(0, 7, 0), 2,
+		new DiffuseLight(new ConstantTexture(Vector3f(4, 4, 4))));
+	list[3] = new XYRect(3, 5, 1, 3, -2,
+		new DiffuseLight(new ConstantTexture(Vector3f(4, 4, 4))));
+	return new HittableList(list, 4);
+}
+
 void RayTracingRenderer::Initialize() {
 	GLuint PixelFormat; // Holds The Results After Searching For A Match
 	PIXELFORMATDESCRIPTOR pfd = // pfd Tells Windows How We Want Things To Be
@@ -81,68 +136,20 @@ void RayTracingRenderer::Initialize() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	Vector3f lookfrom(13, 2, 3);
-	Vector3f lookat(0, 0, 0);
+	//Vector3f lookfrom(0, 0, -20);
+	Vector3f lookfrom(8, 2, 4);
+	Vector3f lookat(0, 3, 0);
 	float dist_to_focus = 10.0;
-	float aperture = 0.1;
-	
-	camera = new RTCamera(lookfrom, lookat, Vector3f(0, 1, 0), 20,
+	float aperture = 0.0;
+	float vfov = 40.0;
+
+	camera = new RTCamera(lookfrom, lookat, Vector3f(0, 1, 0), vfov,
 		float(renderWidth) / float(renderHeight), aperture, dist_to_focus, 0.0, 1.0);
 
 	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
 
-	// Hittable** list = new Hittable *[];
-	//
-	// list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.1, 0.2, 0.5)));
-	// list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8, 0.8, 0.0)));
-	// list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8, 0.6, 0.2), 0.3));
-	// list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Dielectric(1.5));
-	// list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
-	// world = new HittableList(list, 5);
-	int n = 50000;
-	Hittable** list = new Hittable * [n + 1];
-	RTTexture* checker = new CheckerTexture(
-		new ConstantTexture(Vector3f(0.2, 0.3, 0.1)),
-		new ConstantTexture(Vector3f(0.9, 0.9, 0.9))
-	);
-	list[0] = new Sphere(Vector3f(0, -1000, 0), 1000, new Lambertian(checker));
-	int i = 1;
-	for (int a = -10; a < 10; a++) {
-		for (int b = -10; b < 10; b++) {
-			float choose_mat = random_double();
-			Vector3f center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
-			if ((center - Vector3f(4, 0.2, 0)).norm() > 0.9) {
-				if (choose_mat < 0.8) {  // diffuse
-					list[i++] = new MovingSphere(
-						center,
-						center+ Vector3f(0, 0.5 * random_double(), 0),
-						0.0,1.0,0.2,
-						new Lambertian(new ConstantTexture(Vector3f(random_double() * random_double(),
-							random_double() * random_double(),
-							random_double() * random_double()))
-						)
-					);
-				}
-				else if (choose_mat < 0.95) { // metal
-					list[i++] = new Sphere(center, 0.2,
-						new Metal(Vector3f(0.5 * (1 + random_double()),
-							0.5 * (1 + random_double()),
-							0.5 * (1 + random_double())),
-							0.5 * random_double()));
-				}
-				else {  // glass
-					list[i++] = new Sphere(center, 0.2, new Dielectric(1.5));
-				}
-			}
-		}
-	}
-
-	list[i++] = new Sphere(Vector3f(0, 1, 0), 1.0, new Dielectric(1.5));
-	list[i++] = new Sphere(Vector3f(-4, 1, 0), 1.0, new Lambertian(new ConstantTexture(Vector3f(0.4, 0.2, 0.1))));
-	list[i++] = new Sphere(Vector3f(4, 1, 0), 1.0, new Metal(Vector3f(0.7, 0.6, 0.5), 0.0));
-
-	//world = new HittableList(list, i);
-	world = new BvhNode(list, i,0,1);
+	//world = createScene();
+	world = createLightScene();
 }
 
 void Entropy::RayTracingRenderer::Resize(int w, int h) {
@@ -156,19 +163,15 @@ Vector3f color(const Ray& r, Hittable* world, int depth) {
 	if (world->hit(r, 0.001, FLT_MAX, rec)) {
 		Ray scattered;
 		Vector3f attenuation;
+		Vector3f emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
 		if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
-			return attenuation.cwiseProduct(color(scattered, world, depth + 1));
+			return emitted + attenuation.cwiseProduct(color(scattered, world, depth + 1));
 		}
 		else {
-			return Vector3f(0, 0, 0);
+			return emitted;
 		}
 	}
-	else {
-		Vector3f unit_direction = r.direction().normalized();
-		float t = 0.5 * (unit_direction.y() + 1.0);
-		return (1.0 - t) * Vector3f(1.0, 1.0, 1.0) + t * Vector3f(0.5, 0.7, 1.0);
-	}
-
+	return Vector3f(0, 0, 0);
 }
 
 

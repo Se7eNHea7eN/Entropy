@@ -12,6 +12,9 @@ namespace Entropy {
 		virtual bool scatter(
 			const Ray& r_in, const HitRecord& rec, Vector3f& attenuation,
 			Ray& scattered) const = 0;
+		virtual Vector3f emitted(float u, float v, const Vector3f& p) const {
+			return Vector3f(0, 0, 0);
+		}
 	};
 
 	class Lambertian : public RTMaterial {
@@ -91,5 +94,18 @@ namespace Entropy {
 		}
 
 		float ref_idx;
+	};
+
+	class DiffuseLight : public RTMaterial {
+	public:
+		DiffuseLight(RTTexture* a) : emit(a) {}
+		virtual bool scatter(const Ray& r_in, const HitRecord& rec,
+			Vector3f& attenuation, Ray& scattered) const {
+			return false;
+		}
+		virtual Vector3f emitted(float u, float v, const Vector3f& p) const {
+			return emit->value(u, v, p);
+		}
+		RTTexture* emit;
 	};
 }

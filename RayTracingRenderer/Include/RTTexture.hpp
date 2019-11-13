@@ -1,5 +1,6 @@
 #pragma once
 #include "Eigen/Core"
+#include "PerlinNoise.hpp"
 using namespace Eigen;
 
 namespace Entropy {
@@ -31,5 +32,21 @@ namespace Entropy {
 		}
 		RTTexture* odd;
 		RTTexture* even;
+	};
+
+
+	class noise_texture : public RTTexture {
+	public:
+		noise_texture() {}
+		noise_texture(float sc) : scale(sc) {}
+		virtual Vector3f value(float u, float v, const Vector3f& p) const {
+			return Vector3f(1, 1, 1) * 0.5 * (1 + sin(scale * p.z() + 10 * noise.turb(p)));
+		}
+		perlin noise;
+		float scale;
+	};
+
+	class ImageTexture : public RTTexture {
+
 	};
 }

@@ -1,6 +1,5 @@
 #pragma once
 #include "Ray.hpp"
-#include "AABB.hpp"
 
 namespace Entropy {
 
