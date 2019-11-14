@@ -1,6 +1,5 @@
 #pragma once
 #include "Utils.hpp"
-
 #include "Eigen/Core"
 #include <iostream>
 using namespace Eigen;
@@ -483,4 +482,6 @@ namespace Entropy {
 	bool Box::hit(const Ray& r, float t0, float t1, HitRecord& rec) const {
 		return list_ptr->hit(r, t0, t1, rec);
 	}
+
+
 }
