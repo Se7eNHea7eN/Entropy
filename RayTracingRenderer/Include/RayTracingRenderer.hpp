@@ -28,14 +28,14 @@ namespace Entropy {
 		HGLRC hRC = NULL; // Permanent Rendering Context
 		HWND hWnd = NULL; // Holds Our Window Handle
 		unsigned int texture;
-		int renderWidth = 1280;
-		int renderHeight = 720;
+		int renderWidth = 1024;
+		int renderHeight = 1024;
 		unsigned char* renderBuffer = new unsigned char[renderWidth * renderHeight * 3];
 		Tile tiles[16][16];
 		std::thread threads[16];
 		Hittable* world;
 		RTCamera* camera;
-		int sampleCount = 200;
+		int sampleCount = 32;
 		std::function<void()> onUpdate;
 
 	private:
