@@ -80,7 +80,7 @@ Hittable* createLightScene() {
 	return new HittableList(list, 4);
 }
 
-Hittable* cornell_box() {
+Hittable* cornell_Box() {
 	Hittable** list = new Hittable * [100];
 	int i = 0;
 	RTMaterial* red = new Lambertian(new ConstantTexture(Vector3f(0.65, 0.05, 0.05)));
@@ -120,6 +120,60 @@ Hittable* cornell_smoke() {
 	return new HittableList(list, i);
 }
 
+
+Hittable* final() {
+	int nb = 20;
+	Hittable** list = new Hittable * [30];
+	Hittable** Boxlist = new Hittable * [10000];
+	Hittable** Boxlist2 = new Hittable * [10000];
+	RTMaterial* white = new Lambertian(new ConstantTexture(Vector3f(0.73, 0.73, 0.73)));
+	RTMaterial* ground = new Lambertian(new ConstantTexture(Vector3f(0.48, 0.83, 0.53)));
+	int b = 0;
+	for (int i = 0; i < nb; i++) {
+		for (int j = 0; j < nb; j++) {
+			float w = 100;
+			float x0 = -1000 + i * w;
+			float z0 = -1000 + j * w;
+			float y0 = 0;
+			float x1 = x0 + w;
+			float y1 = 100 * (random_double() + 0.01);
+			float z1 = z0 + w;
+			Boxlist[b++] = new Box(Vector3f(x0, y0, z0), Vector3f(x1, y1, z1), ground);
+		}
+	}
+	int l = 0;
+	list[l++] = new BvhNode(Boxlist, b, 0, 1);
+	RTMaterial* light = new DiffuseLight(new ConstantTexture(Vector3f(15, 15, 15)));
+	list[l++] = new XZRect(123, 423, 147, 412, 554, light);
+	Vector3f center(400, 400, 200);
+	list[l++] = new MovingSphere(center, center + Vector3f(30, 0, 0),
+		0, 1, 50, new Lambertian(new ConstantTexture(Vector3f(0.7, 0.3, 0.1))));
+	list[l++] = new Sphere(Vector3f(260, 150, 45), 50, new Dielectric(1.5));
+	list[l++] = new Sphere(Vector3f(0, 150, 145), 50,
+		new Metal(Vector3f(0.8, 0.8, 0.9), 10.0));
+	Hittable* boundary = new Sphere(Vector3f(360, 150, 145), 70, new Dielectric(1.5));
+	list[l++] = boundary;
+	list[l++] = new constant_medium(boundary, 0.2,
+		new ConstantTexture(Vector3f(0.2, 0.4, 0.9)));
+	boundary = new Sphere(Vector3f(0, 0, 0), 5000, new Dielectric(1.5));
+	list[l++] = new constant_medium(boundary, 0.0001,
+		new ConstantTexture(Vector3f(1.0, 1.0, 1.0)));
+	int nx, ny, nn;
+	//unsigned char* tex_data = stbi_load("earthmap.jpg", &nx, &ny, &nn, 0);
+	//RTMaterial* emat = new Lambertian(new image_texture(tex_data, nx, ny));
+	//list[l++] = new Sphere(Vector3f(400, 200, 400), 100, emat);
+	RTTexture* pertext = new noise_texture(0.1);
+	list[l++] = new Sphere(Vector3f(220, 280, 300), 80, new Lambertian(pertext));
+	int ns = 1000;
+	for (int j = 0; j < ns; j++) {
+		Boxlist2[j] = new Sphere(
+			Vector3f(165 * random_double(), 165 * random_double(), 165 * random_double()),
+			10, white);
+	}
+	list[l++] = new translate(new rotate_y(
+		new BvhNode(Boxlist2, ns, 0.0, 1.0), 15), Vector3f(-100, 270, 395));
+	return new HittableList(list, l);
+}
 
 void RayTracingRenderer::Initialize() {
 	GLuint PixelFormat; // Holds The Results After Searching For A Match
@@ -178,7 +232,7 @@ void RayTracingRenderer::Initialize() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	//Vector3f lookfrom(0, 0, -20);
-	Vector3f lookfrom(278, 278, -800);
+	Vector3f lookfrom(400, 400, -800);
 	Vector3f lookat(278, 278, 0);
 	float dist_to_focus = 10.0;
 	float aperture = 0.0;
@@ -190,7 +244,7 @@ void RayTracingRenderer::Initialize() {
 	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
 
 	//world = createScene();
-	world = cornell_smoke();
+	world = final();
 }
 
 void Entropy::RayTracingRenderer::Resize(int w, int h) {

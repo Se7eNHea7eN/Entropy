@@ -80,6 +80,7 @@ namespace Entropy {
 				reflect_prob = schlick(cosine, ref_idx);
 			}
 			else {
+				scattered = Ray(rec.p, reflected, r_in.time());
 				reflect_prob = 1.0;
 			}
 

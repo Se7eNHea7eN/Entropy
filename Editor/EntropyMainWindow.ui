@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>745</width>
-    <height>642</height>
+    <width>1193</width>
+    <height>670</height>
    </rect>
   </property>
   <property name="palette">
@@ -507,13 +507,13 @@
         <widget class="QWidget" name="RayTracing">
          <property name="minimumSize">
           <size>
-           <width>960</width>
+           <width>540</width>
            <height>540</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>960</width>
+           <width>540</width>
            <height>540</height>
           </size>
          </property>
@@ -544,7 +544,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>745</width>
+     <width>1193</width>
      <height>23</height>
     </rect>
    </property>
@@ -616,7 +616,7 @@
           <x>0</x>
           <y>0</y>
           <width>69</width>
-          <height>493</height>
+          <height>521</height>
          </rect>
         </property>
         <attribute name="label">
@@ -629,7 +629,7 @@
           <x>0</x>
           <y>0</y>
           <width>69</width>
-          <height>493</height>
+          <height>521</height>
          </rect>
         </property>
         <attribute name="label">
