@@ -232,7 +232,7 @@ void RayTracingRenderer::Initialize() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	//Vector3f lookfrom(0, 0, -20);
-	Vector3f lookfrom(400, 400, -800);
+	Vector3f lookfrom(278, 278, -800);
 	Vector3f lookat(278, 278, 0);
 	float dist_to_focus = 10.0;
 	float aperture = 0.0;
@@ -244,7 +244,7 @@ void RayTracingRenderer::Initialize() {
 	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
 
 	//world = createScene();
-	world = final();
+	world = cornell_Box();
 }
 
 void Entropy::RayTracingRenderer::Resize(int w, int h) {
