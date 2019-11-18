@@ -68,14 +68,29 @@ namespace Entropy {
 		Vector3f o;
 		Hittable* ptr;
 	};
+	class mixture_pdf : public pdf {
+	public:
+		mixture_pdf(pdf* p0, pdf* p1) { p[0] = p0; p[1] = p1; }
+		virtual float value(const Vector3f& direction) const {
+			return 0.5 * p[0]->value(direction) + 0.5 * p[1]->value(direction);
+		}
+		virtual Vector3f generate() const {
+			if (random_double() < 0.5)
+				return p[0]->generate();
+			else
+				return p[1]->generate();
+		}
+		pdf* p[2];
+	};
 
 
 	class RTMaterial {
 	public:
 		virtual bool scatter(
-			const Ray& r_in, const HitRecord& rec,
- Vector3f& attenuation,
-			Ray& scattered, float& pdf) const = 0;
+			const Ray& r_in,
+			const HitRecord& hrec, scatter_record& srec) const {
+			return false;
+		}
 
 		virtual float scattering_pdf(const Ray& r_in, const HitRecord& rec,
 			const Ray& scattered) const {
@@ -90,15 +105,12 @@ namespace Entropy {
 	class Lambertian : public RTMaterial {
 	public:
 		Lambertian(RTTexture* a) : albedo(a) {}
-		virtual bool scatter(const Ray& r_in,
-			const HitRecord& rec,
-			Vector3f& attenuation, Ray& scattered, float& pdf) const {
-			onb uvw;
-			uvw.build_from_w(rec.normal);
-			Vector3f direction = uvw.local(random_cosine_direction());
-			scattered = Ray(rec.p, direction.normalized(), r_in.time());
-			attenuation = albedo->value(rec.u, rec.v, rec.p);
-			pdf = uvw.w().dot(scattered.direction()) / PI;
+		virtual bool scatter(
+			const Ray& r_in,
+			const HitRecord& hrec, scatter_record& srec) const {
+			srec.is_specular = false;
+			srec.attenuation = albedo->value(hrec.u, hrec.v, hrec.p);
+			srec.pdf_ptr = new cosine_pdf(hrec.normal);
 			return true;
 		}
 		float scattering_pdf(const Ray& r_in,
@@ -118,13 +130,15 @@ namespace Entropy {
 		Metal(const Vector3f& a, float f) : albedo(a) {
 			if (f < 1) fuzz = f; else fuzz = 1;
 		}
-		virtual bool scatter(const Ray& r_in,
- const HitRecord& rec,
-			Vector3f& attenuation, Ray& scattered, float& pdf) const {
-			Vector3f reflected = reflect(r_in.direction().normalized(), rec.normal);
-			scattered = Ray(rec.p, reflected + fuzz * random_in_unit_sphere());
-			attenuation = albedo;
-			return scattered.direction().dot(rec.normal) > 0;
+		virtual bool scatter(
+			const Ray& r_in,
+			const HitRecord& hrec, scatter_record& srec) const {
+			Vector3f reflected = reflect(r_in.direction().normalized(), hrec.normal);
+			srec.specular_ray = Ray(hrec.p, reflected + fuzz * random_in_unit_sphere());
+			srec.attenuation = albedo;
+			srec.is_specular = true;
+			srec.pdf_ptr = nullptr;
+			return true;
 		}
 		Vector3f albedo;
 		float fuzz;
@@ -134,9 +148,10 @@ namespace Entropy {
 	class Dielectric : public RTMaterial {
 	public:
 		Dielectric(float ri) : ref_idx(ri) {}
-		virtual bool scatter(const Ray& r_in,
- const HitRecord& rec,
-			Vector3f& attenuation, Ray& scattered, float& pdf) const {
+		/*virtual bool scatter(
+			const Ray& r_in,
+			const HitRecord& hrec, scatter_record& srec) const {
+
 			Vector3f outward_normal;
 			Vector3f reflected = reflect(r_in.direction(), rec.normal);
 			float ni_over_nt;
@@ -175,7 +190,7 @@ namespace Entropy {
 			}
 
 			return true;
-		}
+		}*/
 
 		float ref_idx;
 	};
@@ -183,11 +198,7 @@ namespace Entropy {
 	class DiffuseLight : public RTMaterial {
 	public:
 		DiffuseLight(RTTexture* a) : emit(a) {}
-		virtual bool scatter(const Ray& r_in,
- const HitRecord& rec,
-			Vector3f& attenuation, Ray& scattered, float& pdf) const {
-			return false;
-		}
+
 		virtual Vector3f emitted(const Ray& r_in, const HitRecord& rec, float u, float v, const Vector3f& p) const {
 			if (rec.normal.dot(r_in.direction()) < 0.0)
 				return emit->value(u, v, p);
@@ -200,18 +211,18 @@ namespace Entropy {
 	class isotropic : public RTMaterial {
 	public:
 		isotropic(RTTexture* a) : albedo(a) {}
-		virtual bool scatter(
-			const Ray& r_in,
+		//virtual bool scatter(
+		//	const Ray& r_in,
 
-			const HitRecord& rec,
+		//	const HitRecord& rec,
 
-			Vector3f& attenuation,
-			Ray& scattered, float& pdf) const {
+		//	Vector3f& attenuation,
+		//	Ray& scattered, float& pdf) const {
 
-			scattered = Ray(rec.p, random_in_unit_sphere());
-			attenuation = albedo->value(rec.u, rec.v, rec.p);
-			return true;
-		}
+		//	scattered = Ray(rec.p, random_in_unit_sphere());
+		//	attenuation = albedo->value(rec.u, rec.v, rec.p);
+		//	return true;
+		//}
 		RTTexture* albedo;
 	};
 

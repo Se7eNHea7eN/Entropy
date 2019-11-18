@@ -5,6 +5,7 @@
 using namespace Eigen;
 namespace Entropy {
 	class RTMaterial;
+	class pdf;
 	class Ray {
 	public:
 		Ray() {
@@ -35,7 +36,13 @@ namespace Entropy {
 		float u;
 		float v;
 	};
-
+	struct scatter_record
+	{
+		Ray specular_ray;
+		bool is_specular;
+		Vector3f attenuation;
+		pdf* pdf_ptr;
+	};
 
 	class AABB {
 	public:

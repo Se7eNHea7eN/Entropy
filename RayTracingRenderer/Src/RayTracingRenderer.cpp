@@ -87,13 +87,14 @@ Hittable* cornell_Box() {
 	RTMaterial* white = new Lambertian(new ConstantTexture(Vector3f(0.73, 0.73, 0.73)));
 	RTMaterial* green = new Lambertian(new ConstantTexture(Vector3f(0.12, 0.45, 0.15)));
 	RTMaterial* light = new DiffuseLight(new ConstantTexture(Vector3f(15, 15, 15)));
+	RTMaterial* blue = new Lambertian(new ConstantTexture(Vector3f(0.07, 0.09, 0.96)));
 
 	list[i++] = new flip_normals(new YZRect(0, 555, 0, 555, 555, green));
 	list[i++] = new YZRect(0, 555, 0, 555, 0, red);
 	list[i++] = new flip_normals(new XZRect(213, 343, 227, 332, 554, light));
 	list[i++] = new flip_normals(new XZRect(0, 555, 0, 555, 555, white));
 	list[i++] = new XZRect(0, 555, 0, 555, 0, white);
-	list[i++] = new flip_normals(new XYRect(0, 555, 0, 555, 555, white));
+	list[i++] = new flip_normals(new XYRect(0, 555, 0, 555, 555, blue));
 	//auto glass = new Dielectric(1.5);
 	//list[i++] = new Sphere(Vector3f(190, 90, 190), 90, glass);
 	list[i++] = new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 165, 165), white),-18), Vector3f(130, 0, 65));
@@ -234,21 +235,23 @@ void Entropy::RayTracingRenderer::Resize(int w, int h) {
 	glViewport(0, 0, width, height);
 }
 
-Vector3f color(const Ray& r, Hittable* world, int depth) {
-	HitRecord rec;
-	if (world->hit(r, 0.001, FLT_MAX, rec)) {
-		Ray scattered;
-		Vector3f attenuation;
-		Vector3f emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
-		float pdf_val;
-		//Vector3f albedo;
+Vector3f color(const Ray& r, Hittable* world, Hittable* light_shape, int depth) {
+	HitRecord hrec;
+	if (world->hit(r, 0.001, FLT_MAX, hrec)) {
+		scatter_record srec;
+		Vector3f emitted = hrec.mat_ptr->emitted(r, hrec, hrec.u, hrec.v, hrec.p);
 
-		if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered, pdf_val)) {
-			Hittable* light_shape = new XZRect(213, 343, 227, 332, 554, 0);
-			hittable_pdf p(light_shape, rec.p);
-			scattered = Ray(rec.p, p.generate(), r.time());
-			pdf_val = p.value(scattered.direction());
-			return emitted + attenuation.cwiseProduct( rec.mat_ptr->scattering_pdf(r, rec, scattered)* color(scattered, world, depth + 1) / pdf_val);
+		if (depth < 50 && hrec.mat_ptr->scatter(r, hrec, srec)) {
+			if (srec.is_specular) {
+				return srec.attenuation.cwiseProduct(color(srec.specular_ray, world, light_shape, depth + 1));
+			}
+			else {
+				hittable_pdf plight(light_shape, hrec.p);
+				mixture_pdf p(&plight, srec.pdf_ptr);
+				Ray scattered = Ray(hrec.p, p.generate(), r.time());
+				float pdf_val = p.value(scattered.direction());
+				return emitted + srec.attenuation.cwiseProduct(hrec.mat_ptr->scattering_pdf(r, hrec, scattered) * color(scattered, world, light_shape, depth + 1) / pdf_val);
+			}
 		}
 		else {
 			return emitted;
@@ -256,8 +259,6 @@ Vector3f color(const Ray& r, Hittable* world, int depth) {
 	}
 	return Vector3f(0, 0, 0);
 }
-
-
 void RayTracingRenderer::CheckTiles() {
 	for (int j = 0; j < 16; j++) {
 		for (int i = 0; i < 16; i++) {
@@ -294,6 +295,7 @@ void RayTracingRenderer::Draw() {
 	SwapBuffers(hDC);
 	
 }
+auto light_shape = new XZRect(213, 343, 227, 332, 554, 0);
 
 void RayTracingRenderer::AwaitRenderFrame() {
 }
@@ -312,7 +314,6 @@ void RayTracingRenderer::Render() {
 			t.isdone = false;
 		}
 	}
-
 	new std::thread([&]
 		{
 			ThreadPool pool(15);
@@ -329,7 +330,7 @@ void RayTracingRenderer::Render() {
 									float u = float(i + random_double()) / float(renderWidth);
 									float v = float(j + random_double()) / float(renderHeight);
 									Ray r = camera->get_ray(u, v);
-									col += color(r, world, 0);
+									col += color(r, world, light_shape,0);
 								}
 								col /= float(sampleCount);
 								col = Vector3f(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
