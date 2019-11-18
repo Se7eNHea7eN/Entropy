@@ -6,6 +6,31 @@ using namespace Eigen;
 namespace Entropy {
 	class RTMaterial;
 	class pdf;
+	class onb
+	{
+	public:
+		onb() {}
+		inline Vector3f operator[](int i) const { return axis[i]; }
+		Vector3f u() const { return axis[0]; }
+		Vector3f v() const { return axis[1]; }
+		Vector3f w() const { return axis[2]; }
+		Vector3f local(float a, float b, float c) const { return a * u() + b * v() + c * w(); }
+		Vector3f local(const Vector3f& a) const { return a.x() * u() + a.y() * v() + a.z() * w(); }
+		void build_from_w(const Vector3f&);
+		Vector3f axis[3];
+	};
+
+	void onb::build_from_w(const Vector3f& n) {
+		axis[2] = n.normalized();
+		Vector3f a;
+		if (fabs(w().x()) > 0.9)
+			a = Vector3f(0, 1, 0);
+		else
+			a = Vector3f(1, 0, 0);
+		axis[1] = w().cross(a).normalized();
+		axis[0] = w().cross(v());
+	}
+
 	class Ray {
 	public:
 		Ray() {
@@ -195,6 +220,9 @@ namespace Entropy {
 		};
 		virtual bool hit(const Ray& r, float tmin, float tmax, HitRecord& rec) const;
 		virtual bool bounding_box(float t0, float t1, AABB& box) const;
+
+		virtual float pdf_value(const Vector3f& o, const Vector3f& v) const;
+		virtual Vector3f random(const Vector3f& o) const;
 		Vector3f center;
 		float radius;
 		RTMaterial* mat_ptr;
@@ -233,6 +261,25 @@ namespace Entropy {
 		box = AABB(center - Vector3f(radius, radius, radius),
 			center + Vector3f(radius, radius, radius));
 		return true;
+	}
+
+	float Sphere::pdf_value(const Vector3f& o, const Vector3f& v) const {
+		HitRecord rec;
+		if (this->hit(Ray(o, v), 0.001, FLT_MAX, rec)) {
+			float cos_theta_max = sqrt(1 - radius * radius / (center - o).squaredNorm());
+			float solid_angle = 2 * PI * (1 - cos_theta_max);
+			return  1 / solid_angle;
+		}
+		else
+			return 0;
+	}
+
+	Vector3f Sphere::random(const Vector3f& o) const {
+		Vector3f direction = center - o;
+		float distance_squared = direction.squaredNorm();
+		onb uvw;
+		uvw.build_from_w(direction);
+		return uvw.local(random_to_sphere(radius, distance_squared));
 	}
 
 	class MovingSphere : public Hittable {
@@ -436,6 +483,11 @@ namespace Entropy {
 
 		virtual bool hit(
 			const Ray& r, float tmin, float tmax, HitRecord& rec) const;
+
+
+		virtual float pdf_value(const Vector3f& o, const Vector3f& v) const;
+		virtual Vector3f random(const Vector3f& o) const;
+
 		Hittable** list;
 		int list_size;
 	};
@@ -474,6 +526,20 @@ namespace Entropy {
 		}
 		return hit_anything;
 	}
+
+	float HittableList::pdf_value(const Vector3f& o, const Vector3f& v) const {
+		float weight = 1.0 / list_size;
+		float sum = 0;
+		for (int i = 0; i < list_size; i++)
+			sum += weight * list[i]->pdf_value(o, v);
+		return sum;
+	}
+
+	Vector3f HittableList::random(const Vector3f& o) const {
+		int index = int(random_double() * list_size);
+		return list[index]->random(o);
+	}
+
 
 	class Box : public Hittable {
 	public:

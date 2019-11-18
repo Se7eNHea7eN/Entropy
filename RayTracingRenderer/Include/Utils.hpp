@@ -20,6 +20,17 @@ inline Vector3f random_cosine_direction() {
 	float y = sin(phi) * sqrt(r2);
 	return Vector3f(x, y, z);
 }
+
+inline Vector3f random_to_sphere(float radius, float distance_squared) {
+	float r1 = random_double();
+	float r2 = random_double();
+	float z = 1 + r2 * (sqrt(1 - radius * radius / distance_squared) - 1);
+	float phi = 2 * PI * r1;
+	float x = cos(phi) * sqrt(1 - z * z);
+	float y = sin(phi) * sqrt(1 - z * z);
+	return Vector3f(x, y, z);
+}
+
 Vector3f random_in_unit_sphere() {
 	Vector3f p;
 	do {
@@ -49,5 +60,13 @@ float schlick(float cosine, float ref_idx) {
 	return r0 + (1 - r0) * pow((1 - cosine), 5);
 }
 
+inline Vector3f de_nan(const Vector3f& c) {
+	Vector3f temp = c;
+	if (!(temp[0] == temp[0])) temp[0] = 0;
+	if (!(temp[1] == temp[1])) temp[1] = 0;
+	if (!(temp[2] == temp[2])) temp[2] = 0;
+	return temp;
+
+}
 inline float ffmin(float a, float b) { return a < b ? a : b; }
 inline float ffmax(float a, float b) { return a > b ? a : b; }

@@ -35,7 +35,7 @@ namespace Entropy {
 		std::thread threads[16];
 		Hittable* world;
 		RTCamera* camera;
-		int sampleCount = 100;
+		int sampleCount = 1000;
 		std::function<void()> onUpdate;
 
 	private:

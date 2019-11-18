@@ -8,30 +8,6 @@ using namespace Eigen;
 //const float PI = 3.141592657f;
 
 namespace Entropy {
-	class onb
-	{
-	public:
-		onb() {}
-		inline Vector3f operator[](int i) const { return axis[i]; }
-		Vector3f u() const { return axis[0]; }
-		Vector3f v() const { return axis[1]; }
-		Vector3f w() const { return axis[2]; }
-		Vector3f local(float a, float b, float c) const { return a * u() + b * v() + c * w(); }
-		Vector3f local(const Vector3f& a) const { return a.x() * u() + a.y() * v() + a.z() * w(); }
-		void build_from_w(const Vector3f&);
-		Vector3f axis[3];
-	};
-
-	void onb::build_from_w(const Vector3f& n) {
-		axis[2] = n.normalized();
-		Vector3f a;
-		if (fabs(w().x()) > 0.9)
-			a = Vector3f(0, 1, 0);
-		else
-			a = Vector3f(1, 0, 0);
-		axis[1] = w().cross(a).normalized();
-		axis[0] = w().cross(v());
-	}
 
 	class pdf {
 	public:
@@ -148,49 +124,41 @@ namespace Entropy {
 	class Dielectric : public RTMaterial {
 	public:
 		Dielectric(float ri) : ref_idx(ri) {}
-		/*virtual bool scatter(
-			const Ray& r_in,
+		virtual bool scatter(const Ray& r_in,
 			const HitRecord& hrec, scatter_record& srec) const {
-
+			srec.is_specular = true;
+			srec.pdf_ptr = 0;
+			srec.attenuation = Vector3f(1.0, 1.0, 1.0);
 			Vector3f outward_normal;
-			Vector3f reflected = reflect(r_in.direction(), rec.normal);
-			float ni_over_nt;
-			attenuation = Vector3f(1.0, 1.0, 1.0);
+			Vector3f reflected = reflect(r_in.direction(), hrec.normal);
 			Vector3f refracted;
-
+			float ni_over_nt;
 			float reflect_prob;
 			float cosine;
-			
-			if (r_in.direction().dot(rec.normal) > 0) {
-				outward_normal = -rec.normal;
+			if (r_in.direction().dot(hrec.normal) > 0) {
+				outward_normal = -hrec.normal;
 				ni_over_nt = ref_idx;
-				cosine = ref_idx * r_in.direction().dot(rec.normal)
-					/ r_in.direction().norm();
+				cosine = ref_idx * r_in.direction().dot(hrec.normal) / r_in.direction().norm();
 			}
 			else {
-				outward_normal = rec.normal;
+				outward_normal = hrec.normal;
 				ni_over_nt = 1.0 / ref_idx;
-				cosine = -r_in.direction().dot(rec.normal)
-					/ r_in.direction().norm();
+				cosine = -r_in.direction().dot( hrec.normal) / r_in.direction().norm();
 			}
-
 			if (refract(r_in.direction(), outward_normal, ni_over_nt, refracted)) {
 				reflect_prob = schlick(cosine, ref_idx);
 			}
 			else {
-				scattered = Ray(rec.p, reflected, r_in.time());
 				reflect_prob = 1.0;
 			}
-
 			if (random_double() < reflect_prob) {
-				scattered = Ray(rec.p, reflected);
-			}	
-			else {
-				scattered = Ray(rec.p, refracted);
+				srec.specular_ray = Ray(hrec.p, reflected);
 			}
-
+			else {
+				srec.specular_ray = Ray(hrec.p, refracted);
+			}
 			return true;
-		}*/
+		}
 
 		float ref_idx;
 	};
@@ -203,7 +171,7 @@ namespace Entropy {
 			if (rec.normal.dot(r_in.direction()) < 0.0)
 				return emit->value(u, v, p);
 			else
-				return Vector3f(0, 0, 0);;
+				return Vector3f(0, 0, 0);
 		}
 		RTTexture* emit;
 	};

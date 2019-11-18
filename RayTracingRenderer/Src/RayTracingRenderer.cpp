@@ -95,9 +95,9 @@ Hittable* cornell_Box() {
 	list[i++] = new flip_normals(new XZRect(0, 555, 0, 555, 555, white));
 	list[i++] = new XZRect(0, 555, 0, 555, 0, white);
 	list[i++] = new flip_normals(new XYRect(0, 555, 0, 555, 555, blue));
-	//auto glass = new Dielectric(1.5);
-	//list[i++] = new Sphere(Vector3f(190, 90, 190), 90, glass);
-	list[i++] = new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 165, 165), white),-18), Vector3f(130, 0, 65));
+	auto glass = new Dielectric(1.5);
+	list[i++] = new Sphere(Vector3f(190, 90, 190), 90, glass);
+	//list[i++] = new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 165, 165), white),-18), Vector3f(130, 0, 65));
 
 	auto aluminum = new Metal(Vector3f(0.8, 0.85, 0.88), 0.0);
 	list[i++] = new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 330, 165), aluminum),15), Vector3f(265, 0, 295));
@@ -297,7 +297,9 @@ void RayTracingRenderer::Draw() {
 	SwapBuffers(hDC);
 	
 }
-auto light_shape = new XZRect(213, 343, 227, 332, 554, 0);
+
+Hittable* a[2];
+HittableList *hlist = new HittableList(a, 2);
 
 void RayTracingRenderer::AwaitRenderFrame() {
 }
@@ -316,6 +318,11 @@ void RayTracingRenderer::Render() {
 			t.isdone = false;
 		}
 	}
+	auto light_shape = new XZRect(213, 343, 227, 332, 554, 0);
+	auto glass_sphere = new Sphere(Vector3f(190, 90, 190), 90, 0);
+	a[0] = light_shape;
+	a[1] = glass_sphere;
+
 	new std::thread([&]
 		{
 			ThreadPool pool(15);
@@ -332,7 +339,7 @@ void RayTracingRenderer::Render() {
 									float u = float(i + random_double()) / float(renderWidth);
 									float v = float(j + random_double()) / float(renderHeight);
 									Ray r = camera->get_ray(u, v);
-									col += color(r, world, light_shape,0);
+									col += de_nan(color(r, world, hlist,0));
 								}
 								col /= float(sampleCount);
 								col = Vector3f(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));

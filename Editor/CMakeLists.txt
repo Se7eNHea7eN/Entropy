@@ -56,5 +56,4 @@ include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Editor")
 
 
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
