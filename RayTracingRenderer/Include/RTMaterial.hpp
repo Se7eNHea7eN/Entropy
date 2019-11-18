@@ -5,14 +5,84 @@
 
 #include "Utils.hpp"
 using namespace Eigen;
+//const float PI = 3.141592657f;
 
 namespace Entropy {
+	class onb
+	{
+	public:
+		onb() {}
+		inline Vector3f operator[](int i) const { return axis[i]; }
+		Vector3f u() const { return axis[0]; }
+		Vector3f v() const { return axis[1]; }
+		Vector3f w() const { return axis[2]; }
+		Vector3f local(float a, float b, float c) const { return a * u() + b * v() + c * w(); }
+		Vector3f local(const Vector3f& a) const { return a.x() * u() + a.y() * v() + a.z() * w(); }
+		void build_from_w(const Vector3f&);
+		Vector3f axis[3];
+	};
+
+	void onb::build_from_w(const Vector3f& n) {
+		axis[2] = n.normalized();
+		Vector3f a;
+		if (fabs(w().x()) > 0.9)
+			a = Vector3f(0, 1, 0);
+		else
+			a = Vector3f(1, 0, 0);
+		axis[1] = w().cross(a).normalized();
+		axis[0] = w().cross(v());
+	}
+
+	class pdf {
+	public:
+		virtual float value(const Vector3f& direction) const = 0;
+		virtual Vector3f generate() const = 0;
+	};
+
+	class cosine_pdf : public pdf {
+	public:
+		cosine_pdf(const Vector3f& w) { uvw.build_from_w(w); }
+		virtual float value(const Vector3f& direction) const {
+			float cosine = direction.normalized().dot(uvw.w());
+			if (cosine > 0)
+				return cosine / PI;
+			else
+				return 0;
+		}
+		virtual Vector3f generate() const {
+			return uvw.local(random_cosine_direction());
+		}
+		onb uvw;
+
+	};
+
+	class hittable_pdf : public pdf {
+	public:
+		hittable_pdf(Hittable* p, const Vector3f& origin) : ptr(p), o(origin) {}
+		virtual float value(const Vector3f& direction) const {
+			return ptr->pdf_value(o, direction);
+		}
+		virtual Vector3f generate() const {
+			return ptr->random(o);
+		}
+		Vector3f o;
+		Hittable* ptr;
+	};
+
+
 	class RTMaterial {
 	public:
 		virtual bool scatter(
-			const Ray& r_in, const HitRecord& rec, Vector3f& attenuation,
-			Ray& scattered) const = 0;
-		virtual Vector3f emitted(float u, float v, const Vector3f& p) const {
+			const Ray& r_in, const HitRecord& rec,
+ Vector3f& attenuation,
+			Ray& scattered, float& pdf) const = 0;
+
+		virtual float scattering_pdf(const Ray& r_in, const HitRecord& rec,
+			const Ray& scattered) const {
+			return 0;
+		}
+
+		virtual Vector3f emitted(const Ray& r_in, const HitRecord& rec, float u, float v, const Vector3f& p) const {
 			return Vector3f(0, 0, 0);
 		}
 	};
@@ -20,12 +90,23 @@ namespace Entropy {
 	class Lambertian : public RTMaterial {
 	public:
 		Lambertian(RTTexture* a) : albedo(a) {}
-		virtual bool scatter(const Ray& r_in, const HitRecord& rec,
-			Vector3f& attenuation, Ray& scattered) const {
-			Vector3f target = rec.p + rec.normal + random_in_unit_sphere();
-			scattered = Ray(rec.p, target - rec.p, r_in.time());
-			attenuation = albedo->value(0, 0, rec.p);
+		virtual bool scatter(const Ray& r_in,
+			const HitRecord& rec,
+			Vector3f& attenuation, Ray& scattered, float& pdf) const {
+			onb uvw;
+			uvw.build_from_w(rec.normal);
+			Vector3f direction = uvw.local(random_cosine_direction());
+			scattered = Ray(rec.p, direction.normalized(), r_in.time());
+			attenuation = albedo->value(rec.u, rec.v, rec.p);
+			pdf = uvw.w().dot(scattered.direction()) / PI;
 			return true;
+		}
+		float scattering_pdf(const Ray& r_in,
+			const HitRecord& rec, const Ray& scattered) const {
+			float cosine = rec.normal.dot(scattered.direction().normalized());
+			if (cosine < 0)
+				return 0;
+			return cosine / PI;
 		}
 
 		RTTexture* albedo;
@@ -37,8 +118,9 @@ namespace Entropy {
 		Metal(const Vector3f& a, float f) : albedo(a) {
 			if (f < 1) fuzz = f; else fuzz = 1;
 		}
-		virtual bool scatter(const Ray& r_in, const HitRecord& rec,
-			Vector3f& attenuation, Ray& scattered) const {
+		virtual bool scatter(const Ray& r_in,
+ const HitRecord& rec,
+			Vector3f& attenuation, Ray& scattered, float& pdf) const {
 			Vector3f reflected = reflect(r_in.direction().normalized(), rec.normal);
 			scattered = Ray(rec.p, reflected + fuzz * random_in_unit_sphere());
 			attenuation = albedo;
@@ -52,8 +134,9 @@ namespace Entropy {
 	class Dielectric : public RTMaterial {
 	public:
 		Dielectric(float ri) : ref_idx(ri) {}
-		virtual bool scatter(const Ray& r_in, const HitRecord& rec,
-			Vector3f& attenuation, Ray& scattered) const {
+		virtual bool scatter(const Ray& r_in,
+ const HitRecord& rec,
+			Vector3f& attenuation, Ray& scattered, float& pdf) const {
 			Vector3f outward_normal;
 			Vector3f reflected = reflect(r_in.direction(), rec.normal);
 			float ni_over_nt;
@@ -100,12 +183,16 @@ namespace Entropy {
 	class DiffuseLight : public RTMaterial {
 	public:
 		DiffuseLight(RTTexture* a) : emit(a) {}
-		virtual bool scatter(const Ray& r_in, const HitRecord& rec,
-			Vector3f& attenuation, Ray& scattered) const {
+		virtual bool scatter(const Ray& r_in,
+ const HitRecord& rec,
+			Vector3f& attenuation, Ray& scattered, float& pdf) const {
 			return false;
 		}
-		virtual Vector3f emitted(float u, float v, const Vector3f& p) const {
-			return emit->value(u, v, p);
+		virtual Vector3f emitted(const Ray& r_in, const HitRecord& rec, float u, float v, const Vector3f& p) const {
+			if (rec.normal.dot(r_in.direction()) < 0.0)
+				return emit->value(u, v, p);
+			else
+				return Vector3f(0, 0, 0);;
 		}
 		RTTexture* emit;
 	};
@@ -115,9 +202,11 @@ namespace Entropy {
 		isotropic(RTTexture* a) : albedo(a) {}
 		virtual bool scatter(
 			const Ray& r_in,
+
 			const HitRecord& rec,
+
 			Vector3f& attenuation,
-			Ray& scattered) const {
+			Ray& scattered, float& pdf) const {
 
 			scattered = Ray(rec.p, random_in_unit_sphere());
 			attenuation = albedo->value(rec.u, rec.v, rec.p);

@@ -3,7 +3,6 @@
 #include "Eigen/Core"
 #include <iostream>
 using namespace Eigen;
-const float PI = 3.141592657f;
 namespace Entropy {
 	class RTMaterial;
 	class Ray {
@@ -81,6 +80,8 @@ namespace Entropy {
 		virtual bool hit(
 			const Ray& r, float t_min, float t_max, HitRecord& rec) const = 0;
 		virtual bool bounding_box(float t0, float t1, AABB& box) const = 0;
+		virtual float  pdf_value(const Vector3f& o, const Vector3f& v) const { return 0.0; }
+		virtual Vector3f random(const Vector3f& o) const { return Vector3f(1, 0, 0); }
 	};
 
 	class translate : public Hittable {
@@ -90,6 +91,7 @@ namespace Entropy {
 		virtual bool hit(
 			const Ray& r, float t_min, float t_max, HitRecord& rec) const;
 		virtual bool bounding_box(float t0, float t1, AABB& box) const;
+
 		Hittable* ptr;
 		Vector3f offset;
 	};
@@ -325,6 +327,22 @@ namespace Entropy {
 		virtual bool bounding_box(float t0, float t1, AABB& box) const {
 			box = AABB(Vector3f(x0, k - 0.0001, z0), Vector3f(x1, k + 0.0001, z1));
 			return true;
+		}
+		virtual float  pdf_value(const Vector3f& o, const Vector3f& v) const {
+			HitRecord rec;
+			if (this->hit(Ray(o, v), 0.001, FLT_MAX, rec)) {
+				float area = (x1 - x0) * (z1 - z0);
+				float distance_squared = rec.t * rec.t * v.squaredNorm();
+				float cosine = fabs(v.dot(rec.normal) / v.norm());
+				return  distance_squared / (cosine * area);
+			}
+			else
+				return 0;
+		}
+		virtual Vector3f random(const Vector3f& o) const {
+			Vector3f random_point = Vector3f(x0 + random_double() * (x1 - x0), k,
+				z0 + random_double() * (z1 - z0));
+			return random_point - o;
 		}
 		RTMaterial* mp;
 		float x0, x1, z0, z1, k;

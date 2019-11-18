@@ -2,6 +2,7 @@
 #include <random>
 #include "Eigen/Core"
 using namespace Eigen;
+const float PI = 3.141592657f;
 
 inline double random_double() {
 	static std::uniform_real_distribution<double> distribution(0.0, 1.0);
@@ -10,13 +11,21 @@ inline double random_double() {
 		std::bind(distribution, generator);
 	return rand_generator();
 }
-
+inline Vector3f random_cosine_direction() {
+	float r1 = random_double();
+	float r2 = random_double();
+	float z = sqrt(1 - r2);
+	float phi = 2 * PI * r1;
+	float x = cos(phi) * sqrt(r2);
+	float y = sin(phi) * sqrt(r2);
+	return Vector3f(x, y, z);
+}
 Vector3f random_in_unit_sphere() {
 	Vector3f p;
 	do {
 		p = 2.0 * Vector3f(random_double(), random_double(), random_double()) - Vector3f(1, 1, 1);
 	} while (p.norm() >= 1.0);
-	return p;
+	return p.normalized();
 }
 
 Vector3f reflect(const Vector3f& v, const Vector3f& n) {

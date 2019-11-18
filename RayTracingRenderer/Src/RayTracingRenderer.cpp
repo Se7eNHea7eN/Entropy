@@ -90,33 +90,14 @@ Hittable* cornell_Box() {
 
 	list[i++] = new flip_normals(new YZRect(0, 555, 0, 555, 555, green));
 	list[i++] = new YZRect(0, 555, 0, 555, 0, red);
-	list[i++] = new XZRect(213, 343, 227, 332, 554, light);
+	list[i++] = new flip_normals(new XZRect(213, 343, 227, 332, 554, light));
 	list[i++] = new flip_normals(new XZRect(0, 555, 0, 555, 555, white));
 	list[i++] = new XZRect(0, 555, 0, 555, 0, white);
 	list[i++] = new flip_normals(new XYRect(0, 555, 0, 555, 555, white));
-
+	//auto glass = new Dielectric(1.5);
+	//list[i++] = new Sphere(Vector3f(190, 90, 190), 90, glass);
 	list[i++] = new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 165, 165), white),-18), Vector3f(130, 0, 65));
 	list[i++] = new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 330, 165), white),15), Vector3f(265, 0, 295));
-	return new HittableList(list, i);
-}
-
-Hittable* cornell_smoke() {
-	Hittable** list = new Hittable * [100];
-	int i = 0;
-	RTMaterial* red = new Lambertian(new ConstantTexture(Vector3f(0.65, 0.05, 0.05)));
-	RTMaterial* white = new Lambertian(new ConstantTexture(Vector3f(0.73, 0.73, 0.73)));
-	RTMaterial* green = new Lambertian(new ConstantTexture(Vector3f(0.12, 0.45, 0.15)));
-	RTMaterial* light = new DiffuseLight(new ConstantTexture(Vector3f(15, 15, 15)));
-
-	list[i++] = new flip_normals(new YZRect(0, 555, 0, 555, 555, green));
-	list[i++] = new YZRect(0, 555, 0, 555, 0, red);
-	list[i++] = new XZRect(213, 343, 227, 332, 554, light);
-	list[i++] = new flip_normals(new XZRect(0, 555, 0, 555, 555, white));
-	list[i++] = new XZRect(0, 555, 0, 555, 0, white);
-	list[i++] = new flip_normals(new XYRect(0, 555, 0, 555, 555, white));
-
-	list[i++] = new constant_medium(new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 165, 165), white), -18), Vector3f(130, 0, 65)), 0.01, new ConstantTexture(Vector3f(1.0, 1.0, 1.0)));
-	list[i++] = new constant_medium(new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 330, 165), white), 15), Vector3f(265, 0, 295)), 0.01, new ConstantTexture(Vector3f(0.0, 0.0, 0.0)));
 	return new HittableList(list, i);
 }
 
@@ -258,9 +239,16 @@ Vector3f color(const Ray& r, Hittable* world, int depth) {
 	if (world->hit(r, 0.001, FLT_MAX, rec)) {
 		Ray scattered;
 		Vector3f attenuation;
-		Vector3f emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
-		if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
-			return emitted + attenuation.cwiseProduct(color(scattered, world, depth + 1));
+		Vector3f emitted = rec.mat_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
+		float pdf_val;
+		//Vector3f albedo;
+
+		if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered, pdf_val)) {
+			Hittable* light_shape = new XZRect(213, 343, 227, 332, 554, 0);
+			hittable_pdf p(light_shape, rec.p);
+			scattered = Ray(rec.p, p.generate(), r.time());
+			pdf_val = p.value(scattered.direction());
+			return emitted + attenuation.cwiseProduct( rec.mat_ptr->scattering_pdf(r, rec, scattered)* color(scattered, world, depth + 1) / pdf_val);
 		}
 		else {
 			return emitted;
