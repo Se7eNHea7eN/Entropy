@@ -98,7 +98,9 @@ Hittable* cornell_Box() {
 	//auto glass = new Dielectric(1.5);
 	//list[i++] = new Sphere(Vector3f(190, 90, 190), 90, glass);
 	list[i++] = new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 165, 165), white),-18), Vector3f(130, 0, 65));
-	list[i++] = new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 330, 165), white),15), Vector3f(265, 0, 295));
+
+	auto aluminum = new Metal(Vector3f(0.8, 0.85, 0.88), 0.0);
+	list[i++] = new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 330, 165), aluminum),15), Vector3f(265, 0, 295));
 	return new HittableList(list, i);
 }
 
