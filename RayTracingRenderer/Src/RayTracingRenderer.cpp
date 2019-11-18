@@ -249,7 +249,7 @@ Vector3f color(const Ray& r, Hittable* world, Hittable* light_shape, int depth) 
 			}
 			else {
 				hittable_pdf plight(light_shape, hrec.p);
-				mixture_pdf p(&plight, srec.pdf_ptr);
+				mixture_pdf p(&plight, srec.pdf_ptr.get());
 				Ray scattered = Ray(hrec.p, p.generate(), r.time());
 				float pdf_val = p.value(scattered.direction());
 				return emitted + srec.attenuation.cwiseProduct(hrec.mat_ptr->scattering_pdf(r, hrec, scattered) * color(scattered, world, light_shape, depth + 1) / pdf_val);
@@ -325,7 +325,7 @@ void RayTracingRenderer::Render() {
 
 	new std::thread([&]
 		{
-			ThreadPool pool(15);
+			ThreadPool pool(16);
 
 			for (int i = 0; i < 16; ++i) {
 				for (int j = 0; j < 16; ++j) {

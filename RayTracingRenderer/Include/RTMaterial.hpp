@@ -86,7 +86,7 @@ namespace Entropy {
 			const HitRecord& hrec, scatter_record& srec) const {
 			srec.is_specular = false;
 			srec.attenuation = albedo->value(hrec.u, hrec.v, hrec.p);
-			srec.pdf_ptr = new cosine_pdf(hrec.normal);
+			srec.pdf_ptr = std::make_shared<cosine_pdf>(hrec.normal);
 			return true;
 		}
 		float scattering_pdf(const Ray& r_in,

@@ -2,6 +2,8 @@
 #include "Utils.hpp"
 #include "Eigen/Core"
 #include <iostream>
+#include <memory>
+
 using namespace Eigen;
 namespace Entropy {
 	class RTMaterial;
@@ -66,7 +68,7 @@ namespace Entropy {
 		Ray specular_ray;
 		bool is_specular;
 		Vector3f attenuation;
-		pdf* pdf_ptr;
+		std::shared_ptr<pdf> pdf_ptr;
 	};
 
 	class AABB {
