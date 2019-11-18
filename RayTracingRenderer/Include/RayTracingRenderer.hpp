@@ -34,8 +34,9 @@ namespace Entropy {
 		Tile tiles[16][16];
 		std::thread threads[16];
 		Hittable* world;
+		Hittable* lightShapes;
 		RTCamera* camera;
-		int sampleCount = 1000;
+		int sampleCount = 100;
 		std::function<void()> onUpdate;
 
 	private:

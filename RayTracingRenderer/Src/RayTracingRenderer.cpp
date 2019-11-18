@@ -80,7 +80,7 @@ Hittable* createLightScene() {
 	return new HittableList(list, 4);
 }
 
-Hittable* cornell_Box() {
+void createCornellBox(Hittable** world, Hittable** lightShapes, RTCamera** camera,float aspect) {
 	Hittable** list = new Hittable * [100];
 	int i = 0;
 	RTMaterial* red = new Lambertian(new ConstantTexture(Vector3f(0.65, 0.05, 0.05)));
@@ -101,11 +101,28 @@ Hittable* cornell_Box() {
 
 	auto aluminum = new Metal(Vector3f(0.8, 0.85, 0.88), 0.0);
 	list[i++] = new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 330, 165), aluminum),15), Vector3f(265, 0, 295));
-	return new HittableList(list, i);
+	*world = new HittableList(list, i);
+
+	Hittable* a[2];
+
+	auto light_shape = new XZRect(213, 343, 227, 332, 554, 0);
+	auto glass_sphere = new Sphere(Vector3f(190, 90, 190), 90, 0);
+	a[0] = light_shape;
+	a[1] = glass_sphere;
+
+	*lightShapes = new HittableList(a, 2);
+
+	Vector3f lookfrom(278, 278, -800);
+	Vector3f lookat(278, 278, 0);
+	float dist_to_focus = 10.0;
+	float aperture = 0.0;
+	float vfov = 40.0;
+
+	*camera = new RTCamera(lookfrom, lookat, Vector3f(0, 1, 0), vfov,
+		aspect, aperture, dist_to_focus, 0.0, 1.0);
 }
 
-
-Hittable* final() {
+void createFinalScene(Hittable** world, Hittable** lightShapes, RTCamera** camera, float aspect) {
 	int nb = 20;
 	Hittable** list = new Hittable * [30];
 	Hittable** Boxlist = new Hittable * [10000];
@@ -128,7 +145,7 @@ Hittable* final() {
 	int l = 0;
 	list[l++] = new BvhNode(Boxlist, b, 0, 1);
 	RTMaterial* light = new DiffuseLight(new ConstantTexture(Vector3f(15, 15, 15)));
-	list[l++] = new XZRect(123, 423, 147, 412, 554, light);
+	list[l++] = new flip_normals(new XZRect(123, 423, 147, 412, 554, light));
 	Vector3f center(400, 400, 200);
 	list[l++] = new MovingSphere(center, center + Vector3f(30, 0, 0),
 		0, 1, 50, new Lambertian(new ConstantTexture(Vector3f(0.7, 0.3, 0.1))));
@@ -156,7 +173,17 @@ Hittable* final() {
 	}
 	list[l++] = new translate(new rotate_y(
 		new BvhNode(Boxlist2, ns, 0.0, 1.0), 15), Vector3f(-100, 270, 395));
-	return new HittableList(list, l);
+	*world = new HittableList(list, l);
+
+	Vector3f lookfrom(400, 400, -800);
+	Vector3f lookat(278, 278, 0);
+	float dist_to_focus = 10.0;
+	float aperture = 0.0;
+	float vfov = 40.0;
+
+	*camera = new RTCamera(lookfrom, lookat, Vector3f(0, 1, 0), vfov,
+		aspect, aperture, dist_to_focus, 0.0, 1.0);
+	*lightShapes = new XZRect(123, 423, 147, 412, 554, nullptr);
 }
 
 void RayTracingRenderer::Initialize() {
@@ -215,20 +242,10 @@ void RayTracingRenderer::Initialize() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	//Vector3f lookfrom(0, 0, -20);
-	Vector3f lookfrom(278, 278, -800);
-	Vector3f lookat(278, 278, 0);
-	float dist_to_focus = 10.0;
-	float aperture = 0.0;
-	float vfov = 40.0;
-
-	camera = new RTCamera(lookfrom, lookat, Vector3f(0, 1, 0), vfov,
-		float(renderWidth) / float(renderHeight), aperture, dist_to_focus, 0.0, 1.0);
-
 	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
 
-	//world = createScene();
-	world = cornell_Box();
+	//createCornellBox(&world,&lightShapes, &camera, float(renderWidth) / float(renderHeight));
+	createFinalScene(&world, &lightShapes, &camera, float(renderWidth) / float(renderHeight));
 }
 
 void Entropy::RayTracingRenderer::Resize(int w, int h) {
@@ -298,8 +315,7 @@ void RayTracingRenderer::Draw() {
 	
 }
 
-Hittable* a[2];
-HittableList *hlist = new HittableList(a, 2);
+
 
 void RayTracingRenderer::AwaitRenderFrame() {
 }
@@ -318,10 +334,7 @@ void RayTracingRenderer::Render() {
 			t.isdone = false;
 		}
 	}
-	auto light_shape = new XZRect(213, 343, 227, 332, 554, 0);
-	auto glass_sphere = new Sphere(Vector3f(190, 90, 190), 90, 0);
-	a[0] = light_shape;
-	a[1] = glass_sphere;
+
 
 	new std::thread([&]
 		{
@@ -339,7 +352,7 @@ void RayTracingRenderer::Render() {
 									float u = float(i + random_double()) / float(renderWidth);
 									float v = float(j + random_double()) / float(renderHeight);
 									Ray r = camera->get_ray(u, v);
-									col += de_nan(color(r, world, hlist,0));
+									col += de_nan(color(r, world, lightShapes,0));
 								}
 								col /= float(sampleCount);
 								col = Vector3f(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
