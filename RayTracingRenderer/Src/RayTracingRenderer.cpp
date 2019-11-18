@@ -103,7 +103,7 @@ void createCornellBox(Hittable** world, Hittable** lightShapes, RTCamera** camer
 	list[i++] = new translate(new rotate_y(new Box(Vector3f(0, 0, 0), Vector3f(165, 330, 165), aluminum),15), Vector3f(265, 0, 295));
 	*world = new HittableList(list, i);
 
-	Hittable* a[2];
+	Hittable **a = new Hittable*[2];
 
 	auto light_shape = new XZRect(213, 343, 227, 332, 554, 0);
 	auto glass_sphere = new Sphere(Vector3f(190, 90, 190), 90, 0);
@@ -244,8 +244,8 @@ void RayTracingRenderer::Initialize() {
 
 	memset(renderBuffer, 0, renderWidth * renderHeight * 3);
 
-	//createCornellBox(&world,&lightShapes, &camera, float(renderWidth) / float(renderHeight));
-	createFinalScene(&world, &lightShapes, &camera, float(renderWidth) / float(renderHeight));
+	createCornellBox(&world,&lightShapes, &camera, float(renderWidth) / float(renderHeight));
+	//createFinalScene(&world, &lightShapes, &camera, float(renderWidth) / float(renderHeight));
 }
 
 void Entropy::RayTracingRenderer::Resize(int w, int h) {
