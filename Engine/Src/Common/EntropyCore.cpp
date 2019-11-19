@@ -1,6 +1,6 @@
 #include "Common/EntropyCore.hpp"
 #include "Common/Scene.hpp"
-#include "Direct3DRenderer.hpp"
+#include "D3d11Renderer.hpp"
 #include "Utils/Debug.hpp"
 
 using namespace Entropy;

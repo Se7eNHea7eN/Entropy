@@ -1,6 +1,6 @@
 #include "Common/RendererFactory.hpp"
 #include "GLRenderer.hpp"
-#include "Direct3DRenderer.hpp"
+#include "D3d11Renderer.hpp"
 #include "BgfxRenderer.hpp"
 
 using namespace Entropy;
@@ -11,8 +11,8 @@ Renderer* RendererFactory::CreateRenderer(RenderAPI renderAPI, HWND hwnd) {
 		return new BgfxRenderer(hwnd);
 	case OpenGL:
 		return new GLRenderer(hwnd);
-	case Direct3D:
-		return new Direct3DRenderer(hwnd);
+	case D3d11:
+		return new D3d11Renderer(hwnd);
 	case Vulkan: 
 		break;
 	default: ;

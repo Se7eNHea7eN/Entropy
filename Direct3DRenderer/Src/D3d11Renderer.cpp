@@ -1,11 +1,11 @@
-#include "Direct3DRenderer.hpp"
+#include "D3d11Renderer.hpp"
 #include <d3d11.h>
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"d3dcompiler.lib")
 
 using namespace Entropy;
 
-Direct3DRenderer::Direct3DRenderer(HWND hwnd) : hwnd(hwnd) {
+D3d11Renderer::D3d11Renderer(HWND hwnd) : hwnd(hwnd) {
 	RECT rc;
 	GetClientRect(hwnd, &rc);
 	width = rc.right - rc.left;
@@ -22,7 +22,7 @@ inline void SafeRelease(T** ppInterfaceToRelease) {
 	}
 }
 
-Direct3DRenderer::~Direct3DRenderer() {
+D3d11Renderer::~D3d11Renderer() {
 	SafeRelease(&g_pLayout);
 	SafeRelease(&g_pVS);
 	SafeRelease(&g_pPS);
@@ -33,7 +33,7 @@ Direct3DRenderer::~Direct3DRenderer() {
 	SafeRelease(&g_pDevcon);
 }
 
-void Direct3DRenderer::Initialize() {
+void D3d11Renderer::Initialize() {
 	HRESULT hr = S_OK;
 	if (g_pSwapchain == nullptr) {
 		// create a struct to hold information about the swap chain
@@ -106,7 +106,7 @@ void Direct3DRenderer::Initialize() {
 	}
 }
 
-void Direct3DRenderer::Resize(int w, int h) {
+void D3d11Renderer::Resize(int w, int h) {
 	width = w;
 	height = h;
 	//g_pSwapchain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
@@ -125,7 +125,7 @@ void Direct3DRenderer::Resize(int w, int h) {
 }
 
 
-void Direct3DRenderer::CreateRenderTarget() {
+void D3d11Renderer::CreateRenderTarget() {
 	 HRESULT hr;
      ID3D11Texture2D *pBackBuffer;
   
@@ -142,7 +142,7 @@ void Direct3DRenderer::CreateRenderTarget() {
      g_pDevcon->OMSetRenderTargets( 1, &g_pRTView, nullptr );
 }
 
-void Direct3DRenderer::SetViewPort() {
+void D3d11Renderer::SetViewPort() {
 	D3D11_VIEWPORT viewport;
     ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
  
@@ -154,12 +154,12 @@ void Direct3DRenderer::SetViewPort() {
     g_pDevcon->RSSetViewports(1, &viewport);
 }
 
-void Direct3DRenderer::InitPipeline() {
+void D3d11Renderer::InitPipeline() {
     // load and compile the two shaders
     ID3DBlob *VS, *PS;
  
-    HRESULT result =  D3DReadFileToBlob(L"Shaders\\copy.vso", &VS);
-    D3DReadFileToBlob(L"Shaders\\copy.pso", &PS);
+    HRESULT result =  D3DReadFileToBlob(L"Shaders\\dx11\\vs_test.bin", &VS);
+	result = D3DReadFileToBlob(L"Shaders\\dx11\\fs_test.bin", &PS);
  
     // encapsulate both shaders into shader objects
     g_pDev->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), NULL, &g_pVS);
@@ -172,10 +172,9 @@ void Direct3DRenderer::InitPipeline() {
     // create the input layout object
     D3D11_INPUT_ELEMENT_DESC ied[] =
     {
-        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"a_position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"a_color0", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
     };
- 
  
     g_pDev->CreateInputLayout(ied, 2, VS->GetBufferPointer(), VS->GetBufferSize(), &g_pLayout);
     g_pDevcon->IASetInputLayout(g_pLayout);
@@ -184,7 +183,7 @@ void Direct3DRenderer::InitPipeline() {
     PS->Release();
 }
 
-void Direct3DRenderer::InitGraphics() {
+void D3d11Renderer::InitGraphics() {
    // create a triangle using the VERTEX struct
     VERTEX OurVertices[] =
     {
@@ -212,7 +211,7 @@ void Direct3DRenderer::InitGraphics() {
  
 }
 
-void Direct3DRenderer::Draw() {
+void D3d11Renderer::Draw() {
 	Initialize();
 	const FLOAT clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	g_pDevcon->ClearRenderTargetView(g_pRTView, clearColor);
@@ -222,12 +221,14 @@ void Direct3DRenderer::Draw() {
 		// select which vertex buffer to display
 		UINT stride = sizeof(VERTEX);
 		UINT offset = 0;
+		g_pDevcon->IASetInputLayout(g_pLayout);
+
 		g_pDevcon->IASetVertexBuffers(0, 1, &g_pVBuffer, &stride, &offset);
 
-		// select which primtive type we are using
+		//// select which primtive type we are using
 		g_pDevcon->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		// draw the vertex buffer to the back buffer
+		//// draw the vertex buffer to the back buffer
 		g_pDevcon->Draw(3, 0);
 	}
 
@@ -236,5 +237,5 @@ void Direct3DRenderer::Draw() {
 
 }
 
-void Direct3DRenderer::AwaitRenderFrame() {
+void D3d11Renderer::AwaitRenderFrame() {
 }

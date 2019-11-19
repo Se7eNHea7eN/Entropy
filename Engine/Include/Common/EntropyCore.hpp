@@ -9,7 +9,7 @@ namespace Entropy {
 	public:
 		EntropyCore();
 		Renderer* CreateRenderer(HWND hwnd);
-		RenderAPI renderAPI = Bgfx;
+		RenderAPI renderAPI = D3d11;
 
 		bool debugMode = false;
 		void CreateScene(const char* scene_name);

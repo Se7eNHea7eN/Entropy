@@ -10,10 +10,10 @@ using namespace DirectX;
 using namespace DirectX::PackedVector;
 
 namespace Entropy {
-	class Direct3DRenderer : public Renderer {
+	class D3d11Renderer : public Renderer {
 	public:
-		Direct3DRenderer(HWND hwnd);
-		~Direct3DRenderer();
+		D3d11Renderer(HWND hwnd);
+		~D3d11Renderer();
 		void Initialize() override;
 		void Resize(int w, int h) override;
 		void Draw() override;

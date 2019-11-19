@@ -1,5 +1,5 @@
-#include "cbuffer.h"
-#include "vsoutput.hs"
+#include "cbuffer.hlsli"
+#include "vsoutput.hlsli"
 
 v2p main(a2v input) {
 	v2p output;
