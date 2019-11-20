@@ -158,8 +158,8 @@ void D3d11Renderer::InitPipeline() {
     // load and compile the two shaders
     ID3DBlob *VS, *PS;
  
-    HRESULT result =  D3DReadFileToBlob(L"Shaders\\dx11\\vs_test.bin", &VS);
-	result = D3DReadFileToBlob(L"Shaders\\dx11\\fs_test.bin", &PS);
+    HRESULT result =  D3DReadFileToBlob(L"Shaders\\dx11\\vs_test.cso", &VS);
+	result = D3DReadFileToBlob(L"Shaders\\dx11\\ps_test.cso", &PS);
  
     // encapsulate both shaders into shader objects
     g_pDev->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), NULL, &g_pVS);
