@@ -149,8 +149,8 @@ void D3d11Renderer::InitGraphics() {
 	// load and compile the two shaders
 	ComPtr<ID3DBlob> VS, PS;
 
-	HR(D3DReadFileToBlob(L"Shaders\\dx11\\vs_test.cso", VS.GetAddressOf()));
-	HR(D3DReadFileToBlob(L"Shaders\\dx11\\ps_test.cso", PS.GetAddressOf()));
+	HR(D3DReadFileToBlob(L"Shaders\\dx11\\Cube_VS.cso", VS.GetAddressOf()));
+	HR(D3DReadFileToBlob(L"Shaders\\dx11\\Cube_PS.cso", PS.GetAddressOf()));
 
 	// encapsulate both shaders into shader objects
 	HR(g_pDev->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), nullptr, geo->g_pVS.GetAddressOf()));
@@ -163,11 +163,11 @@ void D3d11Renderer::InitGraphics() {
 	// create the input layout object
 	D3D11_INPUT_ELEMENT_DESC ied[] =
 	{
-		{"a_position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"a_color0", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
-	g_pDev->CreateInputLayout(ied, 2 , VS.Get()->GetBufferPointer(), VS.Get()->GetBufferSize(), geo->g_pLayout.GetAddressOf());
+	HR(g_pDev->CreateInputLayout(ied, 2 , VS->GetBufferPointer(), VS->GetBufferSize(), geo->g_pLayout.GetAddressOf()));
 
 	g_pDevcon->IASetInputLayout(geo->g_pLayout.Get());
 
@@ -198,28 +198,20 @@ void D3d11Renderer::InitGraphics() {
     };
  
     // create the vertex buffer
-    D3D11_BUFFER_DESC bd;
-    ZeroMemory(&bd, sizeof(bd));
+    D3D11_BUFFER_DESC vbd;
+    ZeroMemory(&vbd, sizeof(vbd));
  
-    bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-    bd.ByteWidth = sizeof OurVertices;             // size is the VERTEX struct * 3
-    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
-    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
+	vbd.Usage = D3D11_USAGE_IMMUTABLE;
+	vbd.ByteWidth = sizeof OurVertices;
+	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vbd.CPUAccessFlags = 0;
  
 		// 新建顶点缓冲区
 	D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
 	InitData.pSysMem = OurVertices;
 
-    HR(g_pDev->CreateBuffer(&bd, &InitData, &geo->g_pVBuffer));       // create the buffer
- 
-	// copy the vertices into the buffer
-	D3D11_MAPPED_SUBRESOURCE ms;
-	g_pDevcon->Map(geo->g_pVBuffer.Get(), NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
-	memcpy(ms.pData, OurVertices, sizeof(OurVertices));                       // copy the data
-	g_pDevcon->Unmap(geo->g_pVBuffer.Get(), NULL);                                      // unmap the buffer
-
-
+    HR(g_pDev->CreateBuffer(&vbd, &InitData, &geo->g_pVBuffer));       // create the buffer
 
 	// ******************
 	// 索引数组
@@ -265,13 +257,39 @@ void D3d11Renderer::InitGraphics() {
 	D3D11_BUFFER_DESC cbd;
 	ZeroMemory(&cbd, sizeof(cbd));
 	cbd.Usage = D3D11_USAGE_DYNAMIC;
-	cbd.ByteWidth = sizeof(geo->g_pCBuffer.Get());
+	cbd.ByteWidth = sizeof(ConstantBuffer);
 	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	// 新建常量缓冲区，不使用初始数据
 	HR(g_pDev->CreateBuffer(&cbd, nullptr, geo->g_pCBuffer.GetAddressOf()));
 
+	// 初始化常量缓冲区的值
+	m_CBuffer.world = XMMatrixIdentity();	// 单位矩阵的转置是它本身
+	m_CBuffer.view = XMMatrixTranspose(XMMatrixLookAtLH(
+		XMVectorSet(0.0f, 0.0f, -5.0f, 0.0f),
+		XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
+		XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)
+	));
+	m_CBuffer.proj = XMMatrixTranspose(XMMatrixPerspectiveFovLH(XM_PIDIV2, 1.0* width/height, 1.0f, 1000.0f));
 
+	// ******************
+	// 给渲染管线各个阶段绑定好所需资源
+	//
+
+	// 输入装配阶段的顶点缓冲区设置
+	UINT stride = sizeof(VERTEX);	// 跨越字节数
+	UINT offset = 0;						// 起始偏移量
+
+	g_pDevcon->IASetVertexBuffers(0, 1, geo->g_pVBuffer.GetAddressOf(), &stride, &offset);
+	// 设置图元类型，设定输入布局
+	g_pDevcon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	g_pDevcon->IASetInputLayout(geo->g_pLayout.Get());
+	// 将着色器绑定到渲染管线
+	g_pDevcon->VSSetShader(geo->g_pVS.Get(), nullptr, 0);
+	// 将更新好的常量缓冲区绑定到顶点着色器
+	g_pDevcon->VSSetConstantBuffers(0, 1, geo->g_pCBuffer.GetAddressOf());
+
+	g_pDevcon->PSSetShader(geo->g_pPS.Get(), nullptr, 0);
 	geometries.push_back(geo);
 }
 
@@ -279,9 +297,26 @@ void D3d11Renderer::Draw() {
 	Initialize();
 	const FLOAT clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	g_pDevcon->ClearRenderTargetView(g_pRTView, clearColor);
+
+
+	static float phi = 0.0f, theta = 0.0f;
+	phi += 0.0001f, theta += 0.00015f;
+	m_CBuffer.world = XMMatrixTranspose(XMMatrixRotationX(phi) * XMMatrixRotationY(theta));
+
+
 	for(auto geo : geometries)
 	// do 3D rendering on the back buffer here
 	{
+
+		// 更新常量缓冲区，让立方体转起来
+		D3D11_MAPPED_SUBRESOURCE mappedData;
+		HR(g_pDevcon->Map(geo->g_pCBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
+		memcpy_s(mappedData.pData, sizeof(m_CBuffer), &m_CBuffer, sizeof(m_CBuffer));
+
+		g_pDevcon->Unmap(geo->g_pCBuffer.Get(), 0);
+
+
+
 		// select which vertex buffer to display
 		UINT stride = sizeof(VERTEX);
 		UINT offset = 0;
@@ -293,7 +328,7 @@ void D3d11Renderer::Draw() {
 		g_pDevcon->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		//// draw the vertex buffer to the back buffer
-		g_pDevcon->Draw(8, 0);
+		g_pDevcon->DrawIndexed(36, 0,0);
 	}
 
 	// swap the back buffer and the front buffer

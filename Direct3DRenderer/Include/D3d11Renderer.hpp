@@ -18,7 +18,26 @@ namespace Entropy {
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 
-	class D3dGeometry;
+	class D3dGeometry {
+	public:
+		ComPtr<ID3D11InputLayout> g_pLayout; // the pointer to the input layout
+		ComPtr<ID3D11VertexShader> g_pVS; // the pointer to the vertex shader
+		ComPtr<ID3D11PixelShader> g_pPS; // the pointer to the pixel shader
+
+		ComPtr<ID3D11Buffer> g_pVBuffer; // Vertex Buffer
+		ComPtr<ID3D11Buffer> g_pIBuffer; // Index Buffer
+		ComPtr<ID3D11Buffer> g_pCBuffer; // Constant Buffer
+
+	};
+
+
+	struct ConstantBuffer
+	{
+		DirectX::XMMATRIX world;
+		DirectX::XMMATRIX view;
+		DirectX::XMMATRIX proj;
+	};
+
 	class D3d11Renderer : public Renderer {
 	public:
 		D3d11Renderer(HWND hwnd);
@@ -50,18 +69,8 @@ namespace Entropy {
 		};
 
 		std::list<std::shared_ptr<D3dGeometry>> geometries;
-
+		ConstantBuffer m_CBuffer;	                    // 用于修改GPU常量缓冲区的变量
 	};
 
-	class D3dGeometry {
-	public:
-		ComPtr<ID3D11InputLayout> g_pLayout; // the pointer to the input layout
-		ComPtr<ID3D11VertexShader> g_pVS; // the pointer to the vertex shader
-		ComPtr<ID3D11PixelShader> g_pPS; // the pointer to the pixel shader
 
-		ComPtr<ID3D11Buffer> g_pVBuffer; // Vertex Buffer
-		ComPtr<ID3D11Buffer> g_pIBuffer; // Index Buffer
-		ComPtr<ID3D11Buffer> g_pCBuffer; // Constant Buffer
-
-	};
 }
