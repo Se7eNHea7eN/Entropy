@@ -6,10 +6,19 @@
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
+#include <list>
+#include <memory>
+#include <wrl\client.h>
+
 using namespace DirectX;
 using namespace DirectX::PackedVector;
 
 namespace Entropy {
+	template <class T>
+	using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+
+	class D3dGeometry;
 	class D3d11Renderer : public Renderer {
 	public:
 		D3d11Renderer(HWND hwnd);
@@ -34,18 +43,25 @@ namespace Entropy {
 		
 		ID3D11RenderTargetView* g_pRTView = nullptr;
 		
-		
-		ID3D11InputLayout* g_pLayout = nullptr; // the pointer to the input layout
-		ID3D11VertexShader* g_pVS = nullptr; // the pointer to the vertex shader
-		ID3D11PixelShader* g_pPS = nullptr; // the pointer to the pixel shader
-		
-		ID3D11Buffer* g_pVBuffer = nullptr; // Vertex Buffer
-		
-	
+
 		struct VERTEX {
 			XMFLOAT3 Position;
 			XMFLOAT4 Color;
 		};
+
+		std::list<std::shared_ptr<D3dGeometry>> geometries;
+
+	};
+
+	class D3dGeometry {
+	public:
+		ComPtr<ID3D11InputLayout> g_pLayout; // the pointer to the input layout
+		ComPtr<ID3D11VertexShader> g_pVS; // the pointer to the vertex shader
+		ComPtr<ID3D11PixelShader> g_pPS; // the pointer to the pixel shader
+
+		ComPtr<ID3D11Buffer> g_pVBuffer; // Vertex Buffer
+		ComPtr<ID3D11Buffer> g_pIBuffer; // Index Buffer
+		ComPtr<ID3D11Buffer> g_pCBuffer; // Constant Buffer
 
 	};
 }

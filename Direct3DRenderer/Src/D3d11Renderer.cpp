@@ -1,8 +1,13 @@
 #include "D3d11Renderer.hpp"
+#include "d3dUtil.h"
+#include "DXTrace.h"
 #include <d3d11.h>
+#include <d3dcompiler.h>
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"d3dcompiler.lib")
-
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "winmm.lib")
 using namespace Entropy;
 
 D3d11Renderer::D3d11Renderer(HWND hwnd) : hwnd(hwnd) {
@@ -23,14 +28,6 @@ inline void SafeRelease(T** ppInterfaceToRelease) {
 }
 
 D3d11Renderer::~D3d11Renderer() {
-	SafeRelease(&g_pLayout);
-	SafeRelease(&g_pVS);
-	SafeRelease(&g_pPS);
-	SafeRelease(&g_pVBuffer);
-	SafeRelease(&g_pSwapchain);
-	SafeRelease(&g_pRTView);
-	SafeRelease(&g_pDev);
-	SafeRelease(&g_pDevcon);
 }
 
 void D3d11Renderer::Initialize() {
@@ -111,17 +108,6 @@ void D3d11Renderer::Resize(int w, int h) {
 	height = h;
 	//g_pSwapchain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
 
-	if (g_pSwapchain != nullptr)
-	{
-		SafeRelease(&g_pLayout);
-		SafeRelease(&g_pVS);
-		SafeRelease(&g_pPS);
-		SafeRelease(&g_pVBuffer);
-		SafeRelease(&g_pSwapchain);
-		SafeRelease(&g_pRTView);
-		SafeRelease(&g_pDev);
-		SafeRelease(&g_pDevcon);
-	}
 }
 
 
@@ -155,41 +141,60 @@ void D3d11Renderer::SetViewPort() {
 }
 
 void D3d11Renderer::InitPipeline() {
-    // load and compile the two shaders
-    ID3DBlob *VS, *PS;
- 
-    HRESULT result =  D3DReadFileToBlob(L"Shaders\\dx11\\vs_test.cso", &VS);
-	result = D3DReadFileToBlob(L"Shaders\\dx11\\ps_test.cso", &PS);
- 
-    // encapsulate both shaders into shader objects
-    g_pDev->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), NULL, &g_pVS);
-    g_pDev->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &g_pPS);
- 
-    // set the shader objects
-    g_pDevcon->VSSetShader(g_pVS, 0, 0);
-    g_pDevcon->PSSetShader(g_pPS, 0, 0);
- 
-    // create the input layout object
-    D3D11_INPUT_ELEMENT_DESC ied[] =
-    {
-        {"a_position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"a_color0", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-    };
- 
-    g_pDev->CreateInputLayout(ied, 2, VS->GetBufferPointer(), VS->GetBufferSize(), &g_pLayout);
-    g_pDevcon->IASetInputLayout(g_pLayout);
- 
-    VS->Release();
-    PS->Release();
+
 }
 
 void D3d11Renderer::InitGraphics() {
-   // create a triangle using the VERTEX struct
+	auto geo = std::make_shared<D3dGeometry>();
+	// load and compile the two shaders
+	ComPtr<ID3DBlob> VS, PS;
+
+	HR(D3DReadFileToBlob(L"Shaders\\dx11\\vs_test.cso", VS.GetAddressOf()));
+	HR(D3DReadFileToBlob(L"Shaders\\dx11\\ps_test.cso", PS.GetAddressOf()));
+
+	// encapsulate both shaders into shader objects
+	HR(g_pDev->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), nullptr, geo->g_pVS.GetAddressOf()));
+	HR(g_pDev->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), nullptr, geo->g_pPS.GetAddressOf()));
+
+	// set the shader objects
+	g_pDevcon->VSSetShader(geo->g_pVS.Get(), 0, 0);
+	g_pDevcon->PSSetShader(geo->g_pPS.Get(), 0, 0);
+
+	// create the input layout object
+	D3D11_INPUT_ELEMENT_DESC ied[] =
+	{
+		{"a_position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"a_color0", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
+
+	g_pDev->CreateInputLayout(ied, 2 , VS.Get()->GetBufferPointer(), VS.Get()->GetBufferSize(), geo->g_pLayout.GetAddressOf());
+
+	g_pDevcon->IASetInputLayout(geo->g_pLayout.Get());
+
+	VS->Release();
+	PS->Release();
+
+
+
+	// ******************
+	// 设置立方体顶点
+	//    5________ 6
+	//    /|      /|
+	//   /_|_____/ |
+	//  1|4|_ _ 2|_|7
+	//   | /     | /
+	//   |/______|/
+	//  0       3
     VERTEX OurVertices[] =
     {
-        {XMFLOAT3(0.0f, 0.5f, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)},
-        {XMFLOAT3(0.45f, -0.5, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f)},
-        {XMFLOAT3(-0.45f, -0.5f, 0.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)}
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) }
     };
  
     // create the vertex buffer
@@ -197,39 +202,98 @@ void D3d11Renderer::InitGraphics() {
     ZeroMemory(&bd, sizeof(bd));
  
     bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-    bd.ByteWidth = sizeof(VERTEX) * 3;             // size is the VERTEX struct * 3
+    bd.ByteWidth = sizeof OurVertices;             // size is the VERTEX struct * 3
     bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
     bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
  
-    g_pDev->CreateBuffer(&bd, NULL, &g_pVBuffer);       // create the buffer
+		// 新建顶点缓冲区
+	D3D11_SUBRESOURCE_DATA InitData;
+	ZeroMemory(&InitData, sizeof(InitData));
+	InitData.pSysMem = OurVertices;
+
+    HR(g_pDev->CreateBuffer(&bd, &InitData, &geo->g_pVBuffer));       // create the buffer
  
-    // copy the vertices into the buffer
-    D3D11_MAPPED_SUBRESOURCE ms;
-    g_pDevcon->Map(g_pVBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
-    memcpy(ms.pData, OurVertices, sizeof(VERTEX) * 3);                       // copy the data
-    g_pDevcon->Unmap(g_pVBuffer, NULL);                                      // unmap the buffer
- 
+	// copy the vertices into the buffer
+	D3D11_MAPPED_SUBRESOURCE ms;
+	g_pDevcon->Map(geo->g_pVBuffer.Get(), NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
+	memcpy(ms.pData, OurVertices, sizeof(OurVertices));                       // copy the data
+	g_pDevcon->Unmap(geo->g_pVBuffer.Get(), NULL);                                      // unmap the buffer
+
+
+
+	// ******************
+	// 索引数组
+	//
+	WORD indices[] = {
+		// 正面
+		0, 1, 2,
+		2, 3, 0,
+		// 左面
+		4, 5, 1,
+		1, 0, 4,
+		// 顶面
+		1, 5, 6,
+		6, 2, 1,
+		// 背面
+		7, 6, 5,
+		5, 4, 7,
+		// 右面
+		3, 2, 6,
+		6, 7, 3,
+		// 底面
+		4, 0, 3,
+		3, 7, 4
+	};
+
+	// 设置索引缓冲区描述
+	D3D11_BUFFER_DESC ibd;
+	ZeroMemory(&ibd, sizeof(ibd));
+	ibd.Usage = D3D11_USAGE_IMMUTABLE;
+	ibd.ByteWidth = sizeof indices;
+	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	ibd.CPUAccessFlags = 0;
+	// 新建索引缓冲区
+	InitData.pSysMem = indices;
+	HR(g_pDev->CreateBuffer(&ibd, &InitData, geo->g_pIBuffer.GetAddressOf()));
+	// 输入装配阶段的索引缓冲区设置
+	g_pDevcon->IASetIndexBuffer(geo->g_pIBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+
+
+	// ******************
+	// 设置常量缓冲区描述
+	//
+	D3D11_BUFFER_DESC cbd;
+	ZeroMemory(&cbd, sizeof(cbd));
+	cbd.Usage = D3D11_USAGE_DYNAMIC;
+	cbd.ByteWidth = sizeof(geo->g_pCBuffer.Get());
+	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	// 新建常量缓冲区，不使用初始数据
+	HR(g_pDev->CreateBuffer(&cbd, nullptr, geo->g_pCBuffer.GetAddressOf()));
+
+
+	geometries.push_back(geo);
 }
 
 void D3d11Renderer::Draw() {
 	Initialize();
 	const FLOAT clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	g_pDevcon->ClearRenderTargetView(g_pRTView, clearColor);
-
+	for(auto geo : geometries)
 	// do 3D rendering on the back buffer here
 	{
 		// select which vertex buffer to display
 		UINT stride = sizeof(VERTEX);
 		UINT offset = 0;
-		g_pDevcon->IASetInputLayout(g_pLayout);
+		g_pDevcon->IASetInputLayout(geo->g_pLayout.Get());
 
-		g_pDevcon->IASetVertexBuffers(0, 1, &g_pVBuffer, &stride, &offset);
+		g_pDevcon->IASetVertexBuffers(0, 1, geo->g_pVBuffer.GetAddressOf(), &stride, &offset);
 
 		//// select which primtive type we are using
 		g_pDevcon->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		//// draw the vertex buffer to the back buffer
-		g_pDevcon->Draw(3, 0);
+		g_pDevcon->Draw(8, 0);
 	}
 
 	// swap the back buffer and the front buffer
