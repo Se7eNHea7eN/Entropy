@@ -358,9 +358,9 @@ void RayTracingRenderer::Render() {
 								col = Vector3f(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
 
 								int position = (j * renderWidth + i) * 3;
-								renderBuffer[position] = 255.99 * col.x();
-								renderBuffer[position + 1] = 255.99 * col.y();
-								renderBuffer[position + 2] = 255.99 * col.z();
+								renderBuffer[position] =		BYTE(min(max(255*col.x(),0),255));
+								renderBuffer[position + 1] =	BYTE(min(max(255*col.y(),0),255));
+								renderBuffer[position + 2] =	BYTE(min(max(255*col.z(),0),255));
 							}
 						}
 						Log("end render tile %d %d", t.left / 16, t.top / 16);
