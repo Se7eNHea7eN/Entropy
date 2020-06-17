@@ -20,7 +20,7 @@ macro(source_group_by_dir source_files)
 endmacro(source_group_by_dir)
 
 
-add_subdirectory(Editor)
+#add_subdirectory(Editor)
 add_subdirectory(Engine)
 add_subdirectory(GLRenderer)
 add_subdirectory(glew)
