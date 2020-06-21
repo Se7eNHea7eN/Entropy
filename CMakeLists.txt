@@ -21,26 +21,30 @@ endmacro(source_group_by_dir)
 
 
 #add_subdirectory(Editor)
-add_subdirectory(Engine)
-add_subdirectory(GLRenderer)
-add_subdirectory(glew)
-add_subdirectory(GameLauncher)
-
+add_subdirectory(Engine/EntropyEngine)
+add_subdirectory(Engine/Renderer/GLRenderer)
 if(WIN32)
-    add_subdirectory(Direct3DRenderer)
-    add_subdirectory(RayTracingRenderer)
+    add_subdirectory(Engine/Renderer/Direct3DRenderer)
+    add_subdirectory(Engine/Renderer/RayTracingRenderer)
 endif()
 
-add_subdirectory(bgfx)
-add_subdirectory(bx)
-add_subdirectory(bimg)
-add_subdirectory(BgfxRenderer)
-add_subdirectory(test)
-add_subdirectory(testScene)
+add_subdirectory(Engine/Renderer/BgfxRenderer)
 
-add_subdirectory(IblPrecompute)
+add_subdirectory(Engine/Tools/IblPrecompute)
 
-add_subdirectory(glfw)
+add_subdirectory(Engine/ThirdParty/glew)
+add_subdirectory(Engine/ThirdParty/bgfx)
+add_subdirectory(Engine/ThirdParty/bx)
+add_subdirectory(Engine/ThirdParty/bimg)
+add_subdirectory(Engine/ThirdParty/glfw)
+
+
+add_subdirectory(test/GameLauncher)
+
+add_subdirectory(test/test)
+add_subdirectory(test/testScene)
+
+
 
 
 
