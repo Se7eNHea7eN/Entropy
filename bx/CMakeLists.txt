@@ -16,5 +16,6 @@ include_directories(SYSTEM "include/compat/msvc")
 include_directories(SYSTEM "3rdparty")
 
 add_library(${PROJECT_NAME} STATIC ${all_files})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Engine/ThirdParty")
 
 add_compile_definitions("__STDC_LIMIT_MACROS;__STDC_FORMAT_MACROS;__STDC_CONSTANT_MACROS;")

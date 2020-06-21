@@ -26,3 +26,4 @@ include_directories(SYSTEM "../bx/include")
 include_directories(SYSTEM "../bx/include/compat/msvc")
 
 add_library(${PROJECT_NAME} STATIC ${all_files})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Engine/ThirdParty")

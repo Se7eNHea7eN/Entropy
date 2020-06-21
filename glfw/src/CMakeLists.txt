@@ -100,7 +100,7 @@ set_target_properties(glfw PROPERTIES
                       VERSION ${GLFW_VERSION_MAJOR}.${GLFW_VERSION_MINOR}
                       SOVERSION ${GLFW_VERSION_MAJOR}
                       POSITION_INDEPENDENT_CODE ON
-                      FOLDER "GLFW3")
+                      FOLDER "Engine/ThirdParty/GLFW3")
 
 target_compile_definitions(glfw PRIVATE _GLFW_USE_CONFIG_H)
 target_include_directories(glfw PUBLIC

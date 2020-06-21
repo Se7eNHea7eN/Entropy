@@ -11,6 +11,7 @@ set(all_files ${project_headers} ${project_cpps})
 source_group_by_dir(all_files)
 
 add_executable(${PROJECT_NAME} ${all_files})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Engine/Tools")
 
 
 include_directories(SYSTEM "Include")

@@ -22,3 +22,4 @@ include_directories(SYSTEM "../bimg/include")
 
 
 add_library(${PROJECT_NAME} STATIC ${all_files})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Engine/ThirdParty")
