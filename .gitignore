@@ -18,5 +18,12 @@ Editor/GeneratedFiles/
 *.bin
 
 build/
+*.obj
+*.lib
+*.user
+*.pdb
+*.log
+*.tlog
+*.idb
 
 .vs/

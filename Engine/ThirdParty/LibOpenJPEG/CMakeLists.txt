@@ -7,7 +7,11 @@ project(${PROJECT_NAME})
 file(GLOB_RECURSE project_headers *.hpp *.h )
 file(GLOB_RECURSE project_cpps *.cpp *.c)
 
+list(REMOVE_ITEM project_cpps "/jmemmac.c")
+
 set(all_files ${project_headers} ${project_cpps})
+
+
 source_group_by_dir(all_files)
 
 include_directories(SYSTEM "/")
