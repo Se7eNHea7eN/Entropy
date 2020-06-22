@@ -31,9 +31,9 @@ target_link_libraries(${PROJECT_NAME} GLRenderer)
 
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/ThirdParty/Eigen")
 
-include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Renderer/BgfxRenderer")
-include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Renderer/BgfxRenderer/Include")
-target_link_libraries(${PROJECT_NAME} BgfxRenderer)
+#include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Renderer/BgfxRenderer")
+#include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/Renderer/BgfxRenderer/Include")
+#target_link_libraries(${PROJECT_NAME} BgfxRenderer)
  
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/ThirdParty/bx/include")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/ThirdParty/bx/include/compat/msvc")

@@ -28,7 +28,7 @@ if(WIN32)
     add_subdirectory(Engine/Renderer/RayTracingRenderer)
 endif()
 
-add_subdirectory(Engine/Renderer/BgfxRenderer)
+#add_subdirectory(Engine/Renderer/BgfxRenderer)
 
 add_subdirectory(Engine/Tools/IblPrecompute)
 
@@ -37,6 +37,12 @@ add_subdirectory(Engine/ThirdParty/bgfx)
 add_subdirectory(Engine/ThirdParty/bx)
 add_subdirectory(Engine/ThirdParty/bimg)
 add_subdirectory(Engine/ThirdParty/glfw)
+add_subdirectory(Engine/ThirdParty/FreeImage)
+add_subdirectory(Engine/ThirdParty/OpenEXR)
+add_subdirectory(Engine/ThirdParty/ZLib)
+add_subdirectory(Engine/ThirdParty/LibJXR)
+add_subdirectory(Engine/ThirdParty/LibJPEG)
+add_subdirectory(Engine/ThirdParty/LibOpenJPEG)
 
 
 add_subdirectory(test/GameLauncher)

@@ -55,9 +55,9 @@ void GenerateScene02(Entropy::Scene* scene) {
 		mat->SetRoughness(i / 8.f);
 		mat->SetAmbientOcclusion(1);
 		mat->SetIBL(
-			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/irradiance.dds", bimg::TextureFormat::RGB8))),
-			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/prefilter.dds", bimg::TextureFormat::RGB8))),
-			new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/brdf.png", bimg::TextureFormat::RGBA8)))
+			new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/irradiance.dds", bimg::TextureFormat::RGB8))),
+			new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/prefilter.dds", bimg::TextureFormat::RGB8))),
+			new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/brdf.png", bimg::TextureFormat::RGBA8)))
 		);
 		node->GetTransform()->SetPosition(Vector3f(i-4, 0, 0));
 		node->AddComponent(meshComponent->SharedPtr());

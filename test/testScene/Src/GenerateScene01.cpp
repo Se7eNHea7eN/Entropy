@@ -44,15 +44,15 @@ std::shared_ptr<SceneNode> createCerberus() {
 	auto mat = std::make_shared<StandardPBRMaterial>();
 	meshComponent->GetMaterials().push_back(mat);
 
-	mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Cerberus_by_Andrew_Maximov/Textures/Cerberus_A.tga", bimg::TextureFormat::RGB8))));
-	mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Cerberus_by_Andrew_Maximov/Textures/Cerberus_N.tga", bimg::TextureFormat::RGB8))));
-	mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Cerberus_by_Andrew_Maximov/Textures/Cerberus_M.tga", bimg::TextureFormat::R8))));
-	mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Cerberus_by_Andrew_Maximov/Textures/Cerberus_R.tga", bimg::TextureFormat::R8))));
+	mat->SetAlbedo(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Cerberus_by_Andrew_Maximov/Textures/Cerberus_A.tga", bimg::TextureFormat::RGB8))));
+	mat->SetNormal(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Cerberus_by_Andrew_Maximov/Textures/Cerberus_N.tga", bimg::TextureFormat::RGB8))));
+	mat->SetMetallic(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Cerberus_by_Andrew_Maximov/Textures/Cerberus_M.tga", bimg::TextureFormat::R8))));
+	mat->SetRoughness(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Cerberus_by_Andrew_Maximov/Textures/Cerberus_R.tga", bimg::TextureFormat::R8))));
 	mat->SetAmbientOcclusion(1);
 	mat->SetIBL(
-		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/irradiance.dds", bimg::TextureFormat::RGB8))),
-		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/prefilter.dds", bimg::TextureFormat::RGB8))),
-		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/brdf.png", bimg::TextureFormat::RGBA8)))
+		new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/irradiance.dds", bimg::TextureFormat::RGB8))),
+		new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/prefilter.dds", bimg::TextureFormat::RGB8))),
+		new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/brdf.png", bimg::TextureFormat::RGBA8)))
 	);
 	node->GetTransform()->SetScale(Vector3f(0.03, 0.03, 0.03));
 	node->GetTransform()->Rotate(3.14 / 2, Vector3f::UnitZ());
@@ -94,15 +94,15 @@ std::shared_ptr<SceneNode> createRifle() {
 	auto mat = std::make_shared<StandardPBRMaterial>();
 	meshComponent->GetMaterials().push_back(mat);
 
-	mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Albedo.jpg", bimg::TextureFormat::RGB8))));
-	mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Normal.jpg", bimg::TextureFormat::RGB8))));
-	mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Metallic.jpg", bimg::TextureFormat::R8))));
-	mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Roughness.jpg", bimg::TextureFormat::R8))));
-	mat->SetAmbientOcclusion(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_AO.jpg", bimg::TextureFormat::R8))));
+	mat->SetAlbedo(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Albedo.jpg", bimg::TextureFormat::RGB8))));
+	mat->SetNormal(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Normal.jpg", bimg::TextureFormat::RGB8))));
+	mat->SetMetallic(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Metallic.jpg", bimg::TextureFormat::R8))));
+	mat->SetRoughness(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_Roughness.jpg", bimg::TextureFormat::R8))));
+	mat->SetAmbientOcclusion(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Rifle2/Rifle_2_AO.jpg", bimg::TextureFormat::R8))));
 	mat->SetIBL(
-		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/irradiance.dds", bimg::TextureFormat::RGB8))),
-		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/prefilter.dds", bimg::TextureFormat::RGB8))),
-		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/brdf.png", bimg::TextureFormat::RGBA8)))
+		new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/irradiance.dds", bimg::TextureFormat::RGB8))),
+		new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/prefilter.dds", bimg::TextureFormat::RGB8))),
+		new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/brdf.png", bimg::TextureFormat::RGBA8)))
 	);
 	node->GetTransform()->SetScale(Vector3f(0.015, 0.015, 0.015));
 	node->AddComponent(meshComponent->SharedPtr());
@@ -137,14 +137,14 @@ std::shared_ptr<SceneNode> createGun() {
 	auto mat = std::make_shared<StandardPBRMaterial>();
 	meshComponent->GetMaterials().push_back(mat);
 
-	mat->SetAlbedo(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_BC.png", bimg::TextureFormat::RGB8))));
-	mat->SetNormal(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::RGB8))));
-	mat->SetMetallic(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_M.png", bimg::TextureFormat::R8))));
-	mat->SetRoughness(new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::R8))));
+	mat->SetAlbedo(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_BC.png", bimg::TextureFormat::RGB8))));
+	mat->SetNormal(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::RGB8))));
+	mat->SetMetallic(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_M.png", bimg::TextureFormat::R8))));
+	mat->SetRoughness(new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Assets/Gun/gun_N.png", bimg::TextureFormat::R8))));
 	mat->SetIBL(
-		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/irradiance.dds", bimg::TextureFormat::RGB8))),
-		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/prefilter.dds", bimg::TextureFormat::RGB8))),
-		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/brdf.png", bimg::TextureFormat::RGBA8)))
+		new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/irradiance.dds", bimg::TextureFormat::RGB8))),
+		new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/prefilter.dds", bimg::TextureFormat::RGB8))),
+		new Texture2D(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/brdf.png", bimg::TextureFormat::RGBA8)))
 	);
 	mat->SetAmbientOcclusion(1.0);
 
@@ -159,7 +159,7 @@ std::shared_ptr<SceneNode> createGun() {
 void GenerateScene01(Entropy::Scene* scene) {
 
 	auto skybox = std::make_shared<SkyBox>();
-	skybox->SetHdrTexture(std::shared_ptr<Texture>(
+	skybox->SetHdrTexture(std::shared_ptr<Texture2D>(
 		new Texture(std::shared_ptr<bimg::ImageContainer>(imageLoad("Textures/cubemap.dds", bimg::TextureFormat::RGB8)))));
 	scene->SetSkybox(skybox);
 

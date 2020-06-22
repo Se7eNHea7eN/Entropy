@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
+
+set(PROJECT_NAME LibJXR)
+
+project(${PROJECT_NAME})
+
+file(GLOB_RECURSE project_headers *.hpp *.h )
+file(GLOB_RECURSE project_cpps *.cpp *.c)
+
+set(all_files ${project_headers} ${project_cpps})
+source_group_by_dir(all_files)
+
+include_directories(SYSTEM "/")
+include_directories(SYSTEM "jxrgluelib")
+include_directories(SYSTEM "common/include")
+include_directories(SYSTEM "image/decode")
+include_directories(SYSTEM "image/encode")
+include_directories(SYSTEM "image/sys")
+
+
+add_library(${PROJECT_NAME} STATIC ${all_files})
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Engine/ThirdParty")
+

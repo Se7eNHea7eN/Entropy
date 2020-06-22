@@ -2,19 +2,19 @@
 #include <memory>
 
 namespace Entropy {
-	class Texture;
+	class Texture2D;
 	class SkyBox {
 	public:
 		SkyBox() = default;
 		~SkyBox() = default;
 	protected:
-		std::shared_ptr<Texture> hdrTexture;
+		std::shared_ptr<Texture2D> hdrTexture;
 	public:
-		std::shared_ptr<Texture> HdrTexture() const {
+		std::shared_ptr<Texture2D> HdrTexture() const {
 			return hdrTexture;
 		}
 
-		void SetHdrTexture(const std::shared_ptr<Texture>& hdr_texture) {
+		void SetHdrTexture(const std::shared_ptr<Texture2D>& hdr_texture) {
 			hdrTexture = hdr_texture;
 		}
 	

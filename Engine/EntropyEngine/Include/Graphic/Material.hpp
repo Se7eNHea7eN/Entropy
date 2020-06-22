@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <Eigen/Core>
-#include "Texture.hpp"
+#include "Resource/Texture.hpp"
 #include <map>
 #include <bimg/decode.h>
 #include "Utils/Utils.hpp"
@@ -143,7 +143,7 @@ namespace Entropy {
 			parameters[name] = param;
 		}
 		
-		friend std::ostream& operator<<(std::ostream& out, const Texture& obj);
+		friend std::ostream& operator<<(std::ostream& out, const Texture2D& obj);
 	};
 
 
@@ -167,11 +167,11 @@ namespace Entropy {
 			parameters["s_albedo"] = Parameter(new Texture(buildImageByColor(color)),Sampler,0);
 		}
 
-		void SetAlbedo(Texture* texture) {
+		void SetAlbedo(Texture2D* texture) {
 			parameters["s_albedo"] = Parameter(texture, Sampler, 0);
 		}
 
-		void SetNormal(Texture* texture) {
+		void SetNormal(Texture2D* texture) {
 			parameters["s_normal"] = Parameter(texture, Sampler, 1);
 
 			u_params[0].x = 1;
@@ -179,10 +179,10 @@ namespace Entropy {
 		}
 		
 		void SetMetallic(float value) {
-			SetMetallic(new Texture(buildImageByFloat(value)));
+			SetMetallic(new Texture2D(buildImageByFloat(value)));
 		}
 
-		void SetMetallic(Texture* texture) {
+		void SetMetallic(Texture2D* texture) {
 			parameters["s_metallic"] = Parameter(texture, Sampler, 2);
 		}
 
@@ -190,7 +190,7 @@ namespace Entropy {
 			parameters["s_roughness"] = Parameter(new Texture(buildImageByFloat(value)), Sampler, 3);
 		}
 
-		void SetRoughness(Texture* texture) {
+		void SetRoughness(Texture2D* texture) {
 			parameters["s_roughness"] = Parameter(texture, Sampler, 3);
 		}
 
@@ -198,22 +198,22 @@ namespace Entropy {
 			parameters["s_ao"] = Parameter(new Texture(buildImageByFloat(value)), Sampler, 4);
 		}
 
-		void SetAmbientOcclusion(Texture* texture) {
+		void SetAmbientOcclusion(Texture2D* texture) {
 			parameters["s_ao"] = Parameter(texture, Sampler, 4);
 		}
 
 
 		void SetEmissive(ColorRGBA value) {
-			SetEmissive(new Texture(buildImageByColor(value)));
+			SetEmissive(new Texture2D(buildImageByColor(value)));
 		}
 
-		void SetEmissive(Texture* texture) {
+		void SetEmissive(Texture2D* texture) {
 			parameters["s_emissive"] = Parameter(texture, Sampler, 5);
 			u_params[0].y = 1;
 			setParams();
 		}
 
-		void SetIBL(Texture* irradiance, Texture* prefilter, Texture* brdfLUT) {
+		void SetIBL(Texture2D* irradiance, Texture2D* prefilter, Texture2D* brdfLUT) {
 			parameters["s_irradianceMap"] = Parameter(irradiance, Sampler, 6);
 			parameters["s_prefilterMap"] = Parameter(prefilter, Sampler, 7);
 			parameters["s_brdfLUT"] = Parameter(brdfLUT, Sampler, 8);
@@ -221,7 +221,7 @@ namespace Entropy {
 			setParams();
 		}
 
-		void SetDepthMap(Texture* texture,float heightScale = 0.1f) {
+		void SetDepthMap(Texture2D* texture,float heightScale = 0.1f) {
 			parameters["s_depthMap"] = Parameter(texture, Sampler, 9);
 
 			u_params[1].x = 1;
