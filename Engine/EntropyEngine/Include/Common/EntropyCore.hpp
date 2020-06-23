@@ -1,5 +1,5 @@
 #pragma once
-#include "Common/RendererFactory.hpp"
+#include "Renderer/RendererFactory.hpp"
 
 namespace Entropy {
 	class Scene;

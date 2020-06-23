@@ -1,4 +1,4 @@
-#include "Common/Renderer.hpp"
+#include "Renderer/Renderer.hpp"
 using namespace Entropy;
 
 void Renderer::SetEngine(EntropyCore* engine) {
