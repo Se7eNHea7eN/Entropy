@@ -10,7 +10,7 @@
 #include "Parser/ObjParser.hpp"
 #include "Parser/FbxParser.hpp"
 #include "Graphic/Material.hpp"
-#include "Graphic/Texture.hpp"
+#include "Resource/Texture.hpp"
 #include "Graphic/SkyBox.hpp"
 #include "Geometry/Sphere.hpp"
 #include "Light/PointLight.hpp"

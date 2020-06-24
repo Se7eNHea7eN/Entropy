@@ -1,6 +1,9 @@
 #pragma once
+#include <memory>
 namespace Entropy {
 	class EntropyCore;
+	class RHITexture2D;
+	class Texture;
 	class Renderer {
 				
 	protected:
@@ -15,6 +18,8 @@ namespace Entropy {
 		virtual void Draw() = 0;
 		virtual void AwaitRenderFrame() = 0;
 		void SetEngine(EntropyCore* engine);
+
+		virtual std::shared_ptr<RHITexture2D> CreateRHITexture2D() = 0;
 	};
 
 }

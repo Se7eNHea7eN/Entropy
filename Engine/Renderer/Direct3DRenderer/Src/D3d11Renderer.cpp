@@ -3,6 +3,10 @@
 #include "DXTrace.h"
 #include <d3d11.h>
 #include <d3dcompiler.h>
+#include "Renderer/RHITexture2D.hpp"
+
+#include "Resource\D3D11RHITexture2D.hpp"
+
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -291,6 +295,13 @@ void D3d11Renderer::InitGraphics() {
 
 	g_pDevcon->PSSetShader(geo->g_pPS.Get(), nullptr, 0);
 	geometries.push_back(geo);
+}
+
+std::shared_ptr<RHITexture2D> Entropy::D3d11Renderer::CreateRHITexture2D()
+{
+	auto texture2D = std::shared_ptr<D3D11RHITexture2D>();
+
+	return texture2D;
 }
 
 void D3d11Renderer::Draw() {

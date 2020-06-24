@@ -38,6 +38,7 @@ namespace Entropy {
 		DirectX::XMMATRIX proj;
 	};
 
+	class RHITexture2D;
 	class D3d11Renderer : public Renderer {
 	public:
 		D3d11Renderer(HWND hwnd);
@@ -46,7 +47,7 @@ namespace Entropy {
 		void Resize(int w, int h) override;
 		void Draw() override;
 		void AwaitRenderFrame() override;
-
+		virtual std::shared_ptr<RHITexture2D> CreateRHITexture2D() override;
 	private:
 		void CreateRenderTarget();
 		void SetViewPort();
@@ -69,7 +70,9 @@ namespace Entropy {
 		};
 
 		std::list<std::shared_ptr<D3dGeometry>> geometries;
-		ConstantBuffer m_CBuffer;	                    // 用于修改GPU常量缓冲区的变量
+		ConstantBuffer m_CBuffer;
+	
+		// 用于修改GPU常量缓冲区的变量
 	};
 
 
