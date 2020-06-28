@@ -1,0 +1,3 @@
+[submodule "Engine/thirdparty/DirectXTex"]
+	path = Engine/thirdparty/DirectXTex
+	url = https://github.com/Se7eNHea7eN/DirectXTex.git
