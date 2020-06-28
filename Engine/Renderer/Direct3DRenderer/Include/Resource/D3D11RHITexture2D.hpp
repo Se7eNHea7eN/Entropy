@@ -14,10 +14,10 @@ namespace Entropy {
 	class D3D11RHITexture2D : public RHITexture2D {
 
 	private:
-		ComPtr<ID3D11ShaderResourceView> m_pTexture;
 
 	public:
 		D3D11RHITexture2D(const Texture2D& texture);
+		ComPtr<ID3D11ShaderResourceView> m_pTexture;
 
 	};
 }

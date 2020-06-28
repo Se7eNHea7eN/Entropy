@@ -21,3 +21,6 @@ include_directories(SYSTEM "Include")
 
 
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/EntropyEngine/Include")
+
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/Engine/ThirdParty/DirectXTex/WICTextureLoader")
+

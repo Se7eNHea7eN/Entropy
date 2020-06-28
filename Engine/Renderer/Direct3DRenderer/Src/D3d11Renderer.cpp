@@ -7,6 +7,9 @@
 
 #include "Resource\D3D11RHITexture2D.hpp"
 
+#include "WICTextureLoader11.h"
+#include <locale.h>
+
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -300,6 +303,22 @@ void D3d11Renderer::InitGraphics() {
 std::shared_ptr<RHITexture2D> Entropy::D3d11Renderer::CreateRHITexture2D(const Entropy::Texture* pTexture)
 {
 	auto texture2D = std::shared_ptr<D3D11RHITexture2D>();
+
+	return texture2D;
+}
+
+std::shared_ptr<RHITexture2D> Entropy::D3d11Renderer::CreateRHITexture2DFromFile(const std::string filePath)
+{
+	auto texture2D = std::shared_ptr<D3D11RHITexture2D>();
+
+	const char* _source = filePath.c_str();
+	size_t _dsize = filePath.size() + 1;
+	wchar_t* _dest = new wchar_t[_dsize];
+	wmemset(_dest, 0x0, _dsize);
+
+	CreateWICTextureFromFile(g_pDev, _dest, nullptr, texture2D->m_pTexture.GetAddressOf(),0);
+
+	delete _dest;
 
 	return texture2D;
 }

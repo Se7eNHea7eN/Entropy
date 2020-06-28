@@ -17,12 +17,14 @@ std::shared_ptr<Entropy::RHITexture> Entropy::TextureManager::GetTexture(std::st
 		return iter->second;
 	}
 
-	int iw, ih, n;
-	unsigned char* idata = stbi_load(name.c_str(), &iw, &ih, &n, 0);
-	Texture* pTexture = new Texture(name);
-	pTexture->SetData(idata);
+	//int iw, ih, n;
+	//unsigned char* idata = stbi_load(name.c_str(), &iw, &ih, &n, 0);
+	//Texture* pTexture = new Texture(name);
+	//pTexture->SetData(idata);
+	//delete pTexture;
+
 	auto renderer = EntropyCore::GetInstance()->GetRenderer();
-	auto pRHITexutre = renderer->CreateRHITexture2D(pTexture);
-	delete pTexture;
+	auto pRHITexutre = renderer->CreateRHITexture2DFromFile(name);
 	return pRHITexutre;
 }
+
