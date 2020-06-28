@@ -143,10 +143,10 @@ namespace Entropy {
 			parameters[name] = param;
 		}
 		
-		friend std::ostream& operator<<(std::ostream& out, const Texture2D& obj);
+		friend std::ostream& operator<<(std::ostream& out, const Texture& obj);
 	};
 
-
+	/*
 	class StandardPBRMaterial : public Material {
 	protected:
 		std::vector<Vec4> u_params;
@@ -229,5 +229,5 @@ namespace Entropy {
 			setParams();
 		}
 
-	};
+	};*/
 }

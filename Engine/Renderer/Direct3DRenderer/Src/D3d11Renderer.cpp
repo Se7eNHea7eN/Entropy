@@ -297,7 +297,7 @@ void D3d11Renderer::InitGraphics() {
 	geometries.push_back(geo);
 }
 
-std::shared_ptr<RHITexture2D> Entropy::D3d11Renderer::CreateRHITexture2D()
+std::shared_ptr<RHITexture2D> Entropy::D3d11Renderer::CreateRHITexture2D(const Entropy::Texture* pTexture)
 {
 	auto texture2D = std::shared_ptr<D3D11RHITexture2D>();
 

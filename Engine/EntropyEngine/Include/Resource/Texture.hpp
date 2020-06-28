@@ -7,7 +7,7 @@
 
 namespace Entropy  {
 	using namespace Eigen;
-	class Texture2D : Object {
+	class Texture {
 	protected:
 		std::string m_Name;
 
@@ -20,11 +20,13 @@ namespace Entropy  {
 
 	public:
 
-		Texture2D(const std::string& name) : Object(), m_Name(name) {};
-		Texture2D(const Texture2D&) = default;
-		Texture2D(Texture2D&&) = default;
+		Texture(const std::string& name) : m_Name(name) {};
+		Texture(const Texture&) = default;
+		Texture(Texture&&) = default;
 	
 		void SetName(const std::string & name) { m_Name = name; };
 		void SetName(std::string && name) { m_Name = std::move(name); };
+
+		void SetData(void* pData) { m_data = pData; }
 	};
 }

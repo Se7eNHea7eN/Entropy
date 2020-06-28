@@ -3,15 +3,13 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <tchar.h>
-#include "Common/Renderer.hpp"
+#include "Renderer/Renderer.hpp"
 #include "EntropyApp.hpp"
 #include <ctime>
 #include <cstdint>
-
+#include "Core/EntropyCore.hpp"
 using namespace Entropy;
-Renderer* renderer;
 bool isExit = false;
-EntropyApp* instance;
 
 struct MainThreadEntry
 {
@@ -22,12 +20,13 @@ struct MainThreadEntry
 };
 int32_t MainThreadEntry::threadFunc(bx::Thread* /*_thread*/, void* _userData)
 {
+	Renderer* renderer = EntropyCore::GetInstance()->GetRenderer();
 	renderer->Initialize();
 	
 	auto lastTime = GetTickCount64();
 	while (!isExit) {
 		auto thisTime = GetTickCount64();
-		instance->entropyCore->Tick((thisTime - lastTime) / 1000.0);
+		EntropyCore::GetInstance()->Tick((thisTime - lastTime) / 1000.0);
 		lastTime = thisTime;
 		if (renderer != nullptr)
 			renderer->Draw();
@@ -43,8 +42,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd,
 
 
 EntropyApp::EntropyApp() {
-	instance = this;
-	entropyCore = new EntropyCore();
+
 }
 
 EntropyApp::~EntropyApp() {
@@ -88,6 +86,10 @@ int EntropyApp::run(int _argc, const char* const* _argv) {
 
 	ShowWindow(hWnd, SW_SHOWNORMAL);
 
+	EntropyInitConfig config;
+	config.hwnd = hWnd;
+	EntropyCore::Init(config);
+
 	MainThreadEntry mte;
 	mte.m_argc = _argc;
 	mte.m_argv = _argv;
@@ -104,14 +106,13 @@ int EntropyApp::run(int _argc, const char* const* _argv) {
 		auto thisTime = GetTickCount64();
 		entropyCore->Tick((thisTime - lastTime) / 1000.0);
 		lastTime = thisTime;
-		if (renderer != nullptr)
-			renderer->Draw();
+		EntropyCore::GetInstance()->GetRenderer()->Draw();
 		while (0 != PeekMessageW(&msg, nullptr, 0U, 0U, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
 		}
 	}
-	delete renderer;
+	EntropyCore::Release();
 	return 0;
 }
 
@@ -121,16 +122,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	// sort through and find what code to run for the message given
 	switch (message) {
 	case WM_CREATE: {
-		renderer =instance->entropyCore->CreateRenderer(hWnd);
-		// renderer->AwaitRenderFrame();
-		renderer->Initialize();
-
+	
 	}
 	break;
 	case WM_SIZE: {
 		RECT rc;
 		GetClientRect(hWnd, &rc);
-		renderer->Resize(rc.right - rc.left, rc.bottom - rc.top);
+		EntropyCore::GetInstance()->GetRenderer()->Resize(rc.right - rc.left, rc.bottom - rc.top);
 	}
 	break;
 		// this message is read when the window is closed

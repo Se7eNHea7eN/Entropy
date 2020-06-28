@@ -47,7 +47,7 @@ namespace Entropy {
 		void Resize(int w, int h) override;
 		void Draw() override;
 		void AwaitRenderFrame() override;
-		virtual std::shared_ptr<RHITexture2D> CreateRHITexture2D() override;
+		virtual std::shared_ptr<RHITexture2D> CreateRHITexture2D(const Entropy::Texture* pTexture) override;
 	private:
 		void CreateRenderTarget();
 		void SetViewPort();

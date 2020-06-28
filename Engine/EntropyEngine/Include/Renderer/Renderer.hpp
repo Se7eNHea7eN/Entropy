@@ -19,7 +19,7 @@ namespace Entropy {
 		virtual void AwaitRenderFrame() = 0;
 		void SetEngine(EntropyCore* engine);
 
-		virtual std::shared_ptr<RHITexture2D> CreateRHITexture2D() = 0;
+		virtual std::shared_ptr<RHITexture2D> CreateRHITexture2D(const Entropy::Texture* pTexture) = 0;
 	};
 
 }

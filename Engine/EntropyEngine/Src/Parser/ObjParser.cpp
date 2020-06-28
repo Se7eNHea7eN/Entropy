@@ -5,7 +5,7 @@
 #include "../../3rdparty/tiny_obj_loader/tiny_obj_loader.h"
 #include "Graphic/Vertex.hpp"
 #include "Graphic/StaticMeshComponent.hpp"
-
+using namespace Entropy;
 std::vector<std::shared_ptr<Mesh>>* Entropy::ParseObj(std::string path) {
 	std::vector<std::shared_ptr<Mesh>>* meshes = new std::vector<std::shared_ptr<Mesh>>;
 

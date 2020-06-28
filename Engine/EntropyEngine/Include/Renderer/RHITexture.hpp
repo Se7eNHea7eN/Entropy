@@ -1,5 +1,7 @@
 #pragma once
 
-class RHITexture {
+namespace Entropy {
+	class RHITexture {
 
-};
+	};
+}
