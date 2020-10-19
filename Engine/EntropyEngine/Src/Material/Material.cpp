@@ -1,4 +1,4 @@
-#include "Graphic/Material.hpp"
+#include "Material/Material.hpp"
 #include <memory>
 #include <bimg/bimg.h>
 bimg::ImageContainer* Entropy::Material::buildImageByFloat(float value) {

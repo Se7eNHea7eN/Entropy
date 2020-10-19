@@ -37,7 +37,7 @@ add_subdirectory(Engine/ThirdParty/bgfx)
 add_subdirectory(Engine/ThirdParty/bx)
 add_subdirectory(Engine/ThirdParty/bimg)
 add_subdirectory(Engine/ThirdParty/glfw)
-add_subdirectory(Engine/ThirdParty/DirectXTex)
+#add_subdirectory(Engine/ThirdParty/DirectXTex)
 
 #add_subdirectory(Engine/ThirdParty/FreeImage)
 #add_subdirectory(Engine/ThirdParty/OpenEXR)

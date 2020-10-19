@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <Eigen/Core>
-#include "Resource/Texture.hpp"
+#include "Texture/Texture.hpp"
 #include <map>
 #include <bimg/decode.h>
 #include "Utils/Utils.hpp"
